@@ -2,11 +2,11 @@
   "name": "torg-kz",
   "version": "1.0.0",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
+"scripts": {
+  "start": "npm install && node server.js"
+}
   "dependencies": {
-    "better-sqlite3": "^12.8.0",
-    "express": "^5.2.1"
+    "express": "^4.18.2",
+    "sqlite3": "5.1.6"
   }
 }
