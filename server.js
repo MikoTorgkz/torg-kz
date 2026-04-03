@@ -3,7 +3,11 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server started on port " + PORT);
+});
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('.', { index: false }));
