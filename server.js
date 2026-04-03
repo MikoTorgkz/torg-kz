@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const app = express();
@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 });
 
 // база данных
-const db = new sqlite3.Database('./database.db', (err) => {
+const db = new Database('database.db');
   if (err) {
     console.error('Ошибка подключения к БД:', err.message);
   } else {
