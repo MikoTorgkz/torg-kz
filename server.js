@@ -5,10 +5,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log("Server started on port " + PORT);
-});
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('.', { index: false }));
 
@@ -17,16 +13,11 @@ app.get('/', (req, res) => {
 });
 
 // база данных
-const db = new Database('database.db');
-  if (err) {
-    console.error('Ошибка подключения к БД:', err.message);
-  } else {
-    console.log('База данных подключена');
-  }
-});
+const db = new Database('./database.db');
+console.log('База данных подключена');
 
 // таблица заявок
-db.run(`
+db.prepare(`
   CREATE TABLE IF NOT EXISTS requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -34,7 +25,7 @@ db.run(`
     part TEXT NOT NULL,
     status TEXT DEFAULT 'Новая заявка'
   )
-`);
+`).run();
 
 // таблица продавцов
 db.run(`
@@ -155,5 +146,5 @@ app.post('/respond/:id', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Сервер запущен: http://localhost:${PORT}`);
+  console.log("Server started on port " + PORT);
 });
