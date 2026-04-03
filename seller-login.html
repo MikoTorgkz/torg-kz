@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torg.kz — Вход продавца</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #dbe1ea;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    button {
+      border: none;
+      background: #111827;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .msg {
+      text-align: center;
+      font-weight: bold;
+      min-height: 24px;
+      color: red;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      color: #2563eb;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Вход продавца</h1>
+    <p>Введите логин и пароль</p>
+
+    <form id="loginForm">
+      <input type="text" name="login" placeholder="Логин" required />
+      <input type="password" name="password" placeholder="Пароль" required />
+      <button type="submit">Войти</button>
+    </form>
+
+    <div class="msg" id="message"></div>
+
+    <a class="back" href="/seller-register.html">Зарегистрироваться</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const body = new URLSearchParams(formData);
+
+      const res = await fetch('/seller-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body.toString()
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('sellerAuth', 'true');
+        localStorage.setItem('sellerLogin', data.login);
+        window.location.href = '/seller.html';
+      } else {
+        message.textContent = data.message;
+      }
+    });
+  </script>
+</body>
+</html>

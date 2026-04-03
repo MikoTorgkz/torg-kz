@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torg.kz — Вход</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    a.button {
+      display: block;
+      text-decoration: none;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .client {
+      background: #2563eb;
+      color: white;
+    }
+
+    .seller {
+      background: #111827;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Torg.kz</h1>
+    <p>Выберите, как хотите продолжить</p>
+
+    <a class="button client" href="/client.html">Я клиент</a>
+    <a class="button seller" href="/seller-login.html">Я продавец</a>
+  </div>
+</body>
+</html>

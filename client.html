@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torg.kz — Клиент</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    .nav {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: bold;
+      margin: 0 10px;
+    }
+
+    .hero {
+      background: white;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+      font-size: 32px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #dbe1ea;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+    }
+
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    .msg {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/client.html">Клиент</a>
+      <a href="/seller.html">Продавец</a>
+    </div>
+
+    <div class="hero">
+      <h1>Torg.kz</h1>
+      <p class="subtitle">Оставьте заявку на нужную запчасть, и продавцы смогут откликнуться</p>
+
+      <form id="requestForm">
+        <input type="text" name="name" placeholder="Ваше имя" required />
+        <input type="text" name="phone" placeholder="Ваш номер телефона" required />
+        <input type="text" name="part" placeholder="Какая запчасть нужна?" required />
+        <button type="submit">Отправить заявку</button>
+      </form>
+
+      <div class="msg" id="message"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('requestForm');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const body = new URLSearchParams(formData);
+
+      const res = await fetch('/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body.toString()
+      });
+
+      const text = await res.text();
+      message.textContent = text;
+      form.reset();
+    });
+  </script>
+</body>
+</html>

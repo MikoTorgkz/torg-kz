@@ -1,0 +1,155 @@
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+
+const app = express();
+const PORT = 3000;
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('.', { index: false }));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// база данных
+const db = new sqlite3.Database('./database.db', (err) => {
+  if (err) {
+    console.error('Ошибка подключения к БД:', err.message);
+  } else {
+    console.log('База данных подключена');
+  }
+});
+
+// таблица заявок
+db.run(`
+  CREATE TABLE IF NOT EXISTS requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    part TEXT NOT NULL,
+    status TEXT DEFAULT 'Новая заявка'
+  )
+`);
+
+// таблица продавцов
+db.run(`
+  CREATE TABLE IF NOT EXISTS sellers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    login TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
+  )
+`);
+
+// главная страница
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// клиент отправляет заявку
+app.post('/submit', (req, res) => {
+  const { name, phone, part } = req.body;
+
+  if (!name || !phone || !part) {
+    return res.send('Заполни все поля');
+  }
+
+  db.run(
+    'INSERT INTO requests (name, phone, part, status) VALUES (?, ?, ?, ?)',
+    [name, phone, part, 'Новая заявка'],
+    function (err) {
+      if (err) {
+        console.error('Ошибка сохранения:', err.message);
+        return res.send('Ошибка при сохранении');
+      }
+
+      res.send(`Заявка сохранена. ID: ${this.lastID}`);
+    }
+  );
+});
+
+// регистрация продавца
+app.post('/seller-register', (req, res) => {
+  const { login, password } = req.body;
+
+  if (!login || !password) {
+    return res.json({ success: false, message: 'Заполни все поля' });
+  }
+
+  db.run(
+    'INSERT INTO sellers (login, password) VALUES (?, ?)',
+    [login, password],
+    function (err) {
+      if (err) {
+        if (err.message.includes('UNIQUE')) {
+          return res.json({ success: false, message: 'Такой логин уже существует' });
+        }
+
+        console.error('Ошибка регистрации:', err.message);
+        return res.json({ success: false, message: 'Ошибка регистрации' });
+      }
+
+      res.json({ success: true, message: 'Регистрация прошла успешно' });
+    }
+  );
+});
+
+// вход продавца
+app.post('/seller-login', (req, res) => {
+  const { login, password } = req.body;
+
+  if (!login || !password) {
+    return res.json({ success: false, message: 'Заполни все поля' });
+  }
+
+  db.get(
+    'SELECT * FROM sellers WHERE login = ? AND password = ?',
+    [login, password],
+    (err, row) => {
+      if (err) {
+        console.error('Ошибка входа:', err.message);
+        return res.json({ success: false, message: 'Ошибка входа' });
+      }
+
+      if (!row) {
+        return res.json({ success: false, message: 'Неверный логин или пароль' });
+      }
+
+      res.json({ success: true, login: row.login });
+    }
+  );
+});
+
+// список заявок
+app.get('/requests', (req, res) => {
+  db.all('SELECT * FROM requests ORDER BY id DESC', [], (err, rows) => {
+    if (err) {
+      console.error('Ошибка получения данных:', err.message);
+      return res.status(500).send('Ошибка получения данных');
+    }
+
+    res.json(rows);
+  });
+});
+
+// отклик продавца
+app.post('/respond/:id', (req, res) => {
+  const id = req.params.id;
+
+  db.run(
+    'UPDATE requests SET status = ? WHERE id = ?',
+    ['Есть отклик', id],
+    function (err) {
+      if (err) {
+        console.error('Ошибка обновления:', err.message);
+        return res.status(500).send('Ошибка отклика');
+      }
+
+      res.send('Продавец откликнулся');
+    }
+  );
+});
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен: http://localhost:${PORT}`);
+});

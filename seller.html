@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Torg.kz — Продавец</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .seller-name {
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .refresh-btn, .logout-btn, .action-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .refresh-btn {
+      background: #2563eb;
+      color: white;
+    }
+
+    .logout-btn {
+      background: #111827;
+      color: white;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .card p {
+      margin: 10px 0;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: bold;
+      background: #e5edff;
+      color: #1d4ed8;
+    }
+
+    .action-btn {
+      margin-top: 15px;
+      width: 100%;
+      background: #16a34a;
+      color: white;
+    }
+
+    .action-btn[disabled] {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>Заявки продавцам</h1>
+        <div class="seller-name" id="sellerName"></div>
+      </div>
+
+      <div class="top-actions">
+        <button class="refresh-btn" onclick="loadRequests()">Обновить</button>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+      </div>
+    </div>
+
+    <div class="cards" id="list"></div>
+    <div class="empty" id="empty"></div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('sellerAuth') !== 'true') {
+      window.location.href = '/seller-login.html';
+    }
+
+    const sellerLogin = localStorage.getItem('sellerLogin') || 'Продавец';
+    document.getElementById('sellerName').textContent = 'Вы вошли как: ' + sellerLogin;
+
+    async function loadRequests() {
+      const res = await fetch('/requests');
+      const data = await res.json();
+
+      const list = document.getElementById('list');
+      const empty = document.getElementById('empty');
+
+      list.innerHTML = '';
+      empty.textContent = '';
+
+      if (data.length === 0) {
+        empty.textContent = 'Пока заявок нет';
+        return;
+      }
+
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const buttonHtml = item.status === 'Есть отклик'
+          ? '<button class="action-btn" disabled>Уже откликнулись</button>'
+          : `<button class="action-btn" onclick="respondToRequest(${item.id})">Откликнуться</button>`;
+
+        card.innerHTML = `
+          <p><strong>ID:</strong> ${item.id}</p>
+          <p><strong>Имя:</strong> ${item.name}</p>
+          <p><strong>Телефон:</strong> ${item.phone}</p>
+          <p><strong>Запчасть:</strong> ${item.part}</p>
+          <div class="status">${item.status}</div>
+          ${buttonHtml}
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    async function respondToRequest(id) {
+      const res = await fetch(`/respond/${id}`, {
+        method: 'POST'
+      });
+
+      const text = await res.text();
+      alert(text);
+      loadRequests();
+    }
+
+    function logout() {
+      localStorage.removeItem('sellerAuth');
+      localStorage.removeItem('sellerLogin');
+      window.location.href = '/seller-login.html';
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>
