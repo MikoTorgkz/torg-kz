@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 });
 
 // база данных
-const db = new Database('./database.db');
+const db = new Database('/tmp/database.db');
 console.log('База данных подключена');
 
 // таблица заявок
