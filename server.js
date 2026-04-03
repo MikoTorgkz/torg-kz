@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
-  res.send("Сервер работает");
+  res.send("Torg KZ работает 🚀");
 });
 
 app.get("/test", (req, res) => {
