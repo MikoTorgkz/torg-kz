@@ -3,100 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Torg.kz</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 0 15px;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    form {
-      border: 1px solid #ccc;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      box-sizing: border-box;
-    }
-
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      background: #f9f9f9;
-    }
-
-    .status {
-      font-weight: bold;
-      margin-top: 10px;
-    }
-  </style>
+  <title>Torg KZ</title>
 </head>
 <body>
-  <h1>Torg.kz</h1>
-  <h2>Оставить заявку на запчасть</h2>
-
-  <form action="/submit" method="post">
-    <input type="text" name="name" placeholder="Ваше имя" required />
-    <input type="text" name="phone" placeholder="Ваш номер телефона" required />
-    <input type="text" name="part" placeholder="Какая запчасть нужна?" required />
-    <button type="submit">Отправить заявку</button>
-  </form>
-
-  <button onclick="loadRequests()">Показать заявки</button>
-
-  <div id="list"></div>
-
-  <script>
-    function loadRequests() {
-      fetch('/requests')
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById('list');
-          list.innerHTML = '';
-
-          data.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'card';
-
-            card.innerHTML = `
-              <p><strong>Имя:</strong> ${item.name}</p>
-              <p><strong>Телефон:</strong> ${item.phone}</p>
-              <p><strong>Запчасть:</strong> ${item.part}</p>
-              <p class="status"><strong>Статус:</strong> ${item.status}</p>
-              <button onclick="respondToRequest(${item.id})">Откликнуться</button>
-            `;
-
-            list.appendChild(card);
-          });
-        });
-    }
-
-    function respondToRequest(id) {
-      fetch(`/respond/${id}`, {
-        method: 'POST'
-      })
-      .then(res => res.text())
-      .then(message => {
-        alert(message);
-        loadRequests();
-      });
-    }
-  </script>
+  <h1>Torg KZ работает</h1>
+  <p>Сайт успешно запущен.</p>
 </body>
 </html>
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
