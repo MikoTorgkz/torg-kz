@@ -3,275 +3,658 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Torg KZ</title>
+  <title>Torg.kz — маркетплейс заявок</title>
   <style>
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
     }
 
     body {
-      background: #f5f7fb;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
       color: #1f2937;
     }
 
     header {
       background: #111827;
       color: white;
-      padding: 18px 40px;
+      padding: 18px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .logo {
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 20px;
-      font-size: 15px;
-    }
-
-    .hero {
-      padding: 70px 20px;
-      text-align: center;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: white;
-    }
-
-    .hero h1 {
-      font-size: 46px;
-      margin-bottom: 16px;
-    }
-
-    .hero p {
-      font-size: 20px;
-      margin-bottom: 28px;
-    }
-
-    .hero-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 14px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
-    .btn {
-      border: none;
-      padding: 14px 24px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
+    header h1 {
+      margin: 0;
+      font-size: 24px;
     }
 
-    .btn-primary {
-      background: white;
-      color: #1d4ed8;
+    header .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .btn-secondary {
-      background: #111827;
-      color: white;
-    }
-
-    .section {
+    .container {
       max-width: 1100px;
-      margin: 0 auto;
-      padding: 60px 20px;
+      margin: 24px auto;
+      padding: 0 16px;
     }
 
-    .section h2 {
-      font-size: 32px;
-      text-align: center;
-      margin-bottom: 14px;
-    }
-
-    .section-subtitle {
-      text-align: center;
-      color: #6b7280;
-      margin-bottom: 40px;
-      font-size: 18px;
-    }
-
-    .cards {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
     }
 
     .card {
       background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 18px;
     }
 
-    .card h3 {
-      margin-bottom: 12px;
-      font-size: 22px;
+    h2, h3 {
+      margin-top: 0;
     }
 
-    .card p {
-      color: #6b7280;
-      line-height: 1.5;
+    input, textarea, select, button {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+      margin-top: 10px;
     }
 
-    .cta {
-      background: white;
-      border-radius: 20px;
-      padding: 35px;
-      text-align: center;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    textarea {
+      min-height: 110px;
+      resize: vertical;
     }
 
-    .cta h3 {
-      font-size: 30px;
-      margin-bottom: 12px;
+    button {
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      background: #2563eb;
+      color: white;
     }
 
-    .cta p {
-      color: #6b7280;
-      margin-bottom: 20px;
-      font-size: 17px;
+    button.secondary {
+      background: #111827;
     }
 
-    footer {
-      text-align: center;
-      padding: 24px;
-      color: #6b7280;
-      font-size: 14px;
+    button.success {
+      background: #16a34a;
+    }
+
+    button.gray {
+      background: #6b7280;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .auth-switch {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .msg {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #1d4ed8;
+      font-weight: bold;
+      display: none;
+    }
+
+    .request-card, .response-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 14px;
+      background: #fafafa;
     }
 
     .status {
-      margin-top: 18px;
-      font-size: 15px;
-      color: #dbeafe;
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 8px;
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .status.expired {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tabs button {
+      width: auto;
+      padding: 10px 14px;
+    }
+
+    .responses-box {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #d1d5db;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">Torg KZ</div>
-    <nav>
-      <a href="#">Главная</a>
-      <a href="#">О проекте</a>
-      <a href="#">Вход</a>
-      <a href="#">Регистрация</a>
-    </nav>
+    <h1>Torg.kz</h1>
+    <div class="user-bar">
+      <div id="currentUserText">Ты не вошёл</div>
+      <button id="logoutBtn" class="gray hidden">Выйти</button>
+    </div>
   </header>
 
-  <section class="hero">
-    <h1>Маркетплейс заявок нового формата</h1>
-    <p>Покупатель оставляет заявку, продавцы сами предлагают товар</p>
-    <div class="hero-buttons">
-      <button class="btn btn-primary" onclick="showMessage('Функция регистрации будет следующей')">Регистрация</button>
-      <button class="btn btn-secondary" onclick="showMessage('Функция создания заявки будет следующей')">Создать заявку</button>
-    </div>
-    <div style="margin-top:20px;">
-  <input id="username" placeholder="Логин" style="padding:10px;margin:5px;">
-  <input id="password" placeholder="Пароль" type="password" style="padding:10px;margin:5px;">
-  <button onclick="register()" class="btn btn-primary">Зарегистрироваться</button>
-</div>
-
-<div 
-style="margin-top:20px;">
-  <input id="loginUsername" placeholder="Логин для входа" style="padding:10px;margin:5px;">
-  <input id="loginPassword" placeholder="Пароль для входа" type="password" style="padding:10px;margin:5px;">
-  <button type="button" onclick="login()" class="btn btn-secondary">Войти</button>
-</div>
-
-<script>
-async function login() {
-  const username = document.getElementById("loginUsername").value;
-  const password = document.getElementById("loginPassword").value;
-
-  const res = await fetch("/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ username, password })
-  });
-
-  const text = await res.text();
-  alert(text);
-}</script>
-
-    <div class="status" id="statusText">Сайт работает и готов к развитию 🚀</div>
-  </section>
-
-  <section class="section">
-    <h2>Как это работает</h2>
-    <p class="section-subtitle">Простая схема для покупателей и продавцов</p>
-
-    <div class="cards">
-      <div class="card">
-        <h3>1. Покупатель</h3>
-        <p>Оставляет заявку на нужный товар без долгого поиска по магазинам.</p>
+  <div class="container">
+    <div id="authSection" class="card">
+      <div class="auth-switch">
+        <button id="showLoginBtn" class="secondary">Вход</button>
+        <button id="showRegisterBtn" class="gray">Регистрация</button>
       </div>
-      <div class="card">
-        <h3>2. Продавцы</h3>
-        <p>Получают заявку и предлагают свои цены, сроки и условия.</p>
+
+      <div id="loginBlock">
+        <h2>Вход</h2>
+        <input type="email" id="loginEmail" placeholder="Email" />
+        <input type="password" id="loginPassword" placeholder="Пароль" />
+        <button id="loginBtn">Войти</button>
+        <div id="loginMsg" class="msg"></div>
       </div>
-      <div class="card">
-        <h3>3. Выбор</h3>
-        <p>Покупатель сравнивает предложения и выбирает лучшее.</p>
+
+      <div id="registerBlock" class="hidden">
+        <h2>Регистрация</h2>
+        <select id="registerRole">
+          <option value="buyer">Покупатель</option>
+          <option value="seller">Продавец</option>
+        </select>
+        <input type="text" id="registerName" placeholder="Имя" />
+        <input type="email" id="registerEmail" placeholder="Email" />
+        <input type="password" id="registerPassword" placeholder="Пароль" />
+        <button id="registerBtn" class="success">Зарегистрироваться</button>
+        <div id="registerMsg" class="msg"></div>
       </div>
     </div>
-  </section>
 
-  <section class="section">
-    <div class="cta">
-      <h3>Torg KZ уже онлайн</h3>
-      <p>Следующий этап — регистрация, личный кабинет и реальные заявки.</p>
-      <button class="btn btn-secondary" onclick="checkServer()">Проверить сервер</button>
+    <div id="dashboardSection" class="hidden">
+      <div class="tabs">
+        <button id="tabMarketplaceBtn">Все заявки</button>
+        <button id="tabBuyerBtn" class="hidden">Мои заявки</button>
+        <button id="tabSellerBtn" class="hidden">Мои ответы</button>
+      </div>
+
+      <div id="buyerPanel" class="hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Создать заявку</h2>
+            <input type="text" id="reqTitle" placeholder="Заголовок заявки" />
+            <input type="text" id="reqCarModel" placeholder="Марка / модель авто" />
+            <input type="text" id="reqPartName" placeholder="Какая запчасть нужна?" />
+            <input type="text" id="reqCity" placeholder="Город" />
+            <input type="text" id="reqPhone" placeholder="Телефон" />
+            <textarea id="reqDescription" placeholder="Опиши, что именно нужно"></textarea>
+            <button id="createRequestBtn" class="success">Опубликовать заявку</button>
+            <div id="requestMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h2>Мои заявки</h2>
+            <div id="myRequestsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sellerPanel" class="hidden">
+        <div class="card">
+          <h2>Мои ответы</h2>
+          <div id="myResponsesList"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Лента заявок</h2>
+        <div id="marketplaceList"></div>
+      </div>
     </div>
-  </section>
-
-  <footer>
-    © 2026 Torg KZ. Все права защищены.
-  </footer>
+  </div>
 
   <script>
-    function showMessage(text) {
-      document.getElementById("statusText").innerText = text;
+    const API = {
+      token: localStorage.getItem('token') || '',
+      user: null
+    };
+
+    const authSection = document.getElementById('authSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const currentUserText = document.getElementById('currentUserText');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const loginBlock = document.getElementById('loginBlock');
+    const registerBlock = document.getElementById('registerBlock');
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    const showRegisterBtn = document.getElementById('showRegisterBtn');
+
+    const tabBuyerBtn = document.getElementById('tabBuyerBtn');
+    const tabSellerBtn = document.getElementById('tabSellerBtn');
+    const tabMarketplaceBtn = document.getElementById('tabMarketplaceBtn');
+
+    const buyerPanel = document.getElementById('buyerPanel');
+    const sellerPanel = document.getElementById('sellerPanel');
+
+    function showMessage(id, text, color = '#1d4ed8') {
+      const el = document.getElementById(id);
+      el.style.display = 'block';
+      el.style.color = color;
+      el.textContent = text;
     }
 
-    async function checkServer() {
-      try {
-        const response = await fetch("/test");
-        const text = await response.text();
-        document.getElementById("statusText").innerText = "Ответ сервера: " + text;
-      } catch (error) {
-        document.getElementById("statusText").innerText = "Ошибка соединения с сервером";
+    function hideMessage(id) {
+      const el = document.getElementById(id);
+      el.style.display = 'none';
+      el.textContent = '';
+    }
+
+    function switchAuth(mode) {
+      if (mode === 'login') {
+        loginBlock.classList.remove('hidden');
+        registerBlock.classList.add('hidden');
+        showLoginBtn.className = 'secondary';
+        showRegisterBtn.className = 'gray';
+      } else {
+        registerBlock.classList.remove('hidden');
+        loginBlock.classList.add('hidden');
+        showRegisterBtn.className = 'secondary';
+        showLoginBtn.className = 'gray';
       }
     }
+
+    async function apiFetch(url, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+
+      if (API.token) {
+        headers.Authorization = `Bearer ${API.token}`;
+      }
+
+      const res = await fetch(url, {
+        ...options,
+        headers
+      });
+
+      const text = await res.text();
+      let data;
+
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { message: text };
+      }
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Ошибка запроса');
+      }
+
+      return data;
+    }
+
+    async function register() {
+      hideMessage('registerMsg');
+
+      const payload = {
+        role: document.getElementById('registerRole').value,
+        name: document.getElementById('registerName').value.trim(),
+        email: document.getElementById('registerEmail').value.trim(),
+        password: document.getElementById('registerPassword').value
+      };
+
+      try {
+        const data = await apiFetch('/api/register', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        showMessage('registerMsg', data.message, 'green');
+      } catch (err) {
+        showMessage('registerMsg', err.message, 'red');
+      }
+    }
+
+    async function login() {
+      hideMessage('loginMsg');
+
+      const payload = {
+        email: document.getElementById('loginEmail').value.trim(),
+        password: document.getElementById('loginPassword').value
+      };
+
+      try {
+        const data = await apiFetch('/api/login', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        API.token = data.token;
+        API.user = data.user;
+        localStorage.setItem('token', API.token);
+
+        await loadMe();
+      } catch (err) {
+        showMessage('loginMsg', err.message, 'red');
+      }
+    }
+
+    async function loadMe() {
+      try {
+        const user = await apiFetch('/api/me');
+        API.user = user;
+        authSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+        currentUserText.textContent = `Ты вошёл как: ${user.name} (${user.role === 'buyer' ? 'покупатель' : 'продавец'})`;
+
+        if (user.role === 'buyer') {
+          tabBuyerBtn.classList.remove('hidden');
+          tabSellerBtn.classList.add('hidden');
+          buyerPanel.classList.remove('hidden');
+          sellerPanel.classList.add('hidden');
+          await loadMyRequests();
+        } else {
+          tabSellerBtn.classList.remove('hidden');
+          tabBuyerBtn.classList.add('hidden');
+          sellerPanel.classList.remove('hidden');
+          buyerPanel.classList.add('hidden');
+          await loadMyResponses();
+        }
+
+        await loadMarketplace();
+      } catch {
+        API.token = '';
+        API.user = null;
+        localStorage.removeItem('token');
+        authSection.classList.remove('hidden');
+        dashboardSection.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
+        currentUserText.textContent = 'Ты не вошёл';
+      }
+    }
+
+    async function logout() {
+      try {
+        await apiFetch('/api/logout', { method: 'POST' });
+      } catch {}
+
+      API.token = '';
+      API.user = null;
+      localStorage.removeItem('token');
+      authSection.classList.remove('hidden');
+      dashboardSection.classList.add('hidden');
+      logoutBtn.classList.add('hidden');
+      currentUserText.textContent = 'Ты не вошёл';
+    }
+
+    async function createRequest() {
+      hideMessage('requestMsg');
+
+      const payload = {
+        title: document.getElementById('reqTitle').value.trim(),
+        carModel: document.getElementById('reqCarModel').value.trim(),
+        partName: document.getElementById('reqPartName').value.trim(),
+        city: document.getElementById('reqCity').value.trim(),
+        phone: document.getElementById('reqPhone').value.trim(),
+        description: document.getElementById('reqDescription').value.trim()
+      };
+
+      try {
+        const data = await apiFetch('/api/requests', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        showMessage('requestMsg', data.message, 'green');
+
+        document.getElementById('reqTitle').value = '';
+        document.getElementById('reqCarModel').value = '';
+        document.getElementById('reqPartName').value = '';
+        document.getElementById('reqCity').value = '';
+        document.getElementById('reqPhone').value = '';
+        document.getElementById('reqDescription').value = '';
+
+        await loadMyRequests();
+        await loadMarketplace();
+      } catch (err) {
+        showMessage('requestMsg', err.message, 'red');
+      }
+    }
+
+    async function loadMarketplace() {
+      const list = document.getElementById('marketplaceList');
+      list.innerHTML = 'Загрузка...';
+
+      try {
+        const requests = await apiFetch('/api/marketplace');
+        list.innerHTML = '';
+
+        if (!requests.length) {
+          list.innerHTML = '<div class="small">Пока заявок нет</div>';
+          return;
+        }
+
+        for (const item of requests) {
+          const card = document.createElement('div');
+          card.className = 'request-card';
+
+          const expiredClass = item.status === 'expired' ? 'status expired' : 'status';
+
+          let actionsHtml = '';
+          if (API.user && API.user.role === 'seller' && item.status === 'open') {
+            actionsHtml = `
+              <div class="responses-box">
+                <input type="text" id="price-${item.id}" placeholder="Цена" />
+                <textarea id="message-${item.id}" placeholder="Твой ответ продавца"></textarea>
+                <button class="success" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
+              </div>
+            `;
+          }
+
+          let buyerExtra = '';
+          if (API.user && API.user.role === 'buyer' && item.buyerId === API.user.id) {
+            buyerExtra = `
+              <div class="responses-box">
+                <button class="gray" onclick="loadResponses('${item.id}')">Посмотреть ответы (${item.responsesCount})</button>
+                <div id="responses-${item.id}"></div>
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            <h3>${item.title}</h3>
+            <div><strong>Авто:</strong> ${item.carModel}</div>
+            <div><strong>Запчасть:</strong> ${item.partName}</div>
+            <div><strong>Город:</strong> ${item.city}</div>
+            <div><strong>Телефон:</strong> ${item.phone}</div>
+            <div><strong>Описание:</strong> ${item.description}</div>
+            <div class="${expiredClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
+            <div class="small">Ответов: ${item.responsesCount}</div>
+            ${actionsHtml}
+            ${buyerExtra}
+          `;
+
+          list.appendChild(card);
+        }
+      } catch (err) {
+        list.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    async function loadMyRequests() {
+      const list = document.getElementById('myRequestsList');
+      list.innerHTML = 'Загрузка...';
+
+      try {
+        const requests = await apiFetch('/api/requests');
+        list.innerHTML = '';
+
+        if (!requests.length) {
+          list.innerHTML = '<div class="small">У тебя пока нет заявок</div>';
+          return;
+        }
+
+        requests.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'request-card';
+
+          const expiredClass = item.status === 'expired' ? 'status expired' : 'status';
+
+          card.innerHTML = `
+            <h3>${item.title}</h3>
+            <div><strong>Авто:</strong> ${item.carModel}</div>
+            <div><strong>Запчасть:</strong> ${item.partName}</div>
+            <div class="${expiredClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
+            <button class="gray" onclick="loadResponses('${item.id}')">Посмотреть ответы (${item.responsesCount})</button>
+            <div id="responses-${item.id}"></div>
+          `;
+
+          list.appendChild(card);
+        });
+      } catch (err) {
+        list.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    async function loadResponses(requestId) {
+      const box = document.getElementById(`responses-${requestId}`);
+      box.innerHTML = 'Загрузка ответов...';
+
+      try {
+        const responses = await apiFetch(`/api/requests/${requestId}/responses`);
+        box.innerHTML = '';
+
+        if (!responses.length) {
+          box.innerHTML = '<div class="small">Ответов пока нет</div>';
+          return;
+        }
+
+        responses.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'response-card';
+          card.innerHTML = `
+            <div><strong>Продавец:</strong> ${item.sellerName}</div>
+            <div><strong>Цена:</strong> ${item.price}</div>
+            <div><strong>Сообщение:</strong> ${item.message}</div>
+          `;
+          box.appendChild(card);
+        });
+      } catch (err) {
+        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    async function respondToRequest(requestId) {
+      const price = document.getElementById(`price-${requestId}`).value.trim();
+      const message = document.getElementById(`message-${requestId}`).value.trim();
+
+      try {
+        await apiFetch(`/api/requests/${requestId}/respond`, {
+          method: 'POST',
+          body: JSON.stringify({ price, message })
+        });
+
+        alert('Ответ отправлен');
+        await loadMarketplace();
+        await loadMyResponses();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadMyResponses() {
+      const list = document.getElementById('myResponsesList');
+      list.innerHTML = 'Загрузка...';
+
+      try {
+        const responses = await apiFetch('/api/my-responses');
+        list.innerHTML = '';
+
+        if (!responses.length) {
+          list.innerHTML = '<div class="small">Ты пока не отвечал на заявки</div>';
+          return;
+        }
+
+        responses.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'response-card';
+          card.innerHTML = `
+            <div><strong>Заявка:</strong> ${item.requestTitle}</div>
+            <div><strong>Авто:</strong> ${item.requestCarModel}</div>
+            <div><strong>Запчасть:</strong> ${item.requestPartName}</div>
+            <div><strong>Твоя цена:</strong> ${item.price}</div>
+            <div><strong>Твоё сообщение:</strong> ${item.message}</div>
+          `;
+          list.appendChild(card);
+        });
+      } catch (err) {
+        list.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    showLoginBtn.addEventListener('click', () => switchAuth('login'));
+    showRegisterBtn.addEventListener('click', () => switchAuth('register'));
+    document.getElementById('registerBtn').addEventListener('click', register);
+    document.getElementById('loginBtn').addEventListener('click', login);
+    document.getElementById('createRequestBtn').addEventListener('click', createRequest);
+    logoutBtn.addEventListener('click', logout);
+
+    tabMarketplaceBtn.addEventListener('click', async () => {
+      await loadMarketplace();
+    });
+
+    tabBuyerBtn.addEventListener('click', async () => {
+      buyerPanel.classList.remove('hidden');
+      sellerPanel.classList.add('hidden');
+      await loadMyRequests();
+    });
+
+    tabSellerBtn.addEventListener('click', async () => {
+      sellerPanel.classList.remove('hidden');
+      buyerPanel.classList.add('hidden');
+      await loadMyResponses();
+    });
+
+    loadMe();
   </script>
-
-  <script>
-async function register() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const res = await fetch("/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ username, password })
-  });
-
-  const text = await res.text();
-  alert(text);
-}
-</script>
-
 </body>
 </html>
