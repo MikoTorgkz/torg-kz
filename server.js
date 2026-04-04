@@ -21,8 +21,12 @@ function readUsers() {
   }
 }
 
-function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf8");
+function saveUsers(users) {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf8");
+  } catch (error) {
+    console.error("Ошибка сохранения users.json:", error);
+  }
 }
 
 app.use(express.json());
@@ -42,21 +46,16 @@ app.get("/users", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-
   const username = (req.body.username || "").trim();
   const password = (req.body.password || "").trim();
-
-  const users = readUsers();
-
-  console.log("REGISTER:", username, password);
-  console.log("USERS:", users);
 
   if (!username || !password) {
     return res.status(400).send("Введите логин и пароль");
   }
 
-  const exists = users.find((user) => user.username === username);
+  const users = readUsers();
 
+  const exists = users.find((u) => u.username === username);
   if (exists) {
     return res.status(400).send("Такой логин уже существует");
   }
@@ -69,34 +68,13 @@ app.post("/register", (req, res) => {
 
   saveUsers(users);
 
+  console.log("REGISTER OK:", username);
   res.send("OK");
 });
 
-  app.post("/login", (req, res) => {
+app.post("/login", (req, res) => {
   const username = (req.body.username || "").trim();
   const password = (req.body.password || "").trim();
-  const users = readUsers();
-
-  console.log("LOGIN TRY:", username, password);
-  console.log("USERS:", users);
-
-  if (!username || !password) {
-    return res.status(400).send("Введите логин и пароль");
-  }
-
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
-
-  if (!user) {
-    return res.status(401).send("Неверный логин или пароль");
-  }
-
-  res.send("LOGIN OK");
-});
-
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
 
   if (!username || !password) {
     return res.status(400).send("Введите логин и пароль");
@@ -112,6 +90,7 @@ app.post("/login", (req, res) => {
     return res.status(401).send("Неверный логин или пароль");
   }
 
+  console.log("LOGIN OK:", username);
   res.send("LOGIN OK");
 });
 
