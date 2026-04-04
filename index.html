@@ -180,6 +180,13 @@
   <button onclick="register()" class="btn btn-primary">Зарегистрироваться</button>
 </div>
 
+<div 
+style="margin-top:20px;">
+  <input id="loginUsername" placeholder="Логин для входа" style="padding:10px;margin:5px;">
+  <input id="loginPassword" placeholder="Пароль для входа" type="password" style="padding:10px;margin:5px;">
+  <button type="button" onclick="login()" class="btn btn-secondary">Войти</button>
+</div>
+
 <script>
 async function login() {
   const username = document.getElementById("loginUsername").value;
