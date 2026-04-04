@@ -180,6 +180,23 @@
   <button onclick="register()" class="btn btn-primary">Зарегистрироваться</button>
 </div>
 
+<script>
+async function login() {
+  const username = document.getElementById("loginUsername").value;
+  const password = document.getElementById("loginPassword").value;
+
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ username, password })
+  });
+
+  const text = await res.text();
+  alert(text);
+}</script>
+
     <div class="status" id="statusText">Сайт работает и готов к развитию 🚀</div>
   </section>
 
@@ -230,7 +247,7 @@
       }
     }
   </script>
-  
+
   <script>
 async function register() {
   const username = document.getElementById("username").value;
