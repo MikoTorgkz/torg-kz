@@ -1,24 +1,21 @@
 {
   "name": "torg-kz",
   "version": "1.0.0",
-  "description": "",
+  "description": "Torg.kz marketplace MVP for buyers and sellers",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "marketplace",
+    "buyers",
+    "sellers",
+    "auto-parts",
+    "torg-kz"
+  ],
+  "author": "Make",
+  "license": "MIT",
   "dependencies": {
-    "express": "^4.22.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MikoTorgkz/torg-kz.git"
-  },
-  "keywords": [],
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/MikoTorgkz/torg-kz/issues"
-  },
-  "homepage": "https://github.com/MikoTorgkz/torg-kz#readme"
+    "express": "^4.21.2"
+  }
 }
