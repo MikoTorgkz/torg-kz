@@ -42,15 +42,21 @@ app.get("/users", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { username, password } = req.body;
+
+  const username = (req.body.username || "").trim();
+  const password = (req.body.password || "").trim();
+
+  const users = readUsers();
+
+  console.log("REGISTER:", username, password);
+  console.log("USERS:", users);
 
   if (!username || !password) {
     return res.status(400).send("Введите логин и пароль");
   }
 
-  const users = readUsers();
-
   const exists = users.find((user) => user.username === username);
+
   if (exists) {
     return res.status(400).send("Такой логин уже существует");
   }
@@ -61,14 +67,22 @@ app.post("/register", (req, res) => {
     password
   });
 
+  saveUsers(users);
+
+  res.send("OK");
+});
+
   app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+  const username = (req.body.username || "").trim();
+  const password = (req.body.password || "").trim();
+  const users = readUsers();
+
+  console.log("LOGIN TRY:", username, password);
+  console.log("USERS:", users);
 
   if (!username || !password) {
     return res.status(400).send("Введите логин и пароль");
   }
-
-  const users = readUsers();
 
   const user = users.find(
     (u) => u.username === username && u.password === password
@@ -79,11 +93,6 @@ app.post("/register", (req, res) => {
   }
 
   res.send("LOGIN OK");
-});
-
-  writeUsers(users);
-
-  res.send("OK");
 });
 
 app.post("/login", (req, res) => {
