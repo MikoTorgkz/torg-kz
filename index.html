@@ -12,248 +12,225 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      color: #111;
+      background: #f4f6fb;
+      color: #111827;
     }
 
     header {
       background: #111827;
       color: white;
-      padding: 18px 40px;
+      padding: 18px 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .logo {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
     }
 
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 24px;
-      font-size: 15px;
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .user-badge {
+      background: rgba(255,255,255,0.12);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .top-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      background: white;
+      color: #111827;
     }
 
     .hero {
-      background: linear-gradient(180deg, #0d47ff, #0057ff);
+      background: linear-gradient(180deg, #0a4dff, #0057ff);
       color: white;
       text-align: center;
-      padding: 90px 20px 80px;
+      padding: 70px 20px 60px;
     }
 
     .hero h1 {
-      font-size: 58px;
-      margin: 0 0 20px;
-      font-weight: 700;
+      margin: 0 0 12px;
+      font-size: 52px;
     }
 
     .hero p {
-      font-size: 24px;
-      margin: 0 0 35px;
-    }
-
-    .hero-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-    }
-
-    .hero-buttons button {
-      border: none;
-      border-radius: 12px;
-      padding: 16px 28px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .btn-light {
-      background: white;
-      color: #111827;
-    }
-
-    .btn-dark {
-      background: #111827;
-      color: white;
-    }
-
-    .hero-form {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    .hero-form input {
-      width: 220px;
-      padding: 15px 16px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .hero-form button {
-      border: none;
-      border-radius: 10px;
-      background: white;
-      color: #111827;
-      padding: 15px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .hero-note {
-      font-size: 17px;
+      margin: 0;
+      font-size: 22px;
       opacity: 0.95;
     }
 
-    .section {
-      max-width: 1200px;
+    .container {
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 70px 20px;
+      padding: 28px 16px 40px;
     }
 
-    .section-title {
-      text-align: center;
-      font-size: 42px;
-      margin: 0 0 14px;
-      color: #1f2937;
-    }
-
-    .section-subtitle {
-      text-align: center;
-      font-size: 20px;
-      color: #6b7280;
-      margin: 0 0 40px;
-    }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
-
-    .step-card {
+    .card {
       background: white;
       border-radius: 18px;
-      padding: 28px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-
-    .step-card h3 {
-      margin: 0 0 14px;
-      font-size: 30px;
-      color: #1f2937;
-    }
-
-    .step-card p {
-      margin: 0;
-      color: #4b5563;
-      font-size: 17px;
-      line-height: 1.6;
-    }
-
-    .auth-panel {
-      max-width: 900px;
-      margin: 40px auto 0;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      padding: 28px;
-      display: none;
-    }
-
-    .auth-tabs {
-      display: flex;
-      gap: 12px;
+      padding: 22px;
       margin-bottom: 20px;
     }
 
-    .auth-tabs button {
-      flex: 1;
-      padding: 14px;
-      border: none;
+    .hidden {
+      display: none !important;
+    }
+
+    .auth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: -30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-box h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 14px 16px;
       border-radius: 12px;
+      border: 1px solid #d1d5db;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    button {
+      border: none;
       cursor: pointer;
-      font-size: 16px;
       font-weight: bold;
     }
 
-    .tab-active {
+    .primary {
+      background: #0a4dff;
+      color: white;
+    }
+
+    .dark {
       background: #111827;
       color: white;
     }
 
-    .tab-inactive {
+    .gray {
       background: #e5e7eb;
       color: #111827;
     }
 
-    .auth-box {
-      display: none;
-    }
-
-    .auth-box.active {
-      display: block;
-    }
-
-    .auth-box input,
-    .auth-box select {
-      width: 100%;
-      padding: 14px 16px;
-      margin-bottom: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font-size: 15px;
-    }
-
-    .auth-box button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      background: #0d47ff;
+    .green {
+      background: #16a34a;
       color: white;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
     }
 
     .msg {
-      margin-top: 12px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
+      min-height: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tabs button {
+      width: auto;
+      margin-bottom: 0;
+      padding: 12px 18px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .request-card, .response-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 14px;
+      background: #fafafa;
+    }
+
+    .request-card h3,
+    .response-card h3 {
+      margin: 0 0 10px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 8px;
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .status.expired {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .section-title {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .small {
+      color: #6b7280;
+      font-size: 14px;
     }
 
     @media (max-width: 900px) {
       .hero h1 {
-        font-size: 40px;
+        font-size: 36px;
       }
 
       .hero p {
-        font-size: 20px;
+        font-size: 18px;
       }
 
-      .steps {
+      .auth-grid,
+      .grid-2 {
         grid-template-columns: 1fr;
-      }
-
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      nav a {
-        margin: 0 16px 0 0;
       }
     }
   </style>
@@ -261,67 +238,29 @@
 <body>
   <header>
     <div class="logo">Torg KZ</div>
-    <nav>
-      <a href="#home">Главная</a>
-      <a href="#about">О проекте</a>
-      <a href="#login" onclick="openAuth('login')">Вход</a>
-      <a href="#register" onclick="openAuth('register')">Регистрация</a>
-    </nav>
+    <div class="topbar">
+      <div id="userBadge" class="user-badge">Ты не вошёл</div>
+      <button id="logoutBtn" class="top-btn logout-btn hidden">Выйти</button>
+    </div>
   </header>
 
-  <section class="hero" id="home">
+  <section class="hero">
     <h1>Маркетплейс заявок нового формата</h1>
     <p>Покупатель оставляет заявку, продавцы сами предлагают товар</p>
-
-    <div class="hero-buttons">
-      <button class="btn-light" onclick="openAuth('register')">Регистрация</button>
-      <button class="btn-dark" onclick="scrollToHow()">Создать заявку</button>
-    </div>
-
-    <div class="hero-form">
-      <input type="email" id="heroEmail" placeholder="Логин" />
-      <input type="password" id="heroPassword" placeholder="Пароль" />
-      <button onclick="heroLogin()">Зарегистрироваться ↑</button>
-    </div>
-
-    <div class="hero-note">Сайт работает и готов к развитию 🚀</div>
   </section>
 
-  <section class="section" id="about">
-    <h2 class="section-title">Как это работает</h2>
-    <p class="section-subtitle">Простая схема для покупателей и продавцов</p>
-
-    <div class="steps">
-      <div class="step-card">
-        <h3>1. Покупатель</h3>
-        <p>Покупатель публикует заявку на нужную автозапчасть: пишет модель машины, название детали и описание.</p>
-      </div>
-
-      <div class="step-card">
-        <h3>2. Продавцы</h3>
-        <p>Продавцы видят новые заявки, выбирают подходящие и отправляют своё предложение с ценой и сообщением.</p>
-      </div>
-
-      <div class="step-card">
-        <h3>3. Выбор</h3>
-        <p>Покупатель получает ответы от продавцов, сравнивает предложения и выбирает наиболее выгодный вариант.</p>
-      </div>
-    </div>
-
-    <div class="auth-panel" id="authPanel">
-      <div class="auth-tabs">
-        <button id="loginTabBtn" class="tab-active" onclick="switchTab('login')">Вход</button>
-        <button id="registerTabBtn" class="tab-inactive" onclick="switchTab('register')">Регистрация</button>
-      </div>
-
-      <div id="loginBox" class="auth-box active">
+  <div class="container">
+    <div id="authSection" class="auth-grid">
+      <div class="card auth-box">
+        <h2>Вход</h2>
         <input type="email" id="loginEmail" placeholder="Email" />
         <input type="password" id="loginPassword" placeholder="Пароль" />
-        <button onclick="login()">Войти</button>
-        <div class="msg" id="loginMsg"></div>
+        <button class="primary" id="loginBtn">Войти</button>
+        <div id="loginMsg" class="msg"></div>
       </div>
 
-      <div id="registerBox" class="auth-box">
+      <div class="card auth-box">
+        <h2>Регистрация</h2>
         <select id="registerRole">
           <option value="buyer">Покупатель</option>
           <option value="seller">Продавец</option>
@@ -329,104 +268,415 @@
         <input type="text" id="registerName" placeholder="Имя" />
         <input type="email" id="registerEmail" placeholder="Email" />
         <input type="password" id="registerPassword" placeholder="Пароль" />
-        <button onclick="register()">Зарегистрироваться</button>
-        <div class="msg" id="registerMsg"></div>
+        <button class="dark" id="registerBtn">Зарегистрироваться</button>
+        <div id="registerMsg" class="msg"></div>
       </div>
     </div>
-  </section>
+
+    <div id="dashboardSection" class="hidden">
+      <div class="card">
+        <div class="tabs">
+          <button class="primary" id="marketTabBtn">Все заявки</button>
+          <button class="dark hidden" id="buyerTabBtn">Мои заявки</button>
+          <button class="dark hidden" id="sellerTabBtn">Мои ответы</button>
+        </div>
+      </div>
+
+      <div id="buyerSection" class="hidden">
+        <div class="grid-2">
+          <div class="card">
+            <h2 class="section-title">Создать заявку</h2>
+            <input type="text" id="reqTitle" placeholder="Заголовок заявки" />
+            <input type="text" id="reqCarModel" placeholder="Марка / модель авто" />
+            <input type="text" id="reqPartName" placeholder="Какая запчасть нужна?" />
+            <input type="text" id="reqCity" placeholder="Город" />
+            <input type="text" id="reqPhone" placeholder="Телефон" />
+            <textarea id="reqDescription" placeholder="Опиши подробно, что нужно"></textarea>
+            <button class="green" id="createRequestBtn">Опубликовать заявку</button>
+            <div id="requestMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Мои заявки</h2>
+            <div id="myRequestsList" class="small">Пока пусто</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sellerSection" class="hidden">
+        <div class="card">
+          <h2 class="section-title">Мои ответы</h2>
+          <div id="myResponsesList" class="small">Пока пусто</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Лента заявок</h2>
+        <div id="marketplaceList" class="small">Загрузка...</div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    function scrollToHow() {
-      document.getElementById('about').scrollIntoView({ behavior: 'smooth' });
+    const tokenKey = 'token';
+    let token = localStorage.getItem(tokenKey) || '';
+    let currentUser = null;
+
+    const authSection = document.getElementById('authSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const userBadge = document.getElementById('userBadge');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const buyerSection = document.getElementById('buyerSection');
+    const sellerSection = document.getElementById('sellerSection');
+    const buyerTabBtn = document.getElementById('buyerTabBtn');
+    const sellerTabBtn = document.getElementById('sellerTabBtn');
+    const marketTabBtn = document.getElementById('marketTabBtn');
+
+    function setMsg(id, text, color = 'red') {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.style.color = color;
     }
 
-    function openAuth(tab) {
-      const panel = document.getElementById('authPanel');
-      panel.style.display = 'block';
-      panel.scrollIntoView({ behavior: 'smooth' });
-      switchTab(tab);
+    async function api(url, options = {}) {
+      const headers = options.headers || {};
+      headers['Content-Type'] = 'application/json';
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(url, { ...options, headers });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Ошибка');
+      }
+
+      return data;
     }
 
-    function switchTab(tab) {
-      const loginBox = document.getElementById('loginBox');
-      const registerBox = document.getElementById('registerBox');
-      const loginTabBtn = document.getElementById('loginTabBtn');
-      const registerTabBtn = document.getElementById('registerTabBtn');
+    async function registerUser() {
+      try {
+        const payload = {
+          role: document.getElementById('registerRole').value,
+          name: document.getElementById('registerName').value.trim(),
+          email: document.getElementById('registerEmail').value.trim(),
+          password: document.getElementById('registerPassword').value.trim()
+        };
 
-      if (tab === 'login') {
-        loginBox.classList.add('active');
-        registerBox.classList.remove('active');
-        loginTabBtn.className = 'tab-active';
-        registerTabBtn.className = 'tab-inactive';
-      } else {
-        registerBox.classList.add('active');
-        loginBox.classList.remove('active');
-        registerTabBtn.className = 'tab-active';
-        loginTabBtn.className = 'tab-inactive';
+        const data = await api('/api/register', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        setMsg('registerMsg', data.message, 'green');
+      } catch (err) {
+        setMsg('registerMsg', err.message, 'red');
       }
     }
 
-    async function register() {
-      const role = document.getElementById('registerRole').value;
-      const name = document.getElementById('registerName').value.trim();
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value.trim();
-      const msg = document.getElementById('registerMsg');
-
-      msg.textContent = '';
-
+    async function loginUser() {
       try {
-        const res = await fetch('/api/register', {
+        const payload = {
+          email: document.getElementById('loginEmail').value.trim(),
+          password: document.getElementById('loginPassword').value.trim()
+        };
+
+        const data = await api('/api/login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role, name, email, password })
+          body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
-        msg.style.color = res.ok ? 'green' : 'red';
-        msg.textContent = data.message || 'Готово';
-      } catch {
-        msg.style.color = 'red';
-        msg.textContent = 'Ошибка регистрации';
+        token = data.token;
+        localStorage.setItem(tokenKey, token);
+        await loadMe();
+      } catch (err) {
+        setMsg('loginMsg', err.message, 'red');
       }
     }
 
-    async function login() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      const msg = document.getElementById('loginMsg');
-
-      msg.textContent = '';
-
+    async function loadMe() {
       try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
+        const user = await api('/api/me');
+        currentUser = user;
 
-        const data = await res.json();
+        authSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
 
-        if (res.ok && data.token) {
-          localStorage.setItem('token', data.token);
-          msg.style.color = 'green';
-          msg.textContent = 'Вход выполнен';
-          setTimeout(() => {
-            location.reload();
-          }, 700);
+        userBadge.textContent =
+          `Ты вошёл как: ${user.name} (${user.role === 'buyer' ? 'покупатель' : 'продавец'})`;
+
+        if (user.role === 'buyer') {
+          buyerTabBtn.classList.remove('hidden');
+          sellerTabBtn.classList.add('hidden');
+          buyerSection.classList.remove('hidden');
+          sellerSection.classList.add('hidden');
+          await loadMyRequests();
         } else {
-          msg.style.color = 'red';
-          msg.textContent = data.message || 'Ошибка входа';
+          sellerTabBtn.classList.remove('hidden');
+          buyerTabBtn.classList.add('hidden');
+          sellerSection.classList.remove('hidden');
+          buyerSection.classList.add('hidden');
+          await loadMyResponses();
         }
+
+        await loadMarketplace();
       } catch {
-        msg.style.color = 'red';
-        msg.textContent = 'Ошибка входа';
+        currentUser = null;
+        token = '';
+        localStorage.removeItem(tokenKey);
+        authSection.classList.remove('hidden');
+        dashboardSection.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
+        userBadge.textContent = 'Ты не вошёл';
       }
     }
 
-    function heroLogin() {
-      openAuth('register');
+    async function logout() {
+      try {
+        await api('/api/logout', { method: 'POST' });
+      } catch {}
+
+      token = '';
+      currentUser = null;
+      localStorage.removeItem(tokenKey);
+      authSection.classList.remove('hidden');
+      dashboardSection.classList.add('hidden');
+      logoutBtn.classList.add('hidden');
+      userBadge.textContent = 'Ты не вошёл';
     }
+
+    async function createRequest() {
+      try {
+        const payload = {
+          title: document.getElementById('reqTitle').value.trim(),
+          carModel: document.getElementById('reqCarModel').value.trim(),
+          partName: document.getElementById('reqPartName').value.trim(),
+          city: document.getElementById('reqCity').value.trim(),
+          phone: document.getElementById('reqPhone').value.trim(),
+          description: document.getElementById('reqDescription').value.trim()
+        };
+
+        const data = await api('/api/requests', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        setMsg('requestMsg', data.message, 'green');
+
+        document.getElementById('reqTitle').value = '';
+        document.getElementById('reqCarModel').value = '';
+        document.getElementById('reqPartName').value = '';
+        document.getElementById('reqCity').value = '';
+        document.getElementById('reqPhone').value = '';
+        document.getElementById('reqDescription').value = '';
+
+        await loadMyRequests();
+        await loadMarketplace();
+      } catch (err) {
+        setMsg('requestMsg', err.message, 'red');
+      }
+    }
+
+    async function loadMarketplace() {
+      const box = document.getElementById('marketplaceList');
+      box.innerHTML = 'Загрузка...';
+
+      try {
+        const list = await api('/api/marketplace');
+        box.innerHTML = '';
+
+        if (!list.length) {
+          box.innerHTML = '<div class="small">Заявок пока нет</div>';
+          return;
+        }
+
+        list.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'request-card';
+
+          const statusClass = item.status === 'expired' ? 'status expired' : 'status';
+
+          let sellerForm = '';
+          if (currentUser && currentUser.role === 'seller' && item.status === 'open') {
+            sellerForm = `
+              <div style="margin-top:12px;">
+                <input id="price-${item.id}" placeholder="Цена" />
+                <textarea id="message-${item.id}" placeholder="Сообщение покупателю"></textarea>
+                <button class="green" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
+              </div>
+            `;
+          }
+
+          let buyerResponses = '';
+          if (currentUser && currentUser.role === 'buyer' && item.buyerId === currentUser.id) {
+            buyerResponses = `
+              <div style="margin-top:12px;">
+                <button class="gray" onclick="loadResponses('${item.id}')">Показать ответы (${item.responsesCount})</button>
+                <div id="responses-${item.id}"></div>
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            <h3>${item.title}</h3>
+            <div class="meta"><strong>Авто:</strong> ${item.carModel}</div>
+            <div class="meta"><strong>Запчасть:</strong> ${item.partName}</div>
+            <div class="meta"><strong>Город:</strong> ${item.city}</div>
+            <div class="meta"><strong>Телефон:</strong> ${item.phone}</div>
+            <div>${item.description}</div>
+            <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
+            <div class="small" style="margin-top:8px;">Ответов: ${item.responsesCount}</div>
+            ${sellerForm}
+            ${buyerResponses}
+          `;
+
+          box.appendChild(card);
+        });
+      } catch (err) {
+        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    async function loadMyRequests() {
+      const box = document.getElementById('myRequestsList');
+      box.innerHTML = 'Загрузка...';
+
+      try {
+        const list = await api('/api/requests');
+        box.innerHTML = '';
+
+        if (!list.length) {
+          box.innerHTML = '<div class="small">У тебя пока нет заявок</div>';
+          return;
+        }
+
+        list.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'request-card';
+
+          const statusClass = item.status === 'expired' ? 'status expired' : 'status';
+
+          card.innerHTML = `
+            <h3>${item.title}</h3>
+            <div class="meta"><strong>Авто:</strong> ${item.carModel}</div>
+            <div class="meta"><strong>Запчасть:</strong> ${item.partName}</div>
+            <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
+            <div style="margin-top:12px;">
+              <button class="gray" onclick="loadResponses('${item.id}')">Показать ответы (${item.responsesCount})</button>
+              <div id="responses-${item.id}"></div>
+            </div>
+          `;
+
+          box.appendChild(card);
+        });
+      } catch (err) {
+        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    async function loadResponses(requestId) {
+      const box = document.getElementById(`responses-${requestId}`);
+      box.innerHTML = 'Загрузка...';
+
+      try {
+        const list = await api(`/api/requests/${requestId}/responses`);
+        box.innerHTML = '';
+
+        if (!list.length) {
+          box.innerHTML = '<div class="small">Ответов пока нет</div>';
+          return;
+        }
+
+        list.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'response-card';
+          card.innerHTML = `
+            <h3>${item.sellerName}</h3>
+            <div class="meta"><strong>Цена:</strong> ${item.price}</div>
+            <div>${item.message}</div>
+          `;
+          box.appendChild(card);
+        });
+      } catch (err) {
+        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    async function respondToRequest(requestId) {
+      try {
+        const payload = {
+          price: document.getElementById(`price-${requestId}`).value.trim(),
+          message: document.getElementById(`message-${requestId}`).value.trim()
+        };
+
+        const data = await api(`/api/requests/${requestId}/respond`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        alert(data.message);
+        await loadMarketplace();
+        await loadMyResponses();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadMyResponses() {
+      const box = document.getElementById('myResponsesList');
+      box.innerHTML = 'Загрузка...';
+
+      try {
+        const list = await api('/api/my-responses');
+        box.innerHTML = '';
+
+        if (!list.length) {
+          box.innerHTML = '<div class="small">Ты пока не отвечал на заявки</div>';
+          return;
+        }
+
+        list.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'response-card';
+          card.innerHTML = `
+            <h3>${item.requestTitle}</h3>
+            <div class="meta"><strong>Авто:</strong> ${item.requestCarModel}</div>
+            <div class="meta"><strong>Запчасть:</strong> ${item.requestPartName}</div>
+            <div class="meta"><strong>Твоя цена:</strong> ${item.price}</div>
+            <div>${item.message}</div>
+          `;
+          box.appendChild(card);
+        });
+      } catch (err) {
+        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+      }
+    }
+
+    document.getElementById('registerBtn').addEventListener('click', registerUser);
+    document.getElementById('loginBtn').addEventListener('click', loginUser);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('createRequestBtn').addEventListener('click', createRequest);
+
+    marketTabBtn.addEventListener('click', async () => {
+      buyerSection.classList.add('hidden');
+      sellerSection.classList.add('hidden');
+      await loadMarketplace();
+    });
+
+    buyerTabBtn.addEventListener('click', async () => {
+      buyerSection.classList.remove('hidden');
+      sellerSection.classList.add('hidden');
+      await loadMyRequests();
+    });
+
+    sellerTabBtn.addEventListener('click', async () => {
+      sellerSection.classList.remove('hidden');
+      buyerSection.classList.add('hidden');
+      await loadMyResponses();
+    });
+
+    loadMe();
   </script>
 </body>
 </html>
