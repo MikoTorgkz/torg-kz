@@ -36,6 +36,11 @@ app.get("/test", (req, res) => {
   res.send("TEST OK");
 });
 
+app.get("/users", (req, res) => {
+  const users = readUsers();
+  res.json(users);
+});
+
 app.post("/register", (req, res) => {
   const { username, password } = req.body;
 
@@ -56,15 +61,49 @@ app.post("/register", (req, res) => {
     password
   });
 
+  app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Введите логин и пароль");
+  }
+
+  const users = readUsers();
+
+  const user = users.find(
+    (u) => u.username === username && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).send("Неверный логин или пароль");
+  }
+
+  res.send("LOGIN OK");
+});
+
   writeUsers(users);
 
-  console.log("Новая регистрация:", username);
   res.send("OK");
 });
 
-app.get("/users", (req, res) => {
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Введите логин и пароль");
+  }
+
   const users = readUsers();
-  res.json(users);
+
+  const user = users.find(
+    (u) => u.username === username && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).send("Неверный логин или пароль");
+  }
+
+  res.send("LOGIN OK");
 });
 
 app.listen(PORT, "0.0.0.0", () => {
