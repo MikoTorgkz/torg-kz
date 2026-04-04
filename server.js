@@ -4,14 +4,23 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+// ЛОГ (чтобы видеть запросы)
+app.use((req, res, next) => {
+  console.log("Request:", req.url);
+  next();
 });
 
+// статические файлы
+app.use(express.static(path.resolve(".")));
+
+// главная страница
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve("index.html"));
+});
+
+// fallback
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.resolve("index.html"));
 });
 
 app.listen(PORT, "0.0.0.0", () => {
