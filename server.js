@@ -15,46 +15,8 @@ function ensureDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
     const initialData = {
       users: [],
-      db.run(`
-CREATE TABLE IF NOT EXISTS requests (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT,
-  description TEXT,
-  user_id INTEGER,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)
-`);
-
-db.run(`
-CREATE TABLE IF NOT EXISTS responses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  request_id INTEGER,
-  seller_id INTEGER,
-  message TEXT,
-  price TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)
-`);
       requests: [],
-      app.post('/api/request', (req, res) => {
-  const { title, description } = req.body;
-
-  db.run(
-    `INSERT INTO requests (title, description, user_id) VALUES (?, ?, ?)`,
-    [title, description, 1], // временно user_id = 1
-    function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Заявка создана' });
-    }
-  );
-});
       responses: [],
-      app.get('/api/requests', (req, res) => {
-  db.all(`SELECT * FROM requests ORDER BY id DESC`, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
       sessions: {}
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
@@ -149,8 +111,8 @@ app.post('/api/register', (req, res) => {
   }
 
   const data = readData();
-
   const exists = data.users.find(u => u.email === normalizedEmail);
+
   if (exists) {
     return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
   }
@@ -376,37 +338,3 @@ app.get('/api/my-responses', auth, (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
-async function createRequest() {
-  const title = document.getElementById('title').value;
-  const description = document.getElementById('desc').value;
-
-  const res = await fetch('/api/request', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ title, description })
-  });
-
-  const data = await res.json();
-  alert(data.message);
-
-  loadRequests();
-}
-
-async function loadRequests() {
-  const res = await fetch('/api/requests');
-  const data = await res.json();
-
-  const container = document.getElementById('requests');
-  container.innerHTML = '';
-
-  data.forEach(r => {
-    container.innerHTML += `
-      <div style="background:white;padding:15px;margin-bottom:10px;border-radius:10px">
-        <h3>${r.title}</h3>
-        <p>${r.description}</p>
-      </div>
-    `;
-  });
-}
-
-loadRequests();
