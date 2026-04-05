@@ -52,6 +52,8 @@
       padding: 10px 14px;
       cursor: pointer;
       font-weight: bold;
+      width: auto;
+      margin: 0;
     }
 
     .logout-btn {
@@ -116,6 +118,7 @@
       border: 1px solid #d1d5db;
       margin-bottom: 12px;
       font-size: 15px;
+      font-family: inherit;
     }
 
     textarea {
@@ -219,6 +222,103 @@
       font-size: 14px;
     }
 
+    .seller-extra-fields {
+      transition: 0.2s ease;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: #111827;
+      color: white;
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .modal-body {
+      padding: 22px;
+      overflow-y: auto;
+    }
+
+    .close-btn {
+      background: white;
+      color: #111827;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      width: auto;
+      margin: 0;
+    }
+
+    .profile-row {
+      margin-bottom: 12px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .review-item {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .link-btn {
+      display: inline-block;
+      background: #16a34a;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 14px;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .actions-row button,
+    .actions-row a {
+      width: auto;
+      margin-bottom: 0;
+    }
+
     @media (max-width: 900px) {
       .hero h1 {
         font-size: 36px;
@@ -265,9 +365,18 @@
           <option value="buyer">Покупатель</option>
           <option value="seller">Продавец</option>
         </select>
+
         <input type="text" id="registerName" placeholder="Имя" />
         <input type="email" id="registerEmail" placeholder="Email" />
         <input type="password" id="registerPassword" placeholder="Пароль" />
+
+        <div id="sellerExtraFields" class="seller-extra-fields hidden">
+          <input type="text" id="registerCity" placeholder="Город" />
+          <input type="text" id="registerAddress" placeholder="Адрес магазина" />
+          <input type="text" id="registerWhatsapp" placeholder="WhatsApp, например 77071234567" />
+          <textarea id="registerAbout" placeholder="Коротко о продавце / магазине"></textarea>
+        </div>
+
         <button class="dark" id="registerBtn">Зарегистрироваться</button>
         <div id="registerMsg" class="msg"></div>
       </div>
@@ -304,15 +413,40 @@
       </div>
 
       <div id="sellerSection" class="hidden">
-        <div class="card">
-          <h2 class="section-title">Мои ответы</h2>
-          <div id="myResponsesList" class="small">Пока пусто</div>
+        <div class="grid-2">
+          <div class="card">
+            <h2 class="section-title">Мои ответы</h2>
+            <div id="myResponsesList" class="small">Пока пусто</div>
+          </div>
+
+          <div class="card">
+            <h2 class="section-title">Мой профиль продавца</h2>
+            <input type="text" id="profileName" placeholder="Имя" />
+            <input type="text" id="profileCity" placeholder="Город" />
+            <input type="text" id="profileAddress" placeholder="Адрес магазина" />
+            <input type="text" id="profileWhatsapp" placeholder="WhatsApp" />
+            <textarea id="profileAbout" placeholder="О продавце / магазине"></textarea>
+            <button class="green" id="saveProfileBtn">Сохранить профиль</button>
+            <div id="profileMsg" class="msg"></div>
+          </div>
         </div>
       </div>
 
       <div class="card">
         <h2 class="section-title">Лента заявок</h2>
         <div id="marketplaceList" class="small">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sellerProfileModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Профиль продавца</h3>
+        <button class="close-btn" onclick="closeSellerProfile()">Закрыть</button>
+      </div>
+      <div class="modal-body" id="sellerProfileContent">
+        Загрузка...
       </div>
     </div>
   </div>
@@ -333,10 +467,37 @@
     const sellerTabBtn = document.getElementById('sellerTabBtn');
     const marketTabBtn = document.getElementById('marketTabBtn');
 
+    const registerRole = document.getElementById('registerRole');
+    const sellerExtraFields = document.getElementById('sellerExtraFields');
+
     function setMsg(id, text, color = 'red') {
       const el = document.getElementById(id);
+      if (!el) return;
       el.textContent = text;
       el.style.color = color;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      return date.toLocaleString('ru-RU');
+    }
+
+    function updateRegisterFieldsVisibility() {
+      if (registerRole.value === 'seller') {
+        sellerExtraFields.classList.remove('hidden');
+      } else {
+        sellerExtraFields.classList.add('hidden');
+      }
     }
 
     async function api(url, options = {}) {
@@ -356,11 +517,17 @@
 
     async function registerUser() {
       try {
+        const role = document.getElementById('registerRole').value;
+
         const payload = {
-          role: document.getElementById('registerRole').value,
+          role,
           name: document.getElementById('registerName').value.trim(),
           email: document.getElementById('registerEmail').value.trim(),
-          password: document.getElementById('registerPassword').value.trim()
+          password: document.getElementById('registerPassword').value.trim(),
+          city: role === 'seller' ? document.getElementById('registerCity').value.trim() : '',
+          address: role === 'seller' ? document.getElementById('registerAddress').value.trim() : '',
+          whatsapp: role === 'seller' ? document.getElementById('registerWhatsapp').value.trim() : '',
+          about: role === 'seller' ? document.getElementById('registerAbout').value.trim() : ''
         };
 
         const data = await api('/api/register', {
@@ -369,6 +536,14 @@
         });
 
         setMsg('registerMsg', data.message, 'green');
+
+        document.getElementById('registerName').value = '';
+        document.getElementById('registerEmail').value = '';
+        document.getElementById('registerPassword').value = '';
+        document.getElementById('registerCity').value = '';
+        document.getElementById('registerAddress').value = '';
+        document.getElementById('registerWhatsapp').value = '';
+        document.getElementById('registerAbout').value = '';
       } catch (err) {
         setMsg('registerMsg', err.message, 'red');
       }
@@ -389,6 +564,7 @@
         token = data.token;
         localStorage.setItem(tokenKey, token);
         await loadMe();
+        setMsg('loginMsg', 'Успешный вход', 'green');
       } catch (err) {
         setMsg('loginMsg', err.message, 'red');
       }
@@ -417,11 +593,12 @@
           buyerTabBtn.classList.add('hidden');
           sellerSection.classList.remove('hidden');
           buyerSection.classList.add('hidden');
+          fillSellerProfileForm(user);
           await loadMyResponses();
         }
 
         await loadMarketplace();
-      } catch {
+      } catch (err) {
         currentUser = null;
         token = '';
         localStorage.removeItem(tokenKey);
@@ -432,10 +609,43 @@
       }
     }
 
+    function fillSellerProfileForm(user) {
+      document.getElementById('profileName').value = user.name || '';
+      document.getElementById('profileCity').value = user.city || '';
+      document.getElementById('profileAddress').value = user.address || '';
+      document.getElementById('profileWhatsapp').value = user.whatsapp || '';
+      document.getElementById('profileAbout').value = user.about || '';
+    }
+
+    async function saveProfile() {
+      try {
+        const payload = {
+          name: document.getElementById('profileName').value.trim(),
+          city: document.getElementById('profileCity').value.trim(),
+          address: document.getElementById('profileAddress').value.trim(),
+          whatsapp: document.getElementById('profileWhatsapp').value.trim(),
+          about: document.getElementById('profileAbout').value.trim()
+        };
+
+        const data = await api('/api/profile', {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+
+        currentUser = data.user;
+        userBadge.textContent =
+          `Ты вошёл как: ${data.user.name} (${data.user.role === 'buyer' ? 'покупатель' : 'продавец'})`;
+
+        setMsg('profileMsg', data.message, 'green');
+      } catch (err) {
+        setMsg('profileMsg', err.message, 'red');
+      }
+    }
+
     async function logout() {
       try {
         await api('/api/logout', { method: 'POST' });
-      } catch {}
+      } catch (err) {}
 
       token = '';
       currentUser = null;
@@ -519,12 +729,12 @@
           }
 
           card.innerHTML = `
-            <h3>${item.title}</h3>
-            <div class="meta"><strong>Авто:</strong> ${item.carModel}</div>
-            <div class="meta"><strong>Запчасть:</strong> ${item.partName}</div>
-            <div class="meta"><strong>Город:</strong> ${item.city}</div>
-            <div class="meta"><strong>Телефон:</strong> ${item.phone}</div>
-            <div>${item.description}</div>
+            <h3>${escapeHtml(item.title)}</h3>
+            <div class="meta"><strong>Авто:</strong> ${escapeHtml(item.carModel)}</div>
+            <div class="meta"><strong>Запчасть:</strong> ${escapeHtml(item.partName)}</div>
+            <div class="meta"><strong>Город:</strong> ${escapeHtml(item.city)}</div>
+            <div class="meta"><strong>Телефон:</strong> ${escapeHtml(item.phone)}</div>
+            <div>${escapeHtml(item.description)}</div>
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
             <div class="small" style="margin-top:8px;">Ответов: ${item.responsesCount}</div>
             ${sellerForm}
@@ -534,7 +744,7 @@
           box.appendChild(card);
         });
       } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
       }
     }
 
@@ -558,9 +768,9 @@
           const statusClass = item.status === 'expired' ? 'status expired' : 'status';
 
           card.innerHTML = `
-            <h3>${item.title}</h3>
-            <div class="meta"><strong>Авто:</strong> ${item.carModel}</div>
-            <div class="meta"><strong>Запчасть:</strong> ${item.partName}</div>
+            <h3>${escapeHtml(item.title)}</h3>
+            <div class="meta"><strong>Авто:</strong> ${escapeHtml(item.carModel)}</div>
+            <div class="meta"><strong>Запчасть:</strong> ${escapeHtml(item.partName)}</div>
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
             <div style="margin-top:12px;">
               <button class="gray" onclick="loadResponses('${item.id}')">Показать ответы (${item.responsesCount})</button>
@@ -571,7 +781,7 @@
           box.appendChild(card);
         });
       } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
       }
     }
 
@@ -591,16 +801,73 @@
         list.forEach(item => {
           const card = document.createElement('div');
           card.className = 'response-card';
+
           card.innerHTML = `
-            <h3>${item.sellerName}</h3>
-            <div class="meta"><strong>Цена:</strong> ${item.price}</div>
-            <div>${item.message}</div>
+            <h3>${escapeHtml(item.sellerName)}</h3>
+            <div class="meta"><strong>Цена:</strong> ${escapeHtml(item.price)}</div>
+            <div style="margin-bottom:10px;">${escapeHtml(item.message)}</div>
+
+            <div class="actions-row">
+              <button class="gray" onclick="openSellerProfile('${item.sellerId}')">
+                Смотреть профиль продавца
+              </button>
+            </div>
           `;
+
           box.appendChild(card);
         });
       } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
       }
+    }
+
+    async function openSellerProfile(sellerId) {
+      const modal = document.getElementById('sellerProfileModal');
+      const content = document.getElementById('sellerProfileContent');
+
+      modal.classList.remove('hidden');
+      content.innerHTML = 'Загрузка профиля...';
+
+      try {
+        const seller = await api(`/api/sellers/${sellerId}`);
+
+        const whatsappClean = String(seller.whatsapp || '').replace(/\D/g, '');
+        const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean}` : '';
+
+        const reviewsHtml = seller.reviews && seller.reviews.length
+          ? seller.reviews.map(review => `
+              <div class="review-item">
+                <strong>${escapeHtml(review.author || 'Покупатель')}</strong>
+                <div class="meta">Оценка: ${escapeHtml(review.rating)} / 5</div>
+                <div>${escapeHtml(review.text || '') || '<span class="small">Без текста</span>'}</div>
+                <div class="small" style="margin-top:6px;">${escapeHtml(formatDate(review.createdAt))}</div>
+              </div>
+            `).join('')
+          : '<div class="small">Пока нет отзывов</div>';
+
+        content.innerHTML = `
+          <div class="profile-row"><strong>Имя:</strong> ${escapeHtml(seller.name || 'Не указано')}</div>
+          <div class="profile-row"><strong>Рейтинг:</strong> ${seller.rating !== null && seller.rating !== undefined ? escapeHtml(seller.rating) + ' ⭐' : 'Нет оценок'}</div>
+          <div class="profile-row"><strong>Город:</strong> ${escapeHtml(seller.city || 'Не указан')}</div>
+          <div class="profile-row"><strong>Адрес:</strong> ${escapeHtml(seller.address || 'Не указан')}</div>
+          <div class="profile-row"><strong>О продавце:</strong> ${escapeHtml(seller.about || 'Нет описания')}</div>
+
+          <h4 style="margin-top:20px; margin-bottom:10px;">Отзывы</h4>
+          ${reviewsHtml}
+
+          ${
+            whatsappLink
+              ? `<a class="link-btn" href="${whatsappLink}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>`
+              : `<div class="small" style="margin-top:14px;">WhatsApp не указан</div>`
+          }
+        `;
+      } catch (err) {
+        content.innerHTML = `<div style="color:red;">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function closeSellerProfile() {
+      document.getElementById('sellerProfileModal').classList.add('hidden');
     }
 
     async function respondToRequest(requestId) {
@@ -640,16 +907,16 @@
           const card = document.createElement('div');
           card.className = 'response-card';
           card.innerHTML = `
-            <h3>${item.requestTitle}</h3>
-            <div class="meta"><strong>Авто:</strong> ${item.requestCarModel}</div>
-            <div class="meta"><strong>Запчасть:</strong> ${item.requestPartName}</div>
-            <div class="meta"><strong>Твоя цена:</strong> ${item.price}</div>
-            <div>${item.message}</div>
+            <h3>${escapeHtml(item.requestTitle)}</h3>
+            <div class="meta"><strong>Авто:</strong> ${escapeHtml(item.requestCarModel)}</div>
+            <div class="meta"><strong>Запчасть:</strong> ${escapeHtml(item.requestPartName)}</div>
+            <div class="meta"><strong>Твоя цена:</strong> ${escapeHtml(item.price)}</div>
+            <div>${escapeHtml(item.message)}</div>
           `;
           box.appendChild(card);
         });
       } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${err.message}</div>`;
+        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
       }
     }
 
@@ -657,6 +924,8 @@
     document.getElementById('loginBtn').addEventListener('click', loginUser);
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('createRequestBtn').addEventListener('click', createRequest);
+    document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+    document.getElementById('registerRole').addEventListener('change', updateRegisterFieldsVisibility);
 
     marketTabBtn.addEventListener('click', async () => {
       buyerSection.classList.add('hidden');
@@ -673,9 +942,19 @@
     sellerTabBtn.addEventListener('click', async () => {
       sellerSection.classList.remove('hidden');
       buyerSection.classList.add('hidden');
+      if (currentUser) {
+        fillSellerProfileForm(currentUser);
+      }
       await loadMyResponses();
     });
 
+    document.getElementById('sellerProfileModal').addEventListener('click', (e) => {
+      if (e.target.id === 'sellerProfileModal') {
+        closeSellerProfile();
+      }
+    });
+
+    updateRegisterFieldsVisibility();
     loadMe();
   </script>
 </body>

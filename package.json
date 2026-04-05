@@ -16,6 +16,6 @@
   "author": "Make",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.22.1"
   }
 }

@@ -1,0 +1,62 @@
+{
+  "users": [
+    {
+      "id": "user_0ef2e9f40a28c8a9",
+      "role": "buyer",
+      "name": "kz",
+      "email": "kz@gmail.com",
+      "password": "a9e20d6d00f5130e8f85773bf709fbbf:bdd69762df2e3f131b87945e2755a3624ee49fba48006edf75a4d296838ca4c10d059f28c54ffb7f0bafece1524ea2c4cffb930b41f3341e8a9c79d1b7aa3276",
+      "city": "",
+      "address": "",
+      "whatsapp": "",
+      "about": "",
+      "createdAt": 1775371994927
+    },
+    {
+      "id": "user_bf90385bd3a0a207",
+      "role": "seller",
+      "name": "prod",
+      "email": "prdo@gmail.com",
+      "password": "f4ee58c179100a11d5b026508b8ed9c7:95e732de1297a3c30c7964c64416d031c23f02fca4911fa7d3baf13b3c46458a1bba6639f83c1fbb928f01bf79deaea7360764fd4d494d666a53be8e971e5901",
+      "city": "shym",
+      "address": "ssss",
+      "whatsapp": "87474344037",
+      "about": "njhjdsfsdfhjsddhfj",
+      "createdAt": 1775372102456
+    }
+  ],
+  "requests": [
+    {
+      "id": "req_4936996306ba82de",
+      "buyerId": "user_0ef2e9f40a28c8a9",
+      "buyerName": "kz",
+      "title": "заказ",
+      "carModel": "зказк",
+      "partName": "дадад",
+      "description": "аоалаолаолал",
+      "city": "лалала",
+      "phone": "89898",
+      "status": "open",
+      "createdAt": 1775372039022,
+      "expiresAt": 1775458439022
+    }
+  ],
+  "responses": [
+    {
+      "id": "resp_50b697f6bbe5b4c9",
+      "requestId": "req_4936996306ba82de",
+      "sellerId": "user_bf90385bd3a0a207",
+      "sellerName": "prod",
+      "message": "vse est",
+      "price": "899999",
+      "createdAt": 1775372161508
+    }
+  ],
+  "sessions": {
+    "token_8cd7225afc9512a2": {
+      "userId": "user_0ef2e9f40a28c8a9",
+      "createdAt": 1775372198095
+    }
+  },
+  "reviews": []
+}

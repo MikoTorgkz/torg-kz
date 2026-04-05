@@ -17,7 +17,8 @@ function ensureDataFile() {
       users: [],
       requests: [],
       responses: [],
-      sessions: {}
+      sessions: {},
+      reviews: []
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
   }
@@ -25,7 +26,15 @@ function ensureDataFile() {
 
 function readData() {
   ensureDataFile();
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+  const raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+
+  if (!raw.users) raw.users = [];
+  if (!raw.requests) raw.requests = [];
+  if (!raw.responses) raw.responses = [];
+  if (!raw.sessions) raw.sessions = {};
+  if (!raw.reviews) raw.reviews = [];
+
+  return raw;
 }
 
 function writeData(data) {
@@ -45,7 +54,10 @@ function hashPassword(password) {
 function verifyPassword(password, storedPassword) {
   const [salt, originalHash] = storedPassword.split(':');
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
-  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(originalHash, 'hex'));
+  return crypto.timingSafeEqual(
+    Buffer.from(hash, 'hex'),
+    Buffer.from(originalHash, 'hex')
+  );
 }
 
 function auth(req, res, next) {
@@ -84,15 +96,36 @@ function cleanupExpiredRequests(data) {
   });
 }
 
+function calculateSellerRating(data, sellerId) {
+  const sellerReviews = (data.reviews || []).filter(r => r.sellerId === sellerId);
+
+  if (!sellerReviews.length) return null;
+
+  const avg =
+    sellerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+    sellerReviews.length;
+
+  return Number(avg.toFixed(1));
+}
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.post('/api/register', (req, res) => {
-  const { role, name, email, password } = req.body;
+  const {
+    role,
+    name,
+    email,
+    password,
+    city,
+    address,
+    whatsapp,
+    about
+  } = req.body;
 
   if (!role || !name || !email || !password) {
-    return res.status(400).json({ message: 'Заполни все поля' });
+    return res.status(400).json({ message: 'Заполни все обязательные поля' });
   }
 
   if (!['buyer', 'seller'].includes(role)) {
@@ -123,6 +156,10 @@ app.post('/api/register', (req, res) => {
     name: normalizedName,
     email: normalizedEmail,
     password: hashPassword(password),
+    city: role === 'seller' ? String(city || '').trim() : '',
+    address: role === 'seller' ? String(address || '').trim() : '',
+    whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
+    about: role === 'seller' ? String(about || '').trim() : '',
     createdAt: Date.now()
   };
 
@@ -176,7 +213,11 @@ app.get('/api/me', auth, (req, res) => {
     id: req.user.id,
     role: req.user.role,
     name: req.user.name,
-    email: req.user.email
+    email: req.user.email,
+    city: req.user.city || '',
+    address: req.user.address || '',
+    whatsapp: req.user.whatsapp || '',
+    about: req.user.about || ''
   });
 });
 
@@ -311,7 +352,13 @@ app.get('/api/requests/:id/responses', auth, (req, res) => {
     return res.status(403).json({ message: 'Нет доступа' });
   }
 
-  const responses = req.data.responses.filter(r => r.requestId === requestId);
+  const responses = req.data.responses
+    .filter(r => r.requestId === requestId)
+    .map(response => ({
+      ...response,
+      sellerId: response.sellerId
+    }));
+
   res.json(responses);
 });
 
@@ -333,6 +380,118 @@ app.get('/api/my-responses', auth, (req, res) => {
     });
 
   res.json(myResponses);
+});
+
+app.get('/api/sellers/:sellerId', auth, (req, res) => {
+  const { sellerId } = req.params;
+
+  const seller = req.data.users.find(
+    u => u.id === sellerId && u.role === 'seller'
+  );
+
+  if (!seller) {
+    return res.status(404).json({ message: 'Продавец не найден' });
+  }
+
+  const sellerReviews = (req.data.reviews || [])
+    .filter(r => r.sellerId === sellerId)
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  const rating = calculateSellerRating(req.data, sellerId);
+
+  res.json({
+    id: seller.id,
+    name: seller.name,
+    city: seller.city || '',
+    address: seller.address || '',
+    whatsapp: seller.whatsapp || '',
+    about: seller.about || '',
+    rating,
+    reviews: sellerReviews.map(r => ({
+      id: r.id,
+      author: r.authorName,
+      rating: r.rating,
+      text: r.text,
+      createdAt: r.createdAt
+    }))
+  });
+});
+
+app.post('/api/sellers/:sellerId/reviews', auth, (req, res) => {
+  if (req.user.role !== 'buyer') {
+    return res.status(403).json({ message: 'Только покупатель может оставлять отзывы' });
+  }
+
+  const { sellerId } = req.params;
+  const { rating, text } = req.body;
+
+  const seller = req.data.users.find(
+    u => u.id === sellerId && u.role === 'seller'
+  );
+
+  if (!seller) {
+    return res.status(404).json({ message: 'Продавец не найден' });
+  }
+
+  const numericRating = Number(rating);
+
+  if (!numericRating || numericRating < 1 || numericRating > 5) {
+    return res.status(400).json({ message: 'Оценка должна быть от 1 до 5' });
+  }
+
+  const reviewItem = {
+    id: generateId('rev_'),
+    sellerId,
+    buyerId: req.user.id,
+    authorName: req.user.name,
+    rating: numericRating,
+    text: String(text || '').trim(),
+    createdAt: Date.now()
+  };
+
+  req.data.reviews.unshift(reviewItem);
+  writeData(req.data);
+
+  res.json({ message: 'Отзыв добавлен', review: reviewItem });
+});
+
+app.put('/api/profile', auth, (req, res) => {
+  const { name, city, address, whatsapp, about } = req.body;
+
+  const userIndex = req.data.users.findIndex(u => u.id === req.user.id);
+
+  if (userIndex === -1) {
+    return res.status(404).json({ message: 'Пользователь не найден' });
+  }
+
+  if (name && String(name).trim().length < 2) {
+    return res.status(400).json({ message: 'Имя слишком короткое' });
+  }
+
+  req.data.users[userIndex] = {
+    ...req.data.users[userIndex],
+    name: name !== undefined ? String(name).trim() : req.data.users[userIndex].name,
+    city: city !== undefined ? String(city).trim() : req.data.users[userIndex].city,
+    address: address !== undefined ? String(address).trim() : req.data.users[userIndex].address,
+    whatsapp: whatsapp !== undefined ? String(whatsapp).trim() : req.data.users[userIndex].whatsapp,
+    about: about !== undefined ? String(about).trim() : req.data.users[userIndex].about
+  };
+
+  writeData(req.data);
+
+  res.json({
+    message: 'Профиль обновлён',
+    user: {
+      id: req.data.users[userIndex].id,
+      role: req.data.users[userIndex].role,
+      name: req.data.users[userIndex].name,
+      email: req.data.users[userIndex].email,
+      city: req.data.users[userIndex].city || '',
+      address: req.data.users[userIndex].address || '',
+      whatsapp: req.data.users[userIndex].whatsapp || '',
+      about: req.data.users[userIndex].about || ''
+    }
+  });
 });
 
 app.listen(PORT, () => {
