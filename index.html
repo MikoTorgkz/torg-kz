@@ -417,7 +417,7 @@
         <input type="password" id="registerPassword" placeholder="Пароль" />
 
         <div id="sellerExtraFields" class="seller-extra-fields hidden">
-          <input type="text" id="registerCity" placeholder="Город" />
+          <select id="registerCity"></select>
           <input type="text" id="registerAddress" placeholder="Адрес магазина" />
           <input type="text" id="registerWhatsapp" placeholder="WhatsApp, например 77071234567" />
           <textarea id="registerAbout" placeholder="Коротко о продавце / магазине"></textarea>
@@ -453,7 +453,7 @@
             <input type="text" id="reqTitle" placeholder="Заголовок заявки" />
             <input type="text" id="reqCarModel" placeholder="Марка / модель авто" />
             <input type="text" id="reqPartName" placeholder="Какая запчасть нужна?" />
-            <input type="text" id="reqCity" placeholder="Город или Весь Казахстан" />
+            <select id="reqCity"></select>
             <input type="text" id="reqPhone" placeholder="Телефон" />
             <textarea id="reqDescription" placeholder="Опиши подробно, что нужно"></textarea>
             <button class="green" id="createRequestBtn">Опубликовать заявку</button>
@@ -478,7 +478,7 @@
         <div class="card">
           <h2 class="section-title">Мои данные продавца</h2>
           <input type="text" id="profileName" placeholder="Имя" />
-          <input type="text" id="profileCity" placeholder="Город" />
+          <select id="profileCity"></select>
           <input type="text" id="profileAddress" placeholder="Адрес магазина" />
           <input type="text" id="profileWhatsapp" placeholder="WhatsApp" />
           <textarea id="profileAbout" placeholder="О продавце / магазине"></textarea>
@@ -513,6 +513,29 @@
     let selectedRating = 0;
     let openedSellerId = null;
 
+    const CITY_OPTIONS = [
+      'Алматы',
+      'Астана',
+      'Шымкент',
+      'Караганда',
+      'Актобе',
+      'Тараз',
+      'Павлодар',
+      'Усть-Каменогорск',
+      'Семей',
+      'Костанай',
+      'Кызылорда',
+      'Уральск',
+      'Атырау',
+      'Актау',
+      'Петропавловск',
+      'Туркестан',
+      'Кокшетау',
+      'Талдыкорган',
+      'Экибастуз',
+      'Рудный'
+    ];
+
     const authSection = document.getElementById('authSection');
     const dashboardSection = document.getElementById('dashboardSection');
     const userBadge = document.getElementById('userBadge');
@@ -531,6 +554,26 @@
 
     const registerRole = document.getElementById('registerRole');
     const sellerExtraFields = document.getElementById('sellerExtraFields');
+
+    function fillCitySelect(selectId, includeAllKazakhstan = false) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+
+      const currentValue = select.value;
+
+      let options = '<option value="">Выберите город</option>';
+
+      if (includeAllKazakhstan) {
+        options += '<option value="Весь Казахстан">Весь Казахстан</option>';
+      }
+
+      options += CITY_OPTIONS.map(city => `<option value="${city}">${city}</option>`).join('');
+      select.innerHTML = options;
+
+      if (currentValue) {
+        select.value = currentValue;
+      }
+    }
 
     function setMsg(id, text, color = 'red') {
       const el = document.getElementById(id);
@@ -937,24 +980,15 @@
           const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
 
           let sellerForm = '';
-          let respondedBlock = '';
 
-          if (currentUser && currentUser.role === 'seller') {
-            if (item.hasResponded) {
-              respondedBlock = `
-                <div class="small" style="margin-top:12px; color:#16a34a; font-weight:bold;">
-                  Ты уже ответил на это объявление
-                </div>
-              `;
-            } else if (item.status === 'open') {
-              sellerForm = `
-                <div style="margin-top:12px;">
-                  <input id="price-${item.id}" placeholder="Цена" />
-                  <textarea id="message-${item.id}" placeholder="Сообщение покупателю"></textarea>
-                  <button class="green" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
-                </div>
-              `;
-            }
+          if (currentUser && currentUser.role === 'seller' && item.status === 'open') {
+            sellerForm = `
+              <div style="margin-top:12px;">
+                <input id="price-${item.id}" placeholder="Цена" />
+                <textarea id="message-${item.id}" placeholder="Сообщение покупателю"></textarea>
+                <button class="green" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
+              </div>
+            `;
           }
 
           let buyerResponses = '';
@@ -977,7 +1011,6 @@
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
             ${timeLeft}
             <div class="small" style="margin-top:8px;">Ответов: ${item.responsesCount}</div>
-            ${respondedBlock}
             ${sellerForm}
             ${buyerResponses}
           `;
@@ -1248,8 +1281,12 @@
       }
     });
 
+    fillCitySelect('registerCity');
+    fillCitySelect('profileCity');
+    fillCitySelect('reqCity', true);
+
     updateRegisterFieldsVisibility();
     loadMe();
   </script>
 </body>
-</html>>
+</html>
