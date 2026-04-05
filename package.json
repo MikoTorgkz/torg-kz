@@ -17,5 +17,14 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.22.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MikoTorgkz/torg-kz.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MikoTorgkz/torg-kz/issues"
+  },
+  "homepage": "https://github.com/MikoTorgkz/torg-kz#readme"
 }

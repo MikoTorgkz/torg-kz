@@ -58,5 +58,15 @@
       "createdAt": 1775372198095
     }
   },
-  "reviews": []
+  "reviews": [
+    {
+      "id": "rev_2ce16660a15f171a",
+      "sellerId": "user_bf90385bd3a0a207",
+      "buyerId": "user_0ef2e9f40a28c8a9",
+      "authorName": "kz",
+      "rating": 5,
+      "text": "sdfdf",
+      "createdAt": 1775380760831
+    }
+  ]
 }
