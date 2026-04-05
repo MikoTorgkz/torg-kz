@@ -319,6 +319,28 @@
       margin-bottom: 0;
     }
 
+    .stars {
+      display: flex;
+      gap: 6px;
+      font-size: 28px;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 10px;
+    }
+
+    .star {
+      color: #d1d5db;
+      transition: 0.2s;
+    }
+
+    .star.active {
+      color: #fbbf24;
+    }
+
+    .star:hover {
+      transform: scale(1.2);
+    }
+
     @media (max-width: 900px) {
       .hero h1 {
         font-size: 36px;
@@ -332,28 +354,6 @@
       .grid-2 {
         grid-template-columns: 1fr;
       }
-
-      .stars {
-   display: flex;
-   gap: 6px;
-   font-size: 28px;
-   cursor: pointer;
-   user-select: none;
-   margin-bottom: 10px;
-   }
-
-   .star {
-   color: #d1d5db;
-   transition: 0.2s;
-   }
-
-   .star.active {
-   color: #fbbf24;
-   }
-
-   .star:hover {
-   transform: scale(1.2);
-   }
     }
   </style>
 </head>
@@ -480,20 +480,6 @@
     let selectedRating = 0;
     let openedSellerId = null;
 
-    function initStars() {
-    const stars = document.querySelectorAll('.star');
-
-    stars.forEach(star => {
-      star.addEventListener('click', () => {
-        selectedRating = Number(star.dataset.value);
-
-        stars.forEach(s => {
-          s.classList.toggle('active', Number(s.dataset.value) <= selectedRating);
-        });
-      });
-    });
-   }
-
     const authSection = document.getElementById('authSection');
     const dashboardSection = document.getElementById('dashboardSection');
     const userBadge = document.getElementById('userBadge');
@@ -538,10 +524,57 @@
       }
     }
 
+    function closeSellerProfile() {
+      const modal = document.getElementById('sellerProfileModal');
+      const content = document.getElementById('sellerProfileContent');
+      modal.classList.add('hidden');
+      content.innerHTML = 'Загрузка...';
+      openedSellerId = null;
+      selectedRating = 0;
+    }
+
+    function initStars() {
+      const container = document.getElementById('starsContainer');
+      if (!container) return;
+
+      const stars = container.querySelectorAll('.star');
+      if (!stars.length) return;
+
+      stars.forEach((star) => {
+        star.onclick = () => {
+          selectedRating = Number(star.dataset.value);
+
+          stars.forEach((s) => {
+            const value = Number(s.dataset.value);
+            s.classList.toggle('active', value <= selectedRating);
+          });
+        };
+
+        star.onmouseenter = () => {
+          const hoverValue = Number(star.dataset.value);
+
+          stars.forEach((s) => {
+            const value = Number(s.dataset.value);
+            s.classList.toggle('active', value <= hoverValue);
+          });
+        };
+      });
+
+      container.onmouseleave = () => {
+        stars.forEach((s) => {
+          const value = Number(s.dataset.value);
+          s.classList.toggle('active', value <= selectedRating);
+        });
+      };
+    }
+
     async function api(url, options = {}) {
       const headers = options.headers || {};
       headers['Content-Type'] = 'application/json';
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
       const res = await fetch(url, { ...options, headers });
       const data = await res.json().catch(() => ({}));
@@ -726,6 +759,24 @@
       }
     }
 
+    async function respondToRequest(requestId) {
+      try {
+        const price = document.getElementById(`price-${requestId}`)?.value.trim() || '';
+        const message = document.getElementById(`message-${requestId}`)?.value.trim() || '';
+
+        const data = await api(`/api/requests/${requestId}/respond`, {
+          method: 'POST',
+          body: JSON.stringify({ price, message })
+        });
+
+        alert(data.message || 'Ответ отправлен');
+        await loadMarketplace();
+        await loadMyResponses();
+      } catch (err) {
+        alert(err.message || 'Ошибка');
+      }
+    }
+
     async function loadMarketplace() {
       const box = document.getElementById('marketplaceList');
       box.innerHTML = 'Загрузка...';
@@ -860,142 +911,105 @@
     }
 
     async function openSellerProfile(sellerId) {
-  const modal = document.getElementById('sellerProfileModal');
-  const content = document.getElementById('sellerProfileContent');
+      const modal = document.getElementById('sellerProfileModal');
+      const content = document.getElementById('sellerProfileContent');
 
-  openedSellerId = sellerId;
-  selectedRating = 0;
+      openedSellerId = sellerId;
+      selectedRating = 0;
 
-  modal.classList.remove('hidden');
-  content.innerHTML = 'Загрузка профиля...';
+      modal.classList.remove('hidden');
+      content.innerHTML = 'Загрузка профиля...';
 
-  try {
-    const seller = await api(`/api/sellers/${sellerId}`);
+      try {
+        const seller = await api(`/api/sellers/${sellerId}`);
 
-    const whatsappClean = String(seller.whatsapp || '').replace(/\D/g, '');
-    const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean}` : '';
+        const whatsappClean = String(seller.whatsapp || '').replace(/\D/g, '');
+        const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean}` : '';
 
-    const reviewsHtml = seller.reviews && seller.reviews.length
-      ? seller.reviews.map(review => `
-          <div class="review-item">
-            <strong>${escapeHtml(review.author || 'Покупатель')}</strong>
-            <div class="meta">Оценка: ${escapeHtml(review.rating)} / 5</div>
-            <div>${review.text ? escapeHtml(review.text) : '<span class="small">Без текста</span>'}</div>
-            <div class="small" style="margin-top:6px;">${escapeHtml(formatDate(review.createdAt))}</div>
-          </div>
-        `).join('')
-      : '<div class="small">Пока нет отзывов</div>';
+        const reviewsHtml = seller.reviews && seller.reviews.length
+          ? seller.reviews.map(review => `
+              <div class="review-item">
+                <strong>${escapeHtml(review.author || 'Покупатель')}</strong>
+                <div class="meta">Оценка: ${escapeHtml(review.rating)} / 5</div>
+                <div>${review.text ? escapeHtml(review.text) : '<span class="small">Без текста</span>'}</div>
+                <div class="small" style="margin-top:6px;">${escapeHtml(formatDate(review.createdAt))}</div>
+              </div>
+            `).join('')
+          : '<div class="small">Пока нет отзывов</div>';
 
-    let reviewFormHtml = '';
+        let reviewFormHtml = '';
 
-    if (currentUser && currentUser.role === 'buyer') {
-      reviewFormHtml = `
-        <div style="margin-top:22px; padding-top:18px; border-top:1px solid #e5e7eb;">
-          <h4 style="margin:0 0 10px;">Оставить отзыв</h4>
+        if (currentUser && currentUser.role === 'buyer') {
+          reviewFormHtml = `
+            <div style="margin-top:22px; padding-top:18px; border-top:1px solid #e5e7eb;">
+              <h4 style="margin:0 0 10px;">Оставить отзыв</h4>
 
-          <div class="stars" id="starsContainer">
-            <span class="star" data-value="1">★</span>
-            <span class="star" data-value="2">★</span>
-            <span class="star" data-value="3">★</span>
-            <span class="star" data-value="4">★</span>
-            <span class="star" data-value="5">★</span>
-          </div>
+              <div class="stars" id="starsContainer">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+              </div>
 
-          <textarea id="reviewText" placeholder="Напиши отзыв о продавце"></textarea>
+              <textarea id="reviewText" placeholder="Напиши отзыв о продавце"></textarea>
 
-          <button class="green" type="button" onclick="submitSellerReview()">Отправить отзыв</button>
-          <div id="reviewMsg" class="msg"></div>
-        </div>
-      `;
+              <button class="green" type="button" onclick="submitSellerReview()">Отправить отзыв</button>
+              <div id="reviewMsg" class="msg"></div>
+            </div>
+          `;
+        }
+
+        content.innerHTML = `
+          <div class="profile-row"><strong>Имя:</strong> ${escapeHtml(seller.name || 'Не указано')}</div>
+          <div class="profile-row"><strong>Рейтинг:</strong> ${seller.rating !== null && seller.rating !== undefined ? escapeHtml(seller.rating) + ' ⭐' : 'Нет оценок'}</div>
+          <div class="profile-row"><strong>Город:</strong> ${escapeHtml(seller.city || 'Не указан')}</div>
+          <div class="profile-row"><strong>Адрес:</strong> ${escapeHtml(seller.address || 'Не указан')}</div>
+          <div class="profile-row"><strong>О продавце:</strong> ${escapeHtml(seller.about || 'Нет описания')}</div>
+
+          <h4 style="margin-top:20px; margin-bottom:10px;">Отзывы</h4>
+          ${reviewsHtml}
+
+          ${
+            whatsappLink
+              ? `<a class="link-btn" href="${whatsappLink}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>`
+              : `<div class="small" style="margin-top:14px;">WhatsApp не указан</div>`
+          }
+
+          ${reviewFormHtml}
+        `;
+
+        initStars();
+      } catch (err) {
+        content.innerHTML = `<div style="color:red;">${escapeHtml(err.message)}</div>`;
+      }
     }
 
-    content.innerHTML = `
-      <div class="profile-row"><strong>Имя:</strong> ${escapeHtml(seller.name || 'Не указано')}</div>
-      <div class="profile-row"><strong>Рейтинг:</strong> ${seller.rating !== null && seller.rating !== undefined ? escapeHtml(seller.rating) + ' ⭐' : 'Нет оценок'}</div>
-      <div class="profile-row"><strong>Город:</strong> ${escapeHtml(seller.city || 'Не указан')}</div>
-      <div class="profile-row"><strong>Адрес:</strong> ${escapeHtml(seller.address || 'Не указан')}</div>
-      <div class="profile-row"><strong>О продавце:</strong> ${escapeHtml(seller.about || 'Нет описания')}</div>
+    async function submitSellerReview() {
+      if (!openedSellerId) return;
 
-      <h4 style="margin-top:20px; margin-bottom:10px;">Отзывы</h4>
-      ${reviewsHtml}
-
-      ${
-        whatsappLink
-          ? `<a class="link-btn" href="${whatsappLink}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>`
-          : `<div class="small" style="margin-top:14px;">WhatsApp не указан</div>`
+      if (!selectedRating) {
+        setMsg('reviewMsg', 'Выбери оценку', 'red');
+        return;
       }
 
-      ${reviewFormHtml}
-    `;
+      const text = document.getElementById('reviewText')?.value.trim() || '';
 
-    initStars();
-  } catch (err) {
-    content.innerHTML = `<div style="color:red;">${escapeHtml(err.message)}</div>`;
-  }
-}
-
-    function initStars() {
-  const container = document.getElementById('starsContainer');
-  if (!container) return;
-
-  const stars = container.querySelectorAll('.star');
-  if (!stars.length) return;
-
-  stars.forEach((star) => {
-    star.onclick = () => {
-      selectedRating = Number(star.dataset.value);
-
-      stars.forEach((s) => {
-        const value = Number(s.dataset.value);
-        s.classList.toggle('active', value <= selectedRating);
-      });
-    };
-
-    star.onmouseenter = () => {
-      const hoverValue = Number(star.dataset.value);
-
-      stars.forEach((s) => {
-        const value = Number(s.dataset.value);
-        s.classList.toggle('active', value <= hoverValue);
-      });
-    };
-  });
-
-  container.onmouseleave = () => {
-    stars.forEach((s) => {
-      const value = Number(s.dataset.value);
-      s.classList.toggle('active', value <= selectedRating);
-    });
-  };
-}
-
-    setMsg('reviewMsg', data.message, 'green');
-
-    selectedRating = 0;
-
-    await openSellerProfile(openedSellerId);
-  } catch (err) {
-    setMsg('reviewMsg', err.message, 'red');
-  }
-}
-
-    async function respondToRequest(requestId) {
       try {
-        const payload = {
-          price: document.getElementById(`price-${requestId}`).value.trim(),
-          message: document.getElementById(`message-${requestId}`).value.trim()
-        };
-
-        const data = await api(`/api/requests/${requestId}/respond`, {
+        const data = await api(`/api/sellers/${openedSellerId}/reviews`, {
           method: 'POST',
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            rating: selectedRating,
+            text
+          })
         });
 
-        alert(data.message);
-        await loadMarketplace();
-        await loadMyResponses();
+        setMsg('reviewMsg', data.message, 'green');
+        selectedRating = 0;
+
+        await openSellerProfile(openedSellerId);
       } catch (err) {
-        alert(err.message);
+        setMsg('reviewMsg', err.message, 'red');
       }
     }
 
@@ -1051,9 +1065,11 @@
     sellerTabBtn.addEventListener('click', async () => {
       sellerSection.classList.remove('hidden');
       buyerSection.classList.add('hidden');
+
       if (currentUser) {
         fillSellerProfileForm(currentUser);
       }
+
       await loadMyResponses();
     });
 
@@ -1065,55 +1081,6 @@
 
     updateRegisterFieldsVisibility();
     loadMe();
-
-    function initStars() {
-  const container = document.getElementById('starsContainer');
-  if (!container) return;
-
-  const stars = container.querySelectorAll('.star');
-  if (!stars.length) return;
-
-  stars.forEach(star => {
-    star.style.cursor = 'pointer';
-
-    star.addEventListener('click', () => {
-      selectedRating = Number(star.dataset.value);
-
-      stars.forEach(s => {
-        const value = Number(s.dataset.value);
-        if (value <= selectedRating) {
-          s.classList.add('active');
-        } else {
-          s.classList.remove('active');
-        }
-      });
-    });
-
-    star.addEventListener('mouseenter', () => {
-      const hoverValue = Number(star.dataset.value);
-
-      stars.forEach(s => {
-        const value = Number(s.dataset.value);
-        if (value <= hoverValue) {
-          s.classList.add('active');
-        } else {
-          s.classList.remove('active');
-        }
-      });
-    });
-  });
-
-  container.addEventListener('mouseleave', () => {
-    stars.forEach(s => {
-      const value = Number(s.dataset.value);
-      if (value <= selectedRating) {
-        s.classList.add('active');
-      } else {
-        s.classList.remove('active');
-      }
-    });
-  });
-}
   </script>
 </body>
 </html>
