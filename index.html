@@ -473,25 +473,26 @@
     </div>
   </div>
 
-  function initStars() {
-  const stars = document.querySelectorAll('.star');
-
-  stars.forEach(star => {
-    star.addEventListener('click', () => {
-      selectedRating = Number(star.dataset.value);
-
-      stars.forEach(s => {
-        s.classList.toggle('active', Number(s.dataset.value) <= selectedRating);
-      });
-    });
-  });
-}
   <script>
     const tokenKey = 'token';
     let token = localStorage.getItem(tokenKey) || '';
     let currentUser = null;
     let selectedRating = 0;
     let openedSellerId = null;
+
+    function initStars() {
+    const stars = document.querySelectorAll('.star');
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = Number(star.dataset.value);
+
+        stars.forEach(s => {
+          s.classList.toggle('active', Number(s.dataset.value) <= selectedRating);
+        });
+      });
+    });
+   }
 
     const authSection = document.getElementById('authSection');
     const dashboardSection = document.getElementById('dashboardSection');
