@@ -385,6 +385,7 @@
     <div class="logo">Torg KZ</div>
     <div class="topbar">
       <div id="userBadge" class="user-badge">Ты не вошёл</div>
+      <div id="notificationCounter" class="user-badge hidden">🔔 0</div>
       <button id="logoutBtn" class="top-btn logout-btn hidden">Выйти</button>
     </div>
   </header>
@@ -430,9 +431,10 @@
     <div id="dashboardSection" class="hidden">
       <div class="card">
         <div class="tabs">
-          <button class="primary" id="marketTabBtn">Все заявки</button>
+          <button class="primary hidden" id="marketTabBtn">Все заявки</button>
           <button class="dark hidden" id="buyerTabBtn">Мои заявки</button>
           <button class="dark hidden" id="sellerTabBtn">Мои ответы</button>
+          <button class="dark hidden" id="sellerProfileTabBtn">Мои данные</button>
         </div>
       </div>
 
@@ -451,7 +453,7 @@
             <input type="text" id="reqTitle" placeholder="Заголовок заявки" />
             <input type="text" id="reqCarModel" placeholder="Марка / модель авто" />
             <input type="text" id="reqPartName" placeholder="Какая запчасть нужна?" />
-            <input type="text" id="reqCity" placeholder="Город" />
+            <input type="text" id="reqCity" placeholder="Город или Весь Казахстан" />
             <input type="text" id="reqPhone" placeholder="Телефон" />
             <textarea id="reqDescription" placeholder="Опиши подробно, что нужно"></textarea>
             <button class="green" id="createRequestBtn">Опубликовать заявку</button>
@@ -466,26 +468,26 @@
       </div>
 
       <div id="sellerSection" class="hidden">
-        <div class="grid-2">
-          <div class="card">
-            <h2 class="section-title">Мои ответы</h2>
-            <div id="myResponsesList" class="small">Пока пусто</div>
-          </div>
-
-          <div class="card">
-            <h2 class="section-title">Мой профиль продавца</h2>
-            <input type="text" id="profileName" placeholder="Имя" />
-            <input type="text" id="profileCity" placeholder="Город" />
-            <input type="text" id="profileAddress" placeholder="Адрес магазина" />
-            <input type="text" id="profileWhatsapp" placeholder="WhatsApp" />
-            <textarea id="profileAbout" placeholder="О продавце / магазине"></textarea>
-            <button class="green" id="saveProfileBtn">Сохранить профиль</button>
-            <div id="profileMsg" class="msg"></div>
-          </div>
+        <div class="card">
+          <h2 class="section-title">Мои ответы</h2>
+          <div id="myResponsesList" class="small">Пока пусто</div>
         </div>
       </div>
 
-      <div class="card">
+      <div id="sellerProfileSection" class="hidden">
+        <div class="card">
+          <h2 class="section-title">Мои данные продавца</h2>
+          <input type="text" id="profileName" placeholder="Имя" />
+          <input type="text" id="profileCity" placeholder="Город" />
+          <input type="text" id="profileAddress" placeholder="Адрес магазина" />
+          <input type="text" id="profileWhatsapp" placeholder="WhatsApp" />
+          <textarea id="profileAbout" placeholder="О продавце / магазине"></textarea>
+          <button class="green" id="saveProfileBtn">Сохранить профиль</button>
+          <div id="profileMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div class="card" id="marketplaceCard">
         <h2 class="section-title">Лента заявок</h2>
         <div id="marketplaceList" class="small">Загрузка...</div>
       </div>
@@ -521,6 +523,11 @@
     const buyerTabBtn = document.getElementById('buyerTabBtn');
     const sellerTabBtn = document.getElementById('sellerTabBtn');
     const marketTabBtn = document.getElementById('marketTabBtn');
+
+    const sellerProfileSection = document.getElementById('sellerProfileSection');
+    const sellerProfileTabBtn = document.getElementById('sellerProfileTabBtn');
+    const marketplaceCard = document.getElementById('marketplaceCard');
+    const notificationCounter = document.getElementById('notificationCounter');
 
     const registerRole = document.getElementById('registerRole');
     const sellerExtraFields = document.getElementById('sellerExtraFields');
@@ -568,6 +575,19 @@
       } else {
         sellerExtraFields.classList.add('hidden');
       }
+    }
+
+    function updateNotificationCounter(notifications = []) {
+      const unreadCount = notifications.filter(item => !item.isRead).length;
+
+      if (!token) {
+        notificationCounter.classList.add('hidden');
+        notificationCounter.textContent = '🔔 0';
+        return;
+      }
+
+      notificationCounter.classList.remove('hidden');
+      notificationCounter.textContent = `🔔 ${unreadCount}`;
     }
 
     function closeSellerProfile() {
@@ -695,21 +715,32 @@
         authSection.classList.add('hidden');
         dashboardSection.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
+        notificationCounter.classList.remove('hidden');
 
         userBadge.textContent =
           `Ты вошёл как: ${user.name} (${user.role === 'buyer' ? 'покупатель' : 'продавец'})`;
 
+        buyerSection.classList.add('hidden');
+        sellerSection.classList.add('hidden');
+        sellerProfileSection.classList.add('hidden');
+
         if (user.role === 'buyer') {
           buyerTabBtn.classList.remove('hidden');
           sellerTabBtn.classList.add('hidden');
+          sellerProfileTabBtn.classList.add('hidden');
+          marketTabBtn.classList.add('hidden');
+          marketplaceCard.classList.add('hidden');
+
           buyerSection.classList.remove('hidden');
-          sellerSection.classList.add('hidden');
           await loadMyRequests();
         } else {
           sellerTabBtn.classList.remove('hidden');
+          sellerProfileTabBtn.classList.remove('hidden');
           buyerTabBtn.classList.add('hidden');
+          marketTabBtn.classList.remove('hidden');
+          marketplaceCard.classList.remove('hidden');
+
           sellerSection.classList.remove('hidden');
-          buyerSection.classList.add('hidden');
           fillSellerProfileForm(user);
           await loadMyResponses();
         }
@@ -723,6 +754,7 @@
         authSection.classList.remove('hidden');
         dashboardSection.classList.add('hidden');
         logoutBtn.classList.add('hidden');
+        notificationCounter.classList.add('hidden');
         userBadge.textContent = 'Ты не вошёл';
       }
     }
@@ -755,6 +787,7 @@
           `Ты вошёл как: ${data.user.name} (${data.user.role === 'buyer' ? 'покупатель' : 'продавец'})`;
 
         setMsg('profileMsg', data.message, 'green');
+        await loadMarketplace();
       } catch (err) {
         setMsg('profileMsg', err.message, 'red');
       }
@@ -771,6 +804,7 @@
       authSection.classList.remove('hidden');
       dashboardSection.classList.add('hidden');
       logoutBtn.classList.add('hidden');
+      notificationCounter.classList.add('hidden');
       userBadge.textContent = 'Ты не вошёл';
     }
 
@@ -832,6 +866,7 @@
 
       if (!token) {
         box.innerHTML = '<div class="small">Войди в аккаунт, чтобы видеть уведомления</div>';
+        updateNotificationCounter([]);
         return;
       }
 
@@ -839,6 +874,7 @@
 
       try {
         const notifications = await api('/api/notifications');
+        updateNotificationCounter(notifications);
         box.innerHTML = '';
 
         if (!notifications.length) {
@@ -863,6 +899,7 @@
           box.appendChild(div);
         });
       } catch (err) {
+        updateNotificationCounter([]);
         box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
       }
     }
@@ -900,14 +937,24 @@
           const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
 
           let sellerForm = '';
-          if (currentUser && currentUser.role === 'seller' && item.status === 'open') {
-            sellerForm = `
-              <div style="margin-top:12px;">
-                <input id="price-${item.id}" placeholder="Цена" />
-                <textarea id="message-${item.id}" placeholder="Сообщение покупателю"></textarea>
-                <button class="green" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
-              </div>
-            `;
+          let respondedBlock = '';
+
+          if (currentUser && currentUser.role === 'seller') {
+            if (item.hasResponded) {
+              respondedBlock = `
+                <div class="small" style="margin-top:12px; color:#16a34a; font-weight:bold;">
+                  Ты уже ответил на это объявление
+                </div>
+              `;
+            } else if (item.status === 'open') {
+              sellerForm = `
+                <div style="margin-top:12px;">
+                  <input id="price-${item.id}" placeholder="Цена" />
+                  <textarea id="message-${item.id}" placeholder="Сообщение покупателю"></textarea>
+                  <button class="green" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
+                </div>
+              `;
+            }
           }
 
           let buyerResponses = '';
@@ -930,6 +977,7 @@
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
             ${timeLeft}
             <div class="small" style="margin-top:8px;">Ответов: ${item.responsesCount}</div>
+            ${respondedBlock}
             ${sellerForm}
             ${buyerResponses}
           `;
@@ -965,6 +1013,7 @@
             <h3>${escapeHtml(item.title)}</h3>
             <div class="meta"><strong>Авто:</strong> ${escapeHtml(item.carModel)}</div>
             <div class="meta"><strong>Запчасть:</strong> ${escapeHtml(item.partName)}</div>
+            <div class="meta"><strong>Город:</strong> ${escapeHtml(item.city)}</div>
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
             ${timeLeft}
             <div style="margin-top:12px;">
@@ -1160,24 +1209,37 @@
     marketTabBtn.addEventListener('click', async () => {
       buyerSection.classList.add('hidden');
       sellerSection.classList.add('hidden');
+      sellerProfileSection.classList.add('hidden');
+      marketplaceCard.classList.remove('hidden');
       await loadMarketplace();
     });
 
     buyerTabBtn.addEventListener('click', async () => {
       buyerSection.classList.remove('hidden');
       sellerSection.classList.add('hidden');
+      sellerProfileSection.classList.add('hidden');
+      marketplaceCard.classList.add('hidden');
       await loadMyRequests();
     });
 
     sellerTabBtn.addEventListener('click', async () => {
       sellerSection.classList.remove('hidden');
+      sellerProfileSection.classList.add('hidden');
       buyerSection.classList.add('hidden');
+      marketplaceCard.classList.remove('hidden');
+      await loadMyResponses();
+      await loadMarketplace();
+    });
+
+    sellerProfileTabBtn.addEventListener('click', async () => {
+      sellerProfileSection.classList.remove('hidden');
+      sellerSection.classList.add('hidden');
+      buyerSection.classList.add('hidden');
+      marketplaceCard.classList.add('hidden');
 
       if (currentUser) {
         fillSellerProfileForm(currentUser);
       }
-
-      await loadMyResponses();
     });
 
     document.getElementById('sellerProfileModal').addEventListener('click', (e) => {
@@ -1190,4 +1252,4 @@
     loadMe();
   </script>
 </body>
-</html>
+</html>>
