@@ -177,7 +177,7 @@
       gap: 20px;
     }
 
-    .request-card, .response-card {
+    .request-card, .response-card, .notification-card {
       border: 1px solid #e5e7eb;
       border-radius: 14px;
       padding: 16px;
@@ -341,6 +341,29 @@
       transform: scale(1.2);
     }
 
+    .notification-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .notification-status {
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    .notification-status.new {
+      color: #16a34a;
+    }
+
+    .notification-status.read {
+      color: #6b7280;
+    }
+
     @media (max-width: 900px) {
       .hero h1 {
         font-size: 36px;
@@ -411,6 +434,14 @@
           <button class="dark hidden" id="buyerTabBtn">Мои заявки</button>
           <button class="dark hidden" id="sellerTabBtn">Мои ответы</button>
         </div>
+      </div>
+
+      <div class="card">
+        <div class="notification-head">
+          <h2 class="section-title" style="margin-bottom:0;">Уведомления</h2>
+          <button class="gray" id="readNotificationsBtn" type="button">Прочитать все</button>
+        </div>
+        <div id="notificationsList" class="small">Загрузка...</div>
       </div>
 
       <div id="buyerSection" class="hidden">
@@ -514,6 +545,21 @@
       if (!timestamp) return '';
       const date = new Date(timestamp);
       return date.toLocaleString('ru-RU');
+    }
+
+    function formatTimeLeft(expiresAt) {
+      if (!expiresAt) return '';
+
+      const diff = Number(expiresAt) - Date.now();
+
+      if (diff <= 0) {
+        return '<div class="small" style="margin-top:8px;">Время истекло</div>';
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      return `<div class="small" style="margin-top:8px;">Осталось: ${hours} ч ${minutes} мин</div>`;
     }
 
     function updateRegisterFieldsVisibility() {
@@ -668,6 +714,7 @@
           await loadMyResponses();
         }
 
+        await loadNotifications();
         await loadMarketplace();
       } catch (err) {
         currentUser = null;
@@ -754,6 +801,7 @@
 
         await loadMyRequests();
         await loadMarketplace();
+        await loadNotifications();
       } catch (err) {
         setMsg('requestMsg', err.message, 'red');
       }
@@ -772,6 +820,60 @@
         alert(data.message || 'Ответ отправлен');
         await loadMarketplace();
         await loadMyResponses();
+        await loadNotifications();
+      } catch (err) {
+        alert(err.message || 'Ошибка');
+      }
+    }
+
+    async function loadNotifications() {
+      const box = document.getElementById('notificationsList');
+      if (!box) return;
+
+      if (!token) {
+        box.innerHTML = '<div class="small">Войди в аккаунт, чтобы видеть уведомления</div>';
+        return;
+      }
+
+      box.innerHTML = 'Загрузка...';
+
+      try {
+        const notifications = await api('/api/notifications');
+        box.innerHTML = '';
+
+        if (!notifications.length) {
+          box.innerHTML = '<div class="small">Уведомлений пока нет</div>';
+          return;
+        }
+
+        notifications.forEach((item) => {
+          const div = document.createElement('div');
+          div.className = 'notification-card';
+
+          div.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:6px;">
+              ${escapeHtml(item.text)}
+            </div>
+            <div class="meta">${escapeHtml(formatDate(item.createdAt))}</div>
+            <div class="notification-status ${item.isRead ? 'read' : 'new'}">
+              ${item.isRead ? 'Прочитано' : 'Новое'}
+            </div>
+          `;
+
+          box.appendChild(div);
+        });
+      } catch (err) {
+        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function markNotificationsRead() {
+      try {
+        await api('/api/notifications/read', {
+          method: 'PUT'
+        });
+
+        await loadNotifications();
       } catch (err) {
         alert(err.message || 'Ошибка');
       }
@@ -795,6 +897,7 @@
           card.className = 'request-card';
 
           const statusClass = item.status === 'expired' ? 'status expired' : 'status';
+          const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
 
           let sellerForm = '';
           if (currentUser && currentUser.role === 'seller' && item.status === 'open') {
@@ -825,6 +928,7 @@
             <div class="meta"><strong>Телефон:</strong> ${escapeHtml(item.phone)}</div>
             <div>${escapeHtml(item.description)}</div>
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
+            ${timeLeft}
             <div class="small" style="margin-top:8px;">Ответов: ${item.responsesCount}</div>
             ${sellerForm}
             ${buyerResponses}
@@ -855,12 +959,14 @@
           card.className = 'request-card';
 
           const statusClass = item.status === 'expired' ? 'status expired' : 'status';
+          const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
 
           card.innerHTML = `
             <h3>${escapeHtml(item.title)}</h3>
             <div class="meta"><strong>Авто:</strong> ${escapeHtml(item.carModel)}</div>
             <div class="meta"><strong>Запчасть:</strong> ${escapeHtml(item.partName)}</div>
             <div class="${statusClass}">${item.status === 'open' ? 'Активна' : 'Истекла'}</div>
+            ${timeLeft}
             <div style="margin-top:12px;">
               <button class="gray" onclick="loadResponses('${item.id}')">Показать ответы (${item.responsesCount})</button>
               <div id="responses-${item.id}"></div>
@@ -1049,6 +1155,7 @@
     document.getElementById('createRequestBtn').addEventListener('click', createRequest);
     document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
     document.getElementById('registerRole').addEventListener('change', updateRegisterFieldsVisibility);
+    document.getElementById('readNotificationsBtn').addEventListener('click', markNotificationsRead);
 
     marketTabBtn.addEventListener('click', async () => {
       buyerSection.classList.add('hidden');
