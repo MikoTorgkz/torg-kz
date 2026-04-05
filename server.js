@@ -34,6 +34,11 @@ function readData() {
   if (!raw.sessions) raw.sessions = {};
   if (!raw.reviews) raw.reviews = [];
 
+  raw.users = raw.users.map(user => ({
+    ...user,
+    notifications: Array.isArray(user.notifications) ? user.notifications : []
+  }));
+
   return raw;
 }
 
@@ -108,6 +113,22 @@ function calculateSellerRating(data, sellerId) {
   return Number(avg.toFixed(1));
 }
 
+function ensureNotificationsArray(user) {
+  if (!Array.isArray(user.notifications)) {
+    user.notifications = [];
+  }
+}
+
+function createNotification(text, type = 'info') {
+  return {
+    id: generateId('notif_'),
+    text: String(text || '').trim(),
+    type,
+    isRead: false,
+    createdAt: Date.now()
+  };
+}
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -160,6 +181,7 @@ app.post('/api/register', (req, res) => {
     address: role === 'seller' ? String(address || '').trim() : '',
     whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
     about: role === 'seller' ? String(about || '').trim() : '',
+    notifications: [],
     createdAt: Date.now()
   };
 
@@ -238,6 +260,8 @@ app.post('/api/requests', auth, (req, res) => {
     return res.status(400).json({ message: 'Заполни все поля заявки' });
   }
 
+  cleanupExpiredRequests(req.data);
+
   const requestItem = {
     id: generateId('req_'),
     buyerId: req.user.id,
@@ -254,6 +278,15 @@ app.post('/api/requests', auth, (req, res) => {
   };
 
   req.data.requests.unshift(requestItem);
+
+  const sellers = req.data.users.filter(user => user.role === 'seller');
+  sellers.forEach(seller => {
+    ensureNotificationsArray(seller);
+    seller.notifications.unshift(
+      createNotification(`Новая заявка: ${requestItem.title}`, 'new_request')
+    );
+  });
+
   writeData(req.data);
 
   res.json({ message: 'Заявка опубликована', request: requestItem });
@@ -307,12 +340,16 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
     return res.status(400).json({ message: 'Укажи сообщение и цену' });
   }
 
+  cleanupExpiredRequests(req.data);
+
   const requestItem = req.data.requests.find(r => r.id === requestId);
   if (!requestItem) {
+    writeData(req.data);
     return res.status(404).json({ message: 'Заявка не найдена' });
   }
 
   if (requestItem.status !== 'open') {
+    writeData(req.data);
     return res.status(400).json({ message: 'На эту заявку уже нельзя ответить' });
   }
 
@@ -321,6 +358,7 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
   );
 
   if (alreadyResponded) {
+    writeData(req.data);
     return res.status(400).json({ message: 'Ты уже отвечал на эту заявку' });
   }
 
@@ -335,6 +373,15 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
   };
 
   req.data.responses.unshift(responseItem);
+
+  const buyer = req.data.users.find(u => u.id === requestItem.buyerId);
+  if (buyer) {
+    ensureNotificationsArray(buyer);
+    buyer.notifications.unshift(
+      createNotification(`На вашу заявку "${requestItem.title}" пришёл новый ответ`, 'new_response')
+    );
+  }
+
   writeData(req.data);
 
   res.json({ message: 'Ответ отправлен', response: responseItem });
@@ -367,6 +414,9 @@ app.get('/api/my-responses', auth, (req, res) => {
     return res.status(403).json({ message: 'Только продавец может смотреть свои ответы' });
   }
 
+  cleanupExpiredRequests(req.data);
+  writeData(req.data);
+
   const myResponses = req.data.responses
     .filter(r => r.sellerId === req.user.id)
     .map(response => {
@@ -380,6 +430,37 @@ app.get('/api/my-responses', auth, (req, res) => {
     });
 
   res.json(myResponses);
+});
+
+app.get('/api/notifications', auth, (req, res) => {
+  const user = req.data.users.find(u => u.id === req.user.id);
+
+  if (!user) {
+    return res.status(404).json({ message: 'Пользователь не найден' });
+  }
+
+  ensureNotificationsArray(user);
+
+  res.json(user.notifications);
+});
+
+app.put('/api/notifications/read', auth, (req, res) => {
+  const user = req.data.users.find(u => u.id === req.user.id);
+
+  if (!user) {
+    return res.status(404).json({ message: 'Пользователь не найден' });
+  }
+
+  ensureNotificationsArray(user);
+
+  user.notifications = user.notifications.map(notification => ({
+    ...notification,
+    isRead: true
+  }));
+
+  writeData(req.data);
+
+  res.json({ message: 'Уведомления отмечены как прочитанные' });
 });
 
 app.get('/api/sellers/:sellerId', auth, (req, res) => {
