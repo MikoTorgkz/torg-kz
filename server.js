@@ -73,12 +73,27 @@ function normalizeStoredCity(city, allowAllKazakhstan = false) {
   if (allowAllKazakhstan && isAllKazakhstan(city)) {
     return ALL_KAZAKHSTAN_LABEL;
   }
-
   return findCanonicalCity(city) || '';
 }
 
 function citiesMatch(cityA, cityB) {
   return cityKey(cityA) === cityKey(cityB);
+}
+
+function ensureNotificationsArray(user) {
+  if (!Array.isArray(user.notifications)) {
+    user.notifications = [];
+  }
+}
+
+function createNotification(text, type = 'info') {
+  return {
+    id: generateId('notif_'),
+    text: String(text || '').trim(),
+    type,
+    isRead: false,
+    createdAt: Date.now()
+  };
 }
 
 function readData() {
@@ -99,7 +114,11 @@ function readData() {
 
   raw.requests = raw.requests.map(requestItem => ({
     ...requestItem,
-    city: normalizeStoredCity(requestItem.city, true)
+    city: normalizeStoredCity(requestItem.city, true),
+    category: String(requestItem.category || '').trim(),
+    selectedSellerId: requestItem.selectedSellerId || null,
+    selectedPrice: requestItem.selectedPrice || null,
+    selectedAt: requestItem.selectedAt || null
   }));
 
   return raw;
@@ -120,7 +139,9 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, storedPassword) {
-  const [salt, originalHash] = storedPassword.split(':');
+  const [salt, originalHash] = String(storedPassword || '').split(':');
+  if (!salt || !originalHash) return false;
+
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
   return crypto.timingSafeEqual(
     Buffer.from(hash, 'hex'),
@@ -132,8 +153,47 @@ function isAllowedCity(city, allowAllKazakhstan = false) {
   if (allowAllKazakhstan && isAllKazakhstan(city)) {
     return true;
   }
-
   return !!findCanonicalCity(city);
+}
+
+function cleanupExpiredRequests(data) {
+  const now = Date.now();
+
+  data.requests = data.requests.map(requestItem => {
+    if (requestItem.status === 'open' && requestItem.expiresAt && now > requestItem.expiresAt) {
+      return { ...requestItem, status: 'expired' };
+    }
+    return requestItem;
+  });
+}
+
+function calculateSellerRating(data, sellerId) {
+  const sellerReviews = (data.reviews || []).filter(r => r.sellerId === sellerId);
+  if (!sellerReviews.length) return null;
+
+  const avg =
+    sellerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+    sellerReviews.length;
+
+  return Number(avg.toFixed(1));
+}
+
+function sanitizeRequestForPublic(requestItem, responsesCount = 0) {
+  return {
+    id: requestItem.id,
+    buyerId: requestItem.buyerId,
+    title: requestItem.title,
+    description: requestItem.description,
+    category: requestItem.category || '',
+    city: requestItem.city,
+    status: requestItem.status,
+    createdAt: requestItem.createdAt,
+    expiresAt: requestItem.expiresAt,
+    responsesCount,
+    selectedSellerId: requestItem.selectedSellerId || null,
+    selectedPrice: requestItem.selectedPrice || null,
+    selectedAt: requestItem.selectedAt || null
+  };
 }
 
 function auth(req, res, next) {
@@ -162,59 +222,28 @@ function auth(req, res, next) {
   next();
 }
 
-function cleanupExpiredRequests(data) {
-  const now = Date.now();
-  data.requests = data.requests.map(r => {
-    if (r.status === 'open' && r.expiresAt && now > r.expiresAt) {
-      return { ...r, status: 'expired' };
-    }
-    return r;
-  });
-}
-
-function calculateSellerRating(data, sellerId) {
-  const sellerReviews = (data.reviews || []).filter(r => r.sellerId === sellerId);
-
-  if (!sellerReviews.length) return null;
-
-  const avg =
-    sellerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
-    sellerReviews.length;
-
-  return Number(avg.toFixed(1));
-}
-
-function ensureNotificationsArray(user) {
-  if (!Array.isArray(user.notifications)) {
-    user.notifications = [];
-  }
-}
-
-function createNotification(text, type = 'info') {
-  return {
-    id: generateId('notif_'),
-    text: String(text || '').trim(),
-    type,
-    isRead: false,
-    createdAt: Date.now()
-  };
-}
-
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/api/public-requests', (req, res) => {
+  const data = readData();
+  cleanupExpiredRequests(data);
+  writeData(data);
+
+  const list = data.requests
+    .filter(r => r.status === 'open')
+    .slice(0, 8)
+    .map(requestItem => {
+      const responsesCount = data.responses.filter(r => r.requestId === requestItem.id).length;
+      return sanitizeRequestForPublic(requestItem, responsesCount);
+    });
+
+  res.json(list);
+});
+
 app.post('/api/register', (req, res) => {
-  const {
-    role,
-    name,
-    email,
-    password,
-    city,
-    address,
-    whatsapp,
-    about
-  } = req.body;
+  const { role, name, email, password, city, address, whatsapp, about } = req.body;
 
   if (!role || !name || !email || !password) {
     return res.status(400).json({ message: 'Заполни все обязательные поля' });
@@ -235,7 +264,7 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ message: 'Имя слишком короткое' });
   }
 
-  if (password.length < 4) {
+  if (String(password).length < 4) {
     return res.status(400).json({ message: 'Пароль должен быть не короче 4 символов' });
   }
 
@@ -277,11 +306,7 @@ app.post('/api/login', (req, res) => {
   const data = readData();
   const user = data.users.find(u => u.email === normalizedEmail);
 
-  if (!user) {
-    return res.status(401).json({ message: 'Неверный email или пароль' });
-  }
-
-  if (!verifyPassword(password, user.password)) {
+  if (!user || !verifyPassword(password, user.password)) {
     return res.status(401).json({ message: 'Неверный email или пароль' });
   }
 
@@ -329,9 +354,9 @@ app.post('/api/requests', auth, (req, res) => {
     return res.status(403).json({ message: 'Только покупатель может создавать заявки' });
   }
 
-  const { title, carModel, partName, description, city, phone } = req.body;
+  const { title, description, category, city, phone } = req.body;
 
-  if (!title || !carModel || !partName || !description || !city || !phone) {
+  if (!title || !description || !city || !phone) {
     return res.status(400).json({ message: 'Заполни все поля заявки' });
   }
 
@@ -346,12 +371,14 @@ app.post('/api/requests', auth, (req, res) => {
     buyerId: req.user.id,
     buyerName: req.user.name,
     title: String(title).trim(),
-    carModel: String(carModel).trim(),
-    partName: String(partName).trim(),
     description: String(description).trim(),
+    category: String(category || '').trim(),
     city: normalizeStoredCity(city, true),
     phone: String(phone).trim(),
     status: 'open',
+    selectedSellerId: null,
+    selectedPrice: null,
+    selectedAt: null,
     createdAt: Date.now(),
     expiresAt: Date.now() + 24 * 60 * 60 * 1000
   };
@@ -413,8 +440,7 @@ app.get('/api/marketplace', auth, (req, res) => {
       : false;
 
     return {
-      ...requestItem,
-      responsesCount: responses.length,
+      ...sanitizeRequestForPublic(requestItem, responses.length),
       hasResponded
     };
   });
@@ -429,7 +455,7 @@ app.get('/api/marketplace', auth, (req, res) => {
         requestCity === ALL_KAZAKHSTAN_LABEL ||
         (sellerCity && citiesMatch(requestCity, sellerCity));
 
-      return matchesCity && !requestItem.hasResponded;
+      return matchesCity && !requestItem.hasResponded && requestItem.status === 'open';
     });
   }
 
@@ -507,6 +533,57 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
   res.json({ message: 'Ответ отправлен', response: responseItem });
 });
 
+app.post('/api/requests/:id/select', auth, (req, res) => {
+  if (req.user.role !== 'buyer') {
+    return res.status(403).json({ message: 'Только покупатель может выбирать продавца' });
+  }
+
+  const { id } = req.params;
+  const { sellerId } = req.body;
+
+  const requestItem = req.data.requests.find(r => r.id === id);
+
+  if (!requestItem) {
+    return res.status(404).json({ message: 'Заявка не найдена' });
+  }
+
+  if (requestItem.buyerId !== req.user.id) {
+    return res.status(403).json({ message: 'Это не твоя заявка' });
+  }
+
+  if (requestItem.status !== 'open') {
+    return res.status(400).json({ message: 'Заявка уже закрыта' });
+  }
+
+  const response = req.data.responses.find(
+    r => r.requestId === id && r.sellerId === sellerId
+  );
+
+  if (!response) {
+    return res.status(404).json({ message: 'Ответ продавца не найден' });
+  }
+
+  requestItem.status = 'closed';
+  requestItem.selectedSellerId = sellerId;
+  requestItem.selectedPrice = response.price;
+  requestItem.selectedAt = Date.now();
+
+  const seller = req.data.users.find(u => u.id === sellerId);
+  if (seller) {
+    ensureNotificationsArray(seller);
+    seller.notifications.unshift(
+      createNotification(`Покупатель выбрал вас по заявке "${requestItem.title}"`, 'deal_selected')
+    );
+  }
+
+  writeData(req.data);
+
+  res.json({
+    message: 'Продавец выбран',
+    request: requestItem
+  });
+});
+
 app.get('/api/requests/:id/responses', auth, (req, res) => {
   const requestId = req.params.id;
   const requestItem = req.data.requests.find(r => r.id === requestId);
@@ -521,10 +598,18 @@ app.get('/api/requests/:id/responses', auth, (req, res) => {
 
   const responses = req.data.responses
     .filter(r => r.requestId === requestId)
-    .map(response => ({
-      ...response,
-      sellerId: response.sellerId
-    }));
+    .map(response => {
+      const seller = req.data.users.find(u => u.id === response.sellerId && u.role === 'seller');
+      return {
+        ...response,
+        sellerId: response.sellerId,
+        sellerWhatsapp: seller?.whatsapp || '',
+        sellerCity: seller?.city || '',
+        sellerAddress: seller?.address || '',
+        sellerAbout: seller?.about || '',
+        sellerRating: seller ? calculateSellerRating(req.data, seller.id) : null
+      };
+    });
 
   res.json(responses);
 });
@@ -543,9 +628,12 @@ app.get('/api/my-responses', auth, (req, res) => {
       const requestItem = req.data.requests.find(r => r.id === response.requestId);
       return {
         ...response,
+        requestId: response.requestId,
         requestTitle: requestItem ? requestItem.title : 'Заявка удалена',
-        requestPartName: requestItem ? requestItem.partName : '',
-        requestCarModel: requestItem ? requestItem.carModel : ''
+        requestCategory: requestItem ? requestItem.category : '',
+        requestCity: requestItem ? requestItem.city : '',
+        requestStatus: requestItem ? requestItem.status : 'closed',
+        selectedSellerId: requestItem ? requestItem.selectedSellerId : null
       };
     });
 
@@ -560,7 +648,6 @@ app.get('/api/notifications', auth, (req, res) => {
   }
 
   ensureNotificationsArray(user);
-
   res.json(user.notifications);
 });
 
@@ -660,7 +747,6 @@ app.put('/api/profile', auth, (req, res) => {
   const { name, city, address, whatsapp, about } = req.body;
 
   const userIndex = req.data.users.findIndex(u => u.id === req.user.id);
-
   if (userIndex === -1) {
     return res.status(404).json({ message: 'Пользователь не найден' });
   }
