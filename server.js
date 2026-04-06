@@ -7,6 +7,31 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
+const ALLOWED_CITIES = [
+  'Алматы',
+  'Астана',
+  'Шымкент',
+  'Караганда',
+  'Актобе',
+  'Тараз',
+  'Павлодар',
+  'Усть-Каменогорск',
+  'Семей',
+  'Костанай',
+  'Кызылорда',
+  'Уральск',
+  'Атырау',
+  'Актау',
+  'Петропавловск',
+  'Туркестан',
+  'Кокшетау',
+  'Талдыкорган',
+  'Экибастуз',
+  'Рудный'
+];
+
+const ALL_KAZAKHSTAN_LABEL = 'Весь Казахстан';
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
@@ -24,6 +49,38 @@ function ensureDataFile() {
   }
 }
 
+function normalizeText(str) {
+  return String(str || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+function cityKey(city) {
+  return normalizeText(city);
+}
+
+function isAllKazakhstan(city) {
+  return cityKey(city) === cityKey(ALL_KAZAKHSTAN_LABEL);
+}
+
+function findCanonicalCity(city) {
+  const key = cityKey(city);
+  return ALLOWED_CITIES.find(item => cityKey(item) === key) || null;
+}
+
+function normalizeStoredCity(city, allowAllKazakhstan = false) {
+  if (allowAllKazakhstan && isAllKazakhstan(city)) {
+    return ALL_KAZAKHSTAN_LABEL;
+  }
+
+  return findCanonicalCity(city) || '';
+}
+
+function citiesMatch(cityA, cityB) {
+  return cityKey(cityA) === cityKey(cityB);
+}
+
 function readData() {
   ensureDataFile();
   const raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
@@ -36,7 +93,13 @@ function readData() {
 
   raw.users = raw.users.map(user => ({
     ...user,
+    city: user.role === 'seller' ? normalizeStoredCity(user.city) : (user.city || ''),
     notifications: Array.isArray(user.notifications) ? user.notifications : []
+  }));
+
+  raw.requests = raw.requests.map(requestItem => ({
+    ...requestItem,
+    city: normalizeStoredCity(requestItem.city, true)
   }));
 
   return raw;
@@ -63,6 +126,14 @@ function verifyPassword(password, storedPassword) {
     Buffer.from(hash, 'hex'),
     Buffer.from(originalHash, 'hex')
   );
+}
+
+function isAllowedCity(city, allowAllKazakhstan = false) {
+  if (allowAllKazakhstan && isAllKazakhstan(city)) {
+    return true;
+  }
+
+  return !!findCanonicalCity(city);
 }
 
 function auth(req, res, next) {
@@ -153,6 +224,10 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ message: 'Неверная роль' });
   }
 
+  if (role === 'seller' && !isAllowedCity(city)) {
+    return res.status(400).json({ message: 'Выбери город из списка' });
+  }
+
   const normalizedEmail = String(email).trim().toLowerCase();
   const normalizedName = String(name).trim();
 
@@ -177,7 +252,7 @@ app.post('/api/register', (req, res) => {
     name: normalizedName,
     email: normalizedEmail,
     password: hashPassword(password),
-    city: role === 'seller' ? String(city || '').trim() : '',
+    city: role === 'seller' ? normalizeStoredCity(city) : '',
     address: role === 'seller' ? String(address || '').trim() : '',
     whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
     about: role === 'seller' ? String(about || '').trim() : '',
@@ -260,6 +335,10 @@ app.post('/api/requests', auth, (req, res) => {
     return res.status(400).json({ message: 'Заполни все поля заявки' });
   }
 
+  if (!isAllowedCity(city, true)) {
+    return res.status(400).json({ message: 'Выбери город из списка' });
+  }
+
   cleanupExpiredRequests(req.data);
 
   const requestItem = {
@@ -270,7 +349,7 @@ app.post('/api/requests', auth, (req, res) => {
     carModel: String(carModel).trim(),
     partName: String(partName).trim(),
     description: String(description).trim(),
-    city: String(city).trim(),
+    city: normalizeStoredCity(city, true),
     phone: String(phone).trim(),
     status: 'open',
     createdAt: Date.now(),
@@ -281,10 +360,19 @@ app.post('/api/requests', auth, (req, res) => {
 
   const sellers = req.data.users.filter(user => user.role === 'seller');
   sellers.forEach(seller => {
-    ensureNotificationsArray(seller);
-    seller.notifications.unshift(
-      createNotification(`Новая заявка: ${requestItem.title}`, 'new_request')
-    );
+    const sellerCity = normalizeStoredCity(seller.city);
+    const requestCity = normalizeStoredCity(requestItem.city, true);
+
+    const canSeeRequest =
+      requestCity === ALL_KAZAKHSTAN_LABEL ||
+      (sellerCity && citiesMatch(requestCity, sellerCity));
+
+    if (canSeeRequest) {
+      ensureNotificationsArray(seller);
+      seller.notifications.unshift(
+        createNotification(`Новая заявка: ${requestItem.title}`, 'new_request')
+      );
+    }
   });
 
   writeData(req.data);
@@ -317,13 +405,33 @@ app.get('/api/marketplace', auth, (req, res) => {
   cleanupExpiredRequests(req.data);
   writeData(req.data);
 
-  const requests = req.data.requests.map(requestItem => {
+  let requests = req.data.requests.map(requestItem => {
     const responses = req.data.responses.filter(r => r.requestId === requestItem.id);
+
+    const hasResponded = req.user.role === 'seller'
+      ? responses.some(r => r.sellerId === req.user.id)
+      : false;
+
     return {
       ...requestItem,
-      responsesCount: responses.length
+      responsesCount: responses.length,
+      hasResponded
     };
   });
+
+  if (req.user.role === 'seller') {
+    const sellerCity = normalizeStoredCity(req.user.city);
+
+    requests = requests.filter(requestItem => {
+      const requestCity = normalizeStoredCity(requestItem.city, true);
+
+      const matchesCity =
+        requestCity === ALL_KAZAKHSTAN_LABEL ||
+        (sellerCity && citiesMatch(requestCity, sellerCity));
+
+      return matchesCity && !requestItem.hasResponded;
+    });
+  }
 
   res.json(requests);
 });
@@ -351,6 +459,18 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
   if (requestItem.status !== 'open') {
     writeData(req.data);
     return res.status(400).json({ message: 'На эту заявку уже нельзя ответить' });
+  }
+
+  const sellerCity = normalizeStoredCity(req.user.city);
+  const requestCity = normalizeStoredCity(requestItem.city, true);
+
+  const canSeeRequest =
+    requestCity === ALL_KAZAKHSTAN_LABEL ||
+    (sellerCity && citiesMatch(requestCity, sellerCity));
+
+  if (!canSeeRequest) {
+    writeData(req.data);
+    return res.status(403).json({ message: 'Эта заявка недоступна для твоего города' });
   }
 
   const alreadyResponded = req.data.responses.find(
@@ -549,10 +669,14 @@ app.put('/api/profile', auth, (req, res) => {
     return res.status(400).json({ message: 'Имя слишком короткое' });
   }
 
+  if (req.user.role === 'seller' && city !== undefined && !isAllowedCity(city)) {
+    return res.status(400).json({ message: 'Выбери город из списка' });
+  }
+
   req.data.users[userIndex] = {
     ...req.data.users[userIndex],
     name: name !== undefined ? String(name).trim() : req.data.users[userIndex].name,
-    city: city !== undefined ? String(city).trim() : req.data.users[userIndex].city,
+    city: city !== undefined ? normalizeStoredCity(city) : req.data.users[userIndex].city,
     address: address !== undefined ? String(address).trim() : req.data.users[userIndex].address,
     whatsapp: whatsapp !== undefined ? String(whatsapp).trim() : req.data.users[userIndex].whatsapp,
     about: about !== undefined ? String(about).trim() : req.data.users[userIndex].about
