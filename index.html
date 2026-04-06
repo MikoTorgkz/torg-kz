@@ -5,124 +5,374 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Torg KZ</title>
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     :root {
-      --bg: #f3f4f6;
+      --bg: #f3f5fb;
       --card: #ffffff;
-      --line: #e5e7eb;
-      --text: #111827;
+      --line: #e6eaf2;
+      --text: #1f2937;
       --muted: #6b7280;
-      --blue: #1d4ed8;
       --red: #ef4444;
       --red-dark: #dc2626;
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
       --green: #16a34a;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-      --radius: 18px;
+      --green-dark: #15803d;
+      --soft: #f8fafc;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
     }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: var(--bg);
+      background: linear-gradient(180deg, #f8f9fd 0%, #eef2f8 100%);
       color: var(--text);
     }
 
-    .hidden { display: none !important; }
-
-    .top-header {
-      background: #fff;
-      border-bottom: 1px solid var(--line);
-      padding: 16px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 20;
+    .hidden {
+      display: none !important;
     }
 
-    .top-header-inner {
-      max-width: 1240px;
-      margin: 0 auto;
+    .page-shell,
+    .app-shell {
+      max-width: 1280px;
+      margin: 12px auto;
+      background: #fff;
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.10);
+      border: 1px solid #edf1f7;
+    }
+
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 28px;
       flex-wrap: wrap;
     }
 
     .logo {
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 28px;
+      font-weight: 900;
       letter-spacing: 0.2px;
+      white-space: nowrap;
     }
 
-    .logo .blue { color: #0b5ed7; }
-    .logo .red { color: #ef4444; }
+    .logo .red {
+      color: #ef4444;
+    }
 
-    .topbar {
+    .logo .blue {
+      color: #1e3a8a;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1f2937;
+    }
+
+    .topbar-right,
+    .top-actions {
       display: flex;
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
     }
 
-    .user-badge {
+    .badge {
       background: #f3f4f6;
       color: #111827;
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-size: 14px;
-      border: 1px solid var(--line);
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 700;
     }
 
-    .top-btn {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px 14px;
+    .top-btn,
+    .logout-btn,
+    .landing-btn {
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #111827;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
-      font-weight: 700;
       width: auto;
       margin: 0;
-      background: white;
-      color: var(--text);
     }
 
-    .page {
-      max-width: 1240px;
+    .landing-btn.primary,
+    .login-btn,
+    .create-btn,
+    .select-btn,
+    .hero-cta {
+      background: linear-gradient(180deg, #ff4d4d, #e11d1d);
+      color: #fff;
+      border: none;
+    }
+
+    .notif-btn {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      cursor: pointer;
+      font-size: 22px;
+    }
+
+    .notif-count {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #fbbf24;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 24px 20px 34px;
+      background: linear-gradient(180deg, #f9fcff 0%, #eef5fd 100%);
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 120px;
+      background:
+        radial-gradient(circle at 10% 100%, #8cc3ff 0 10%, transparent 11%),
+        radial-gradient(circle at 18% 100%, #7fb7ef 0 9%, transparent 10%),
+        radial-gradient(circle at 30% 100%, #9ccaf6 0 12%, transparent 13%),
+        radial-gradient(circle at 44% 100%, #7fb7ef 0 10%, transparent 11%),
+        radial-gradient(circle at 58% 100%, #9ccaf6 0 13%, transparent 14%),
+        radial-gradient(circle at 72% 100%, #7fb7ef 0 9%, transparent 10%),
+        radial-gradient(circle at 84% 100%, #9ccaf6 0 11%, transparent 12%),
+        linear-gradient(to top, #d8e9fb 0%, transparent 75%);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 24px 16px 40px;
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .hero-people {
+      display: grid;
+      grid-template-columns: 180px 1fr 180px;
+      align-items: end;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .hero-person {
+      height: 210px;
+      border-radius: 26px;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      font-size: 110px;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .hero-title {
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1.1;
+      color: #13325f;
+      margin: 0 0 18px;
+    }
+
+    .steps-card {
+      max-width: 1080px;
+      margin: 0 auto 22px;
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid #e9eef5;
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr 80px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 22px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+      justify-content: center;
+    }
+
+    .step-icon {
+      width: 86px;
+      height: 86px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #eaf3ff, #dfeeff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #17345f;
+      text-align: left;
+    }
+
+    .step-arrow {
+      text-align: center;
+      font-size: 42px;
+      color: #c7d2e3;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .hero-cta-wrap {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .hero-cta {
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 800;
+      padding: 18px 36px;
+      min-width: 310px;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(225, 29, 29, 0.24);
+    }
+
+    .benefits {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .benefit-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8edf4;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 132px;
+    }
+
+    .benefit-icon {
+      width: 90px;
+      height: 90px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #eef5ff, #e2efff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      flex-shrink: 0;
+    }
+
+    .benefit-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #17345f;
+    }
+
+    .benefit-text {
+      font-size: 15px;
+      color: #5f6b7a;
+      line-height: 1.45;
+    }
+
+    .content {
+      padding: 20px;
+      background: var(--bg);
     }
 
     .card {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: 22px;
       box-shadow: var(--shadow);
-      padding: 20px;
-      margin-bottom: 20px;
+      padding: 22px;
     }
 
-    .auth-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 12px;
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 20px;
+      font-weight: 900;
+      color: #1f2937;
     }
 
-    .auth-box h2 {
-      margin-top: 0;
-      margin-bottom: 16px;
-      font-size: 24px;
+    .msg {
+      min-height: 18px;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 700;
     }
 
-    input, textarea, select, button {
-      width: 100%;
-      padding: 13px 14px;
-      border-radius: 12px;
-      border: 1px solid #d1d5db;
-      margin-bottom: 12px;
-      font-size: 15px;
+    input,
+    select,
+    textarea,
+    button {
       font-family: inherit;
+      font-size: 16px;
+      border-radius: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      border: 1px solid #d8dee8;
       background: #fff;
+      padding: 15px 16px;
+      color: #111827;
+      width: 100%;
     }
 
     textarea {
@@ -130,372 +380,973 @@
       min-height: 110px;
     }
 
-    button {
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .primary { background: var(--blue); color: white; }
-    .dark { background: #111827; color: white; }
-    .gray { background: #eef2f7; color: #111827; border: 1px solid #dbe2ea; }
-    .green { background: var(--green); color: white; }
-    .red-btn { background: var(--red); color: white; }
-    .red-btn:hover { background: var(--red-dark); }
-
-    .msg { font-size: 14px; font-weight: bold; min-height: 18px; }
-    .section-title { margin: 0 0 14px; font-size: 18px; font-weight: 800; }
-    .small { color: var(--muted); font-size: 14px; }
-    .seller-extra-fields { transition: 0.2s ease; }
-
-    .action-bar {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    .action-bar button {
-      width: auto;
-      margin: 0;
-      padding: 12px 16px;
-    }
-
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 22px;
-      align-items: start;
-    }
-
-    .search-card h1 {
-      font-size: 20px;
-      margin: 0 0 16px;
-    }
-
-    .search-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .last-requests-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .mini-request-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      background: #fff;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    .mini-request-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.06);
-    }
-
-    .mini-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: #eef2ff;
+    .auth-modal-overlay,
+    .modal-overlay,
+    .notif-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .auth-modal,
+    .modal-box,
+    .notif-modal-box {
+      width: 100%;
+      max-width: 560px;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
+      overflow: hidden;
+    }
+
+    .auth-modal {
+      max-width: 460px;
+    }
+
+    .auth-modal-header,
+    .modal-head,
+    .notif-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .auth-modal-title,
+    .modal-title,
+    .notif-title {
+      margin: 0;
       font-size: 22px;
+      font-weight: 900;
+    }
+
+    .auth-close,
+    .modal-close,
+    .notif-close {
+      border: 1px solid #dbe2ea;
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 800;
+      cursor: pointer;
+      width: auto;
+      margin: 0;
+    }
+
+    .auth-modal-body,
+    .modal-body,
+    .notif-body {
+      padding: 18px 20px;
+    }
+
+    .notif-body {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .notif-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fafafa;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .notif-text {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #1f2937;
+    }
+
+    .notif-date {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .seller-extra-fields {
+      margin-top: 4px;
+    }
+
+    .buyer-layout {
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .buyer-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.45fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .buyer-left-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .create-btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+
+    .create-btn {
+      width: auto;
+      min-width: 260px;
+      padding: 16px 28px;
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 14px 28px rgba(225, 29, 29, 0.22);
+    }
+
+    .requests-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .request-item {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 16px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    }
+
+    .request-item.active {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.10);
+      background: #f8fbff;
+    }
+
+    .request-top,
+    .request-head,
+    .response-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .request-name,
+    .request-title,
+    .response-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1f2937;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    .request-city,
+    .meta {
+      font-size: 15px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .request-status-line,
+    .status-line {
+      font-size: 16px;
+      color: #4b5563;
+      margin-top: 8px;
+      font-weight: 700;
+    }
+
+    .request-timer {
+      white-space: nowrap;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #374151;
+      font-weight: 700;
+    }
+
+    .request-bottom,
+    .request-footer,
+    .response-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .request-chip,
+    .timer-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #6b7280;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .request-chip {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: #374151;
+    }
+
+    .show-offers-btn,
+    .respond-btn,
+    .wa-open-btn,
+    .apply-btn,
+    .modal-submit,
+    .message-btn,
+    .wa-btn {
+      width: auto;
+      color: #fff;
+      border: none;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .show-offers-btn,
+    .respond-btn,
+    .modal-submit,
+    .wa-open-btn,
+    .wa-btn {
+      background: linear-gradient(180deg, #22c55e, #16a34a);
+      padding: 12px 18px;
+    }
+
+    .respond-btn.red {
+      background: linear-gradient(180deg, #ff5b5b, #ef4444);
+    }
+
+    .offer-card,
+    .request-card,
+    .response-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 5px 16px rgba(15, 23, 42, 0.04);
+    }
+
+    .offer-top {
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .offer-avatar,
+    .stat-icon,
+    .mini-closed-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
 
-    .mini-request-title {
-      font-weight: 700;
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-
-    .mini-request-meta {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .form-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin: 0 0 16px;
-    }
-
-    .form-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .upload-box {
-      border: 1px dashed #d1d5db;
-      border-radius: 14px;
-      padding: 18px;
-      text-align: center;
-      color: var(--muted);
-      background: #fafafa;
-      margin-bottom: 12px;
-    }
-
-    .submit-row {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 8px;
-    }
-
-    .submit-row button {
-      width: auto;
-      min-width: 140px;
-      margin: 0;
-      padding-left: 22px;
-      padding-right: 22px;
-    }
-
-    .request-card,
-    .response-card,
-    .notification-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 16px;
-      margin-top: 14px;
-      background: #fafafa;
-    }
-
-    .request-card h3,
-    .response-card h3 {
-      margin: 0 0 10px;
-    }
-
-    .meta {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-top: 8px;
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .status.expired {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .notification-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .notification-status {
-      font-size: 13px;
-      font-weight: bold;
-      margin-top: 6px;
-    }
-
-    .notification-status.new { color: #16a34a; }
-    .notification-status.read { color: #6b7280; }
-
-    .offer-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      background: white;
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    .offer-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #eef5ff, #e1edff);
+      font-size: 28px;
     }
 
     .offer-name {
-      font-weight: 800;
-      color: #0b5ed7;
-      font-size: 20px;
+      font-size: 18px;
+      font-weight: 900;
+      color: #17345f;
       margin-bottom: 6px;
     }
 
+    .offer-meta {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
     .offer-price {
-      font-size: 30px;
-      font-weight: 800;
+      font-size: 18px;
+      font-weight: 900;
+      color: #111827;
       white-space: nowrap;
-      text-align: right;
+    }
+
+    .offer-message,
+    .request-desc,
+    .response-desc {
+      color: #374151;
+      font-size: 16px;
+      line-height: 1.45;
+      margin: 10px 0 14px;
     }
 
     .offer-actions {
       display: flex;
-      gap: 8px;
-      justify-content: flex-end;
+      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 10px;
     }
 
     .offer-actions button,
     .offer-actions a {
       width: auto;
-      margin: 0;
+      min-width: 120px;
       text-decoration: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 16px;
+      font-weight: 800;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 11px 14px;
-      border-radius: 10px;
-      font-weight: 700;
+      cursor: pointer;
     }
 
-    .whatsapp-btn { background: #16a34a; color: white; }
-    .choose-btn { background: var(--red); color: white; }
+    .message-btn {
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+    }
 
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(17, 24, 39, 0.6);
+    .chat-btn {
+      background: #eef2ff;
+      color: #374151;
+      border: 1px solid #dbe3f5;
+      min-width: 60px !important;
+      width: auto;
+    }
+
+    .note-box,
+    .chosen-box {
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .note-box {
+      border: 1px solid var(--line);
+      background: #fafafa;
+      color: #4b5563;
+    }
+
+    .chosen-box {
+      border: 1px solid #d7e9dc;
+      background: #f5fbf6;
+      color: #25663a;
+    }
+
+    .mini-closed {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fbfbfc;
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      color: #374151;
+      margin-top: 12px;
+    }
+
+    .mini-closed-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #eef2f7;
+      font-size: 24px;
+    }
+
+    .mini-closed-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .mini-closed-status {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .empty-box,
+    .access-box {
+      text-align: center;
+    }
+
+    .empty-box {
+      border: 1px dashed #d9dee7;
+      background: #fbfcfe;
+      border-radius: 18px;
+      padding: 28px 18px;
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .access-box {
+      max-width: 760px;
+      margin: 80px auto;
+      background: #fff;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .access-box h2 {
+      margin-top: 0;
+      color: #17345f;
+      font-size: 28px;
+    }
+
+    .access-box p {
+      color: #6b7280;
+      font-size: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 2.1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 9999;
+      gap: 18px;
+      min-height: 114px;
     }
 
-    .modal {
-      width: 100%;
-      max-width: 760px;
-      background: white;
+    .stat-icon {
+      width: 74px;
+      height: 74px;
       border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-      overflow: hidden;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
+      background: linear-gradient(180deg, #eef5ff, #e1edff);
+      font-size: 42px;
     }
 
-    .modal-header {
-      background: #fff;
+    .stat-number {
+      font-size: 28px;
+      font-weight: 900;
       color: #111827;
-      padding: 18px 22px;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 16px;
+      color: #374151;
+      line-height: 1.3;
+    }
+
+    .stat-wide {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 18px;
+      align-items: center;
+      min-height: 114px;
+    }
+
+    .divider {
+      width: 1px;
+      height: 68px;
+      background: #e5e7eb;
+      margin: 0 auto;
+    }
+
+    .filters-head {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       gap: 12px;
-      border-bottom: 1px solid var(--line);
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
     }
 
-    .modal-header h3 {
+    .history-link {
+      color: #6b7280;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+      background: transparent;
+      border: none;
+      width: auto;
+      padding: 0;
       margin: 0;
-      font-size: 22px;
     }
 
-    .modal-body {
-      padding: 22px;
-      overflow-y: auto;
+    .filters-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: center;
     }
 
-    .close-btn {
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid #d8dee8;
+      border-radius: 14px;
       background: #fff;
-      color: #111827;
-      border: 1px solid var(--line);
+      padding: 12px 14px;
+      min-height: 54px;
+    }
+
+    .toggle-label {
+      color: #374151;
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .toggle {
+      position: relative;
+      width: 54px;
+      height: 30px;
+      border-radius: 999px;
+      background: #d1d5db;
+      transition: 0.2s ease;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: white;
+      transition: 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .toggle.active {
+      background: #22c55e;
+    }
+
+    .toggle.active::after {
+      left: 27px;
+    }
+
+    .apply-btn {
+      background: linear-gradient(180deg, #3b82f6, #2563eb);
+      padding: 15px 22px;
+      min-width: 150px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+      align-items: start;
+    }
+
+    .panel-title {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 900;
+      color: #1f2937;
+    }
+
+    .new-badge {
+      background: #22c55e;
+      color: #fff;
       border-radius: 10px;
       padding: 8px 12px;
-      cursor: pointer;
-      font-weight: bold;
-      width: auto;
-      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    .stars {
-      display: flex;
-      gap: 6px;
-      font-size: 28px;
-      cursor: pointer;
-      user-select: none;
-      margin-bottom: 10px;
-    }
-
-    .star {
-      color: #d1d5db;
-      transition: 0.2s;
-    }
-
-    .star.active {
-      color: #fbbf24;
-    }
-
-    .star:hover {
-      transform: scale(1.2);
-    }
-
-    @media (max-width: 1024px) {
-      .dashboard-layout { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 900px) {
-      .auth-grid,
-      .form-grid-2,
-      .search-row,
-      .last-requests-grid {
+    @media (max-width: 1100px) {
+      .buyer-layout,
+      .buyer-form-grid,
+      .requests-layout,
+      .stats-grid,
+      .main-grid,
+      .filters-row {
         grid-template-columns: 1fr;
       }
 
-      .offer-card {
+      .stat-wide {
         grid-template-columns: 1fr;
+      }
+
+      .divider {
+        display: none;
+      }
+
+      .steps-card {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .step-arrow {
+        display: none;
+      }
+
+      .benefits {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page-shell,
+      .app-shell {
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .topbar {
+        padding: 16px;
+      }
+
+      .topbar-left {
+        gap: 12px;
+      }
+
+      .page-title {
+        font-size: 18px;
+      }
+
+      .content {
+        padding: 14px;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .hero-people {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-person {
+        display: none;
+      }
+
+      .hero-cta {
+        min-width: 100%;
+      }
+
+      .offer-top {
+        grid-template-columns: 64px 1fr;
       }
 
       .offer-price {
-        text-align: left;
-        font-size: 28px;
+        grid-column: 2 / 3;
+      }
+
+      .request-top,
+      .request-head,
+      .response-head {
+        flex-direction: column;
+      }
+
+      .create-btn {
+        min-width: 100%;
       }
     }
   </style>
 </head>
 <body>
-  <header class="top-header">
-    <div class="top-header-inner">
-      <div class="logo"><span class="blue">Torg</span> <span class="red">KZ</span></div>
-      <div class="topbar">
-        <div id="userBadge" class="user-badge">Ты не вошёл</div>
-        <div id="notificationCounter" class="user-badge hidden">🔔 0</div>
-        <button id="logoutBtn" class="top-btn hidden">Выйти</button>
-      </div>
-    </div>
-  </header>
+  <!-- LANDING -->
+  <div id="landingApp" class="page-shell hidden">
+    <header class="topbar">
+      <div class="logo"><span class="red">Torg</span> <span class="blue">KZ</span></div>
 
-  <div class="page">
-    <div id="authSection" class="auth-grid">
-      <div class="card auth-box">
-        <h2>Вход</h2>
+      <div class="top-actions" id="guestActions">
+        <button type="button" class="landing-btn" id="openRegisterBtn">Регистрация</button>
+        <button type="button" class="landing-btn primary" id="openLoginBtn">Вход</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-inner">
+          <div class="hero-people">
+            <div class="hero-person">🧑‍🔧</div>
+            <div>
+              <h1 class="hero-title">Один запрос —<br />все цены на то, что нужно</h1>
+            </div>
+            <div class="hero-person">👩‍💻</div>
+          </div>
+
+          <div class="steps-card">
+            <div class="step">
+              <div class="step-icon">📝</div>
+              <div class="step-title">Создай заявку</div>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+              <div class="step-icon">💬</div>
+              <div class="step-title">Получи предложения</div>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+              <div class="step-icon">🤝</div>
+              <div class="step-title">Выбери лучшее</div>
+            </div>
+          </div>
+
+          <div class="hero-cta-wrap">
+            <button type="button" class="hero-cta" id="heroCreateBtn">Создать заявку</button>
+          </div>
+
+          <div class="benefits">
+            <div class="benefit-card">
+              <div class="benefit-icon">📦</div>
+              <div>
+                <div class="benefit-title">Любые товары и услуги</div>
+                <div class="benefit-text">Найдёте всё, что нужно — от А до Я</div>
+              </div>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon">🔎</div>
+              <div>
+                <div class="benefit-title">Сравнивай цены</div>
+                <div class="benefit-text">Удобно, быстро и без лишних хлопот</div>
+              </div>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon">⏰</div>
+              <div>
+                <div class="benefit-title">Экономь время</div>
+                <div class="benefit-text">Лучшие предложения без долгих поисков</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- BUYER -->
+  <div id="buyerApp" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo"><span class="red">Torg</span> <span class="blue">KZ</span></div>
+        <div class="page-title">Кабинет покупателя</div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="badge" id="buyerBadge">Я покупатель</div>
+
+        <button type="button" class="notif-btn" id="buyerOpenNotificationsBtn">
+          🔔
+          <span class="notif-count hidden" id="buyerNotifCount">0</span>
+        </button>
+
+        <button type="button" class="logout-btn" id="buyerLogoutBtn">Выйти</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2 class="section-title">Создать заявку</h2>
+
+        <input type="text" id="buyerReqTitle" placeholder="Название заявки" />
+
+        <div class="buyer-form-grid">
+          <div class="buyer-left-fields">
+            <select id="buyerReqCategory">
+              <option value="">Категория</option>
+              <option value="Электроника">Электроника</option>
+              <option value="Бытовая техника">Бытовая техника</option>
+              <option value="Автозапчасти">Автозапчасти</option>
+              <option value="Мебель">Мебель</option>
+              <option value="Услуги">Услуги</option>
+              <option value="Одежда и обувь">Одежда и обувь</option>
+              <option value="Детские товары">Детские товары</option>
+              <option value="Стройматериалы">Стройматериалы</option>
+              <option value="Другое">Другое</option>
+            </select>
+
+            <select id="buyerReqCity"></select>
+
+            <input type="text" id="buyerReqPhone" placeholder="Телефон" />
+          </div>
+
+          <div>
+            <textarea id="buyerReqDescription" placeholder="Описание"></textarea>
+          </div>
+        </div>
+
+        <div class="create-btn-row">
+          <button type="button" class="create-btn" id="buyerCreateRequestBtn">Создать заявку</button>
+        </div>
+
+        <div id="buyerRequestMsg" class="msg"></div>
+      </section>
+
+      <section class="requests-layout">
+        <div class="card">
+          <h2 class="section-title">Мои активные заявки</h2>
+          <div id="buyerRequestsList"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+            <div>
+              <h2 class="section-title" style="margin-bottom:6px;">Предложения по заявке</h2>
+              <div class="meta" id="buyerOffersSubTitle">Выбери заявку слева</div>
+            </div>
+          </div>
+
+          <div id="buyerOffersList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- SELLER -->
+  <div id="sellerApp" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo"><span class="red">Torg</span> <span class="blue">KZ</span></div>
+        <div class="page-title">Кабинет продавца</div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="badge" id="sellerBadge">Я продавец</div>
+
+        <button type="button" class="notif-btn" id="sellerOpenNotificationsBtn">
+          🔔
+          <span class="notif-count hidden" id="sellerNotifCount">0</span>
+        </button>
+
+        <button type="button" class="logout-btn" id="sellerLogoutBtn">Выйти</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="stats-grid">
+        <div class="card stat-card">
+          <div class="stat-icon">📋</div>
+          <div>
+            <div class="stat-number" id="sellerNewRequestsCount">0</div>
+            <div class="stat-label">Новые заявки</div>
+          </div>
+        </div>
+
+        <div class="card stat-wide">
+          <div class="stat-card" style="padding:0;border:none;box-shadow:none;min-height:auto;">
+            <div class="stat-icon">💬</div>
+            <div>
+              <div class="stat-number" id="sellerResponsesCount">0</div>
+              <div class="stat-label">Откликов<br />отправлено</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="stat-card" style="padding:0;border:none;box-shadow:none;min-height:auto;">
+            <div class="stat-icon">📈</div>
+            <div>
+              <div class="stat-number" id="sellerChosenCount">0</div>
+              <div class="stat-label">Выбрано меня</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="filters-head">
+          <h2 class="section-title">Новые заявки</h2>
+          <button type="button" class="history-link" id="sellerHistoryBtn">История</button>
+        </div>
+
+        <div class="filters-row">
+          <select id="sellerCategoryFilter">
+            <option value="">Категория</option>
+            <option value="Электроника">Электроника</option>
+            <option value="Бытовая техника">Бытовая техника</option>
+            <option value="Автозапчасти">Автозапчасти</option>
+            <option value="Мебель">Мебель</option>
+            <option value="Услуги">Услуги</option>
+            <option value="Одежда и обувь">Одежда и обувь</option>
+            <option value="Детские товары">Детские товары</option>
+            <option value="Стройматериалы">Стройматериалы</option>
+            <option value="Другое">Другое</option>
+          </select>
+
+          <select id="sellerCityFilter"></select>
+
+          <div class="toggle-wrap">
+            <div class="toggle-label">Только новые</div>
+            <div class="toggle active" id="sellerOnlyNewToggle"></div>
+          </div>
+
+          <button type="button" class="apply-btn" id="sellerApplyFiltersBtn">Применить</button>
+        </div>
+      </section>
+
+      <section class="main-grid">
+        <div class="card">
+          <h3 class="panel-title">Новые заявки</h3>
+          <div id="sellerMarketplaceList"></div>
+        </div>
+
+        <div class="card">
+          <h3 class="panel-title">Мои отклики</h3>
+          <div id="sellerResponsesList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="auth-modal-overlay hidden">
+    <div class="auth-modal">
+      <div class="auth-modal-header">
+        <h2 class="auth-modal-title">Вход</h2>
+        <button type="button" class="auth-close" id="closeLoginModalBtn">Закрыть</button>
+      </div>
+      <div class="auth-modal-body">
         <input type="email" id="loginEmail" placeholder="Email" />
         <input type="password" id="loginPassword" placeholder="Пароль" />
-        <button class="primary" id="loginBtn">Войти</button>
+        <button type="button" class="landing-btn primary" style="width:100%;" id="loginBtn">Войти</button>
         <div id="loginMsg" class="msg"></div>
       </div>
+    </div>
+  </div>
 
-      <div class="card auth-box">
-        <h2>Регистрация</h2>
-        <div class="small" style="margin-bottom:12px;">Регистрация займёт 30 секунд. Вы сможете создавать заявки и получать предложения.</div>
+  <!-- REGISTER MODAL -->
+  <div id="registerModal" class="auth-modal-overlay hidden">
+    <div class="auth-modal">
+      <div class="auth-modal-header">
+        <h2 class="auth-modal-title">Регистрация</h2>
+        <button type="button" class="auth-close" id="closeRegisterModalBtn">Закрыть</button>
+      </div>
+      <div class="auth-modal-body">
         <select id="registerRole">
           <option value="buyer">Покупатель</option>
           <option value="seller">Продавец</option>
@@ -512,148 +1363,48 @@
           <textarea id="registerAbout" placeholder="Коротко о продавце / магазине"></textarea>
         </div>
 
-        <button class="dark" id="registerBtn">Зарегистрироваться</button>
+        <button type="button" class="landing-btn" style="background:#17345f;color:#fff;width:100%;border:none;" id="registerBtn">Зарегистрироваться</button>
         <div id="registerMsg" class="msg"></div>
-      </div>
-    </div>
-
-    <div id="dashboardSection" class="hidden">
-      <div class="action-bar">
-        <button class="primary hidden" id="goToMarketBtn">🔍 Смотреть заявки</button>
-        <button class="dark hidden" id="goToMyRequestsBtn">📋 Мои заявки</button>
-        <button class="gray hidden" id="goToMyResponsesBtn">💬 Мои отклики</button>
-        <button class="gray hidden" id="goToProfileBtn">👤 Профиль</button>
-        <button class="red-btn hidden" id="goToCreateBtn">➕ Создать заявку</button>
-      </div>
-
-      <div class="card">
-        <div class="notification-head">
-          <h2 class="section-title" style="margin-bottom:0;">Уведомления</h2>
-          <button class="gray" id="readNotificationsBtn" type="button">Прочитать все</button>
-        </div>
-        <div id="notificationsList" class="small">Загрузка...</div>
-      </div>
-
-      <div class="dashboard-layout">
-        <div>
-          <div class="card search-card">
-            <h1>Что вы ищете?</h1>
-            <div class="search-row">
-              <select id="reqCityQuick"></select>
-              <select id="reqCategoryQuick">
-                <option value="">Категория</option>
-                <option value="Электроника">Электроника</option>
-                <option value="Бытовая техника">Бытовая техника</option>
-                <option value="Автозапчасти">Автозапчасти</option>
-                <option value="Мебель">Мебель</option>
-                <option value="Услуги">Услуги</option>
-                <option value="Одежда и обувь">Одежда и обувь</option>
-                <option value="Детские товары">Детские товары</option>
-                <option value="Стройматериалы">Стройматериалы</option>
-                <option value="Другое">Другое</option>
-              </select>
-              <button class="red-btn" id="openCreateFormBtn" type="button">Создать заявку</button>
-            </div>
-          </div>
-
-          <div class="card">
-            <h2 class="section-title">Последние заявки</h2>
-            <div id="latestRequestsGrid" class="last-requests-grid">
-              <div class="small">Загрузка...</div>
-            </div>
-          </div>
-
-          <div class="card" id="marketplaceCard">
-            <h2 class="section-title">Лента заявок / предложения</h2>
-            <input type="text" id="searchMarketplace" placeholder="Поиск по заявкам..." />
-            <select id="categoryFilter">
-              <option value="">Все категории</option>
-              <option value="Электроника">Электроника</option>
-              <option value="Бытовая техника">Бытовая техника</option>
-              <option value="Автозапчасти">Автозапчасти</option>
-              <option value="Мебель">Мебель</option>
-              <option value="Услуги">Услуги</option>
-              <option value="Одежда и обувь">Одежда и обувь</option>
-              <option value="Детские товары">Детские товары</option>
-              <option value="Стройматериалы">Стройматериалы</option>
-              <option value="Другое">Другое</option>
-            </select>
-            <div id="marketplaceList" class="small">Загрузка...</div>
-          </div>
-        </div>
-
-        <div>
-          <div id="buyerSection" class="card hidden">
-            <h2 class="form-title">Создание заявки</h2>
-            <input type="text" id="reqTitle" placeholder="Что вы ищете?" />
-            <textarea id="reqDescription" placeholder="Опишите подробнее, что вам нужно"></textarea>
-
-            <div class="form-grid-2">
-              <select id="reqCategory">
-                <option value="">Категория (необязательно)</option>
-                <option value="Электроника">Электроника</option>
-                <option value="Бытовая техника">Бытовая техника</option>
-                <option value="Автозапчасти">Автозапчасти</option>
-                <option value="Мебель">Мебель</option>
-                <option value="Услуги">Услуги</option>
-                <option value="Одежда и обувь">Одежда и обувь</option>
-                <option value="Детские товары">Детские товары</option>
-                <option value="Стройматериалы">Стройматериалы</option>
-                <option value="Другое">Другое</option>
-              </select>
-              <input type="text" id="reqPhone" placeholder="Телефон" />
-            </div>
-
-            <div class="form-grid-2">
-              <select id="reqDuration">
-                <option value="24">Срок — 24 часа</option>
-              </select>
-              <select id="reqCity"></select>
-            </div>
-
-            <div class="upload-box">
-              Добавить фото<br />
-              <span class="small">Загрузка фото будет следующим этапом</span>
-            </div>
-
-            <div class="submit-row">
-              <button class="red-btn" id="createRequestBtn">Отправить</button>
-            </div>
-            <div id="requestMsg" class="msg"></div>
-          </div>
-
-          <div id="sellerSection" class="card hidden">
-            <h2 class="section-title">Мои отклики</h2>
-            <div id="myResponsesList" class="small">Пока пусто</div>
-          </div>
-
-          <div id="sellerProfileSection" class="card hidden">
-            <h2 class="section-title">Мой профиль</h2>
-            <input type="text" id="profileName" placeholder="Имя" />
-            <select id="profileCity"></select>
-            <input type="text" id="profileAddress" placeholder="Адрес магазина" />
-            <input type="text" id="profileWhatsapp" placeholder="WhatsApp" />
-            <textarea id="profileAbout" placeholder="О продавце / магазине"></textarea>
-            <button class="green" id="saveProfileBtn">Сохранить профиль</button>
-            <div id="profileMsg" class="msg"></div>
-          </div>
-
-          <div class="card">
-            <h2 class="section-title">Мои заявки</h2>
-            <div id="myRequestsList" class="small">Пока пусто</div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 
-  <div id="sellerProfileModal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <h3>Карточка продавца</h3>
-        <button class="close-btn" onclick="closeSellerProfile()">Закрыть</button>
+  <!-- BUYER NOTIFICATIONS -->
+  <div id="buyerNotificationsModal" class="notif-modal hidden">
+    <div class="notif-modal-box">
+      <div class="notif-head">
+        <h3 class="notif-title">Уведомления</h3>
+        <button type="button" class="notif-close" id="closeBuyerNotificationsBtn">Закрыть</button>
       </div>
-      <div class="modal-body" id="sellerProfileContent">Загрузка...</div>
+      <div class="notif-body" id="buyerNotificationsList"></div>
+    </div>
+  </div>
+
+  <!-- SELLER NOTIFICATIONS -->
+  <div id="sellerNotificationsModal" class="notif-modal hidden">
+    <div class="notif-modal-box">
+      <div class="notif-head">
+        <h3 class="notif-title">Уведомления</h3>
+        <button type="button" class="notif-close" id="closeSellerNotificationsBtn">Закрыть</button>
+      </div>
+      <div class="notif-body" id="sellerNotificationsList"></div>
+    </div>
+  </div>
+
+  <!-- SELLER RESPONSE MODAL -->
+  <div id="sellerRespondModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 class="modal-title">Откликнуться на заявку</h3>
+        <button type="button" class="modal-close" id="closeSellerRespondModalBtn">Закрыть</button>
+      </div>
+      <div class="modal-body">
+        <div id="sellerRespondRequestInfo" class="meta" style="margin-bottom:12px;"></div>
+        <input type="text" id="sellerRespondPrice" placeholder="Цена" />
+        <textarea id="sellerRespondMessage" placeholder="Ваше предложение покупателю"></textarea>
+        <button type="button" class="modal-submit" id="submitSellerResponseBtn">Отправить отклик</button>
+        <div id="sellerRespondMsg" class="msg"></div>
+      </div>
     </div>
   </div>
 
@@ -661,36 +1412,52 @@
     const tokenKey = 'token';
     let token = localStorage.getItem(tokenKey) || '';
     let currentUser = null;
-    let selectedRating = 0;
-    let openedSellerId = null;
-    let lastUnreadCount = 0;
 
     const CITY_OPTIONS = [
-      'Алматы', 'Астана', 'Шымкент', 'Караганда', 'Актобе', 'Тараз', 'Павлодар',
-      'Усть-Каменогорск', 'Семей', 'Костанай', 'Кызылорда', 'Уральск',
-      'Атырау', 'Актау', 'Петропавловск', 'Туркестан', 'Кокшетау',
-      'Талдыкорган', 'Экибастуз', 'Рудный'
+      'Алматы',
+      'Астана',
+      'Шымкент',
+      'Караганда',
+      'Актобе',
+      'Тараз',
+      'Павлодар',
+      'Усть-Каменогорск',
+      'Семей',
+      'Костанай',
+      'Кызылорда',
+      'Уральск',
+      'Атырау',
+      'Актау',
+      'Петропавловск',
+      'Туркестан',
+      'Кокшетау',
+      'Талдыкорган',
+      'Экибастуз',
+      'Рудный'
     ];
 
-    const authSection = document.getElementById('authSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const userBadge = document.getElementById('userBadge');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const buyerSection = document.getElementById('buyerSection');
-    const sellerSection = document.getElementById('sellerSection');
-    const sellerProfileSection = document.getElementById('sellerProfileSection');
-    const marketplaceCard = document.getElementById('marketplaceCard');
-    const notificationCounter = document.getElementById('notificationCounter');
-    const latestRequestsGrid = document.getElementById('latestRequestsGrid');
-    const registerRole = document.getElementById('registerRole');
-    const sellerExtraFields = document.getElementById('sellerExtraFields');
+    let buyerRequestsCache = [];
+    let buyerSelectedRequestId = null;
+    let buyerNotificationsCache = [];
 
-    function fillCitySelect(selectId, includeAllKazakhstan = false) {
+    let sellerMarketplaceCache = [];
+    let sellerResponsesCache = [];
+    let sellerNotificationsCache = [];
+    let selectedRequestForResponse = null;
+    let sellerOnlyNew = true;
+    let sellerHistoryMode = false;
+
+    function fillCitySelect(selectId, includeAllKazakhstan = false, includeAllCities = false) {
       const select = document.getElementById(selectId);
       if (!select) return;
 
-      const currentValue = select.value;
-      let options = '<option value="">Выберите город</option>';
+      let options = '';
+
+      if (includeAllCities) {
+        options += '<option value="">Все города</option>';
+      } else {
+        options += '<option value="">Выберите город</option>';
+      }
 
       if (includeAllKazakhstan) {
         options += '<option value="Весь Казахстан">Весь Казахстан</option>';
@@ -698,10 +1465,6 @@
 
       options += CITY_OPTIONS.map(city => `<option value="${city}">${city}</option>`).join('');
       select.innerHTML = options;
-
-      if (currentValue) {
-        select.value = currentValue;
-      }
     }
 
     function setMsg(id, text, color = 'red') {
@@ -726,114 +1489,29 @@
     }
 
     function formatTimeLeft(expiresAt) {
-      if (!expiresAt) return '';
-      const diff = Number(expiresAt) - Date.now();
+      if (!expiresAt) return 'Без срока';
 
-      if (diff <= 0) {
-        return '<div class="small" style="margin-top:8px;">Время истекло</div>';
-      }
+      const diff = Number(expiresAt) - Date.now();
+      if (diff <= 0) return 'Истекло';
 
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      return `<div class="small" style="margin-top:8px;">Осталось: ${hours} ч ${minutes} мин</div>`;
+
+      return `Осталось: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }
 
-    function updateRegisterFieldsVisibility() {
-      if (registerRole.value === 'seller') {
-        sellerExtraFields.classList.remove('hidden');
-      } else {
-        sellerExtraFields.classList.add('hidden');
-      }
+    function formatSellerTimeLeft(expiresAt) {
+      if (!expiresAt) return 'Без срока';
+      const diff = Number(expiresAt) - Date.now();
+      if (diff <= 0) return 'Время истекло';
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      return `${hours} часа на ответ`;
     }
 
-    function showToast(message) {
-      const toast = document.createElement('div');
-      toast.textContent = message;
-      toast.style.position = 'fixed';
-      toast.style.bottom = '20px';
-      toast.style.right = '20px';
-      toast.style.backgroundColor = '#1d4ed8';
-      toast.style.color = 'white';
-      toast.style.padding = '12px 20px';
-      toast.style.borderRadius = '30px';
-      toast.style.zIndex = '9999';
-      toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
-    }
-
-    function updateNotificationCounter(notifications = []) {
-      const unreadCount = notifications.filter(item => !item.isRead).length;
-
-      if (!token) {
-        notificationCounter.classList.add('hidden');
-        notificationCounter.textContent = '🔔 0';
-        return;
-      }
-
-      notificationCounter.classList.remove('hidden');
-      notificationCounter.textContent = `🔔 ${unreadCount}`;
-
-      if (unreadCount > lastUnreadCount && lastUnreadCount !== 0) {
-        const newest = notifications.find(item => !item.isRead);
-        if (newest) showToast(newest.text);
-      }
-
-      lastUnreadCount = unreadCount;
-    }
-
-    function closeSellerProfile() {
-      const modal = document.getElementById('sellerProfileModal');
-      const content = document.getElementById('sellerProfileContent');
-      modal.classList.add('hidden');
-      content.innerHTML = 'Загрузка...';
-      openedSellerId = null;
-      selectedRating = 0;
-    }
-
-    function initStars() {
-      const container = document.getElementById('starsContainer');
-      if (!container) return;
-
-      const stars = container.querySelectorAll('.star');
-      if (!stars.length) return;
-
-      stars.forEach((star) => {
-        star.onclick = () => {
-          selectedRating = Number(star.dataset.value);
-
-          stars.forEach((s) => {
-            const value = Number(s.dataset.value);
-            s.classList.toggle('active', value <= selectedRating);
-          });
-        };
-
-        star.onmouseenter = () => {
-          const hoverValue = Number(star.dataset.value);
-          stars.forEach((s) => {
-            const value = Number(s.dataset.value);
-            s.classList.toggle('active', value <= hoverValue);
-          });
-        };
-      });
-
-      container.onmouseleave = () => {
-        stars.forEach((s) => {
-          const value = Number(s.dataset.value);
-          s.classList.toggle('active', value <= selectedRating);
-        });
-      };
-    }
-
-    function getRequestEmoji(item) {
-      const text = `${item.title || ''} ${item.category || ''}`.toLowerCase();
-      if (text.includes('электрон')) return '💻';
-      if (text.includes('авто')) return '🧰';
-      if (text.includes('меб')) return '🪑';
-      if (text.includes('строй')) return '🧱';
-      if (text.includes('услуг')) return '🛠️';
-      if (text.includes('одеж')) return '👕';
-      return '📦';
+    function whatsappLink(phone) {
+      const clean = String(phone || '').replace(/\D/g, '');
+      return clean ? `https://wa.me/${clean}` : '';
     }
 
     async function api(url, options = {}) {
@@ -852,6 +1530,39 @@
       }
 
       return data;
+    }
+
+    function showScreen(screen) {
+      document.getElementById('landingApp').classList.add('hidden');
+      document.getElementById('buyerApp').classList.add('hidden');
+      document.getElementById('sellerApp').classList.add('hidden');
+
+      if (screen === 'landing') document.getElementById('landingApp').classList.remove('hidden');
+      if (screen === 'buyer') document.getElementById('buyerApp').classList.remove('hidden');
+      if (screen === 'seller') document.getElementById('sellerApp').classList.remove('hidden');
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+      setMsg('loginMsg', '');
+    }
+
+    function openRegisterModal() {
+      document.getElementById('registerModal').classList.remove('hidden');
+    }
+
+    function closeRegisterModal() {
+      document.getElementById('registerModal').classList.add('hidden');
+      setMsg('registerMsg', '');
+    }
+
+    function updateRegisterFieldsVisibility() {
+      const role = document.getElementById('registerRole').value;
+      document.getElementById('sellerExtraFields').classList.toggle('hidden', role !== 'seller');
     }
 
     async function registerUser() {
@@ -883,6 +1594,11 @@
         document.getElementById('registerAddress').value = '';
         document.getElementById('registerWhatsapp').value = '';
         document.getElementById('registerAbout').value = '';
+
+        setTimeout(() => {
+          closeRegisterModal();
+          openLoginModal();
+        }, 600);
       } catch (err) {
         setMsg('registerMsg', err.message, 'red');
       }
@@ -902,100 +1618,19 @@
 
         token = data.token;
         localStorage.setItem(tokenKey, token);
-        await loadMe();
+
         setMsg('loginMsg', 'Успешный вход', 'green');
+
+        setTimeout(async () => {
+          closeLoginModal();
+          await initApp();
+        }, 400);
       } catch (err) {
         setMsg('loginMsg', err.message, 'red');
       }
     }
 
-    function updateActionButtons() {
-      const isBuyer = currentUser?.role === 'buyer';
-      const isSeller = currentUser?.role === 'seller';
-
-      document.getElementById('goToMarketBtn').classList.toggle('hidden', !isSeller);
-      document.getElementById('goToMyRequestsBtn').classList.toggle('hidden', false);
-      document.getElementById('goToMyResponsesBtn').classList.toggle('hidden', !isSeller);
-      document.getElementById('goToProfileBtn').classList.toggle('hidden', !isSeller);
-      document.getElementById('goToCreateBtn').classList.toggle('hidden', !isBuyer);
-    }
-
-    async function loadMe() {
-      try {
-        const user = await api('/api/me');
-        currentUser = user;
-
-        authSection.classList.add('hidden');
-        dashboardSection.classList.remove('hidden');
-        logoutBtn.classList.remove('hidden');
-        notificationCounter.classList.remove('hidden');
-
-        userBadge.textContent = `Я ${user.role === 'buyer' ? 'покупатель' : 'продавец'} • ${user.name}`;
-        updateActionButtons();
-
-        buyerSection.classList.add('hidden');
-        sellerSection.classList.add('hidden');
-        sellerProfileSection.classList.add('hidden');
-
-        if (user.role === 'buyer') {
-          buyerSection.classList.remove('hidden');
-          marketplaceCard.classList.add('hidden');
-          await loadMyRequests();
-        } else {
-          sellerSection.classList.remove('hidden');
-          marketplaceCard.classList.remove('hidden');
-          fillSellerProfileForm(user);
-          await loadMyResponses();
-        }
-
-        await loadNotifications();
-        await loadMarketplace();
-        await loadLatestRequests();
-      } catch (err) {
-        currentUser = null;
-        token = '';
-        localStorage.removeItem(tokenKey);
-        authSection.classList.remove('hidden');
-        dashboardSection.classList.add('hidden');
-        logoutBtn.classList.add('hidden');
-        notificationCounter.classList.add('hidden');
-        userBadge.textContent = 'Ты не вошёл';
-      }
-    }
-
-    function fillSellerProfileForm(user) {
-      document.getElementById('profileName').value = user.name || '';
-      document.getElementById('profileCity').value = user.city || '';
-      document.getElementById('profileAddress').value = user.address || '';
-      document.getElementById('profileWhatsapp').value = user.whatsapp || '';
-      document.getElementById('profileAbout').value = user.about || '';
-    }
-
-    async function saveProfile() {
-      try {
-        const payload = {
-          name: document.getElementById('profileName').value.trim(),
-          city: document.getElementById('profileCity').value.trim(),
-          address: document.getElementById('profileAddress').value.trim(),
-          whatsapp: document.getElementById('profileWhatsapp').value.trim(),
-          about: document.getElementById('profileAbout').value.trim()
-        };
-
-        const data = await api('/api/profile', {
-          method: 'PUT',
-          body: JSON.stringify(payload)
-        });
-
-        currentUser = data.user;
-        userBadge.textContent = `Я ${data.user.role === 'buyer' ? 'покупатель' : 'продавец'} • ${data.user.name}`;
-        setMsg('profileMsg', data.message, 'green');
-        await loadMarketplace();
-      } catch (err) {
-        setMsg('profileMsg', err.message, 'red');
-      }
-    }
-
-    async function logout() {
+    async function logoutUser() {
       try {
         await api('/api/logout', { method: 'POST' });
       } catch (err) {}
@@ -1003,21 +1638,60 @@
       token = '';
       currentUser = null;
       localStorage.removeItem(tokenKey);
-      authSection.classList.remove('hidden');
-      dashboardSection.classList.add('hidden');
-      logoutBtn.classList.add('hidden');
-      notificationCounter.classList.add('hidden');
-      userBadge.textContent = 'Ты не вошёл';
+      location.reload();
     }
 
-    async function createRequest() {
+    async function loadMe() {
+      if (!token) throw new Error('Нет токена');
+      currentUser = await api('/api/me');
+      return currentUser;
+    }
+
+    function renderNotificationList(containerId, notifications, counterId) {
+      const box = document.getElementById(containerId);
+      const counter = document.getElementById(counterId);
+      box.innerHTML = '';
+
+      const unread = notifications.filter(item => !item.isRead).length;
+
+      if (unread > 0) {
+        counter.textContent = unread;
+        counter.classList.remove('hidden');
+      } else {
+        counter.classList.add('hidden');
+      }
+
+      if (!notifications.length) {
+        box.innerHTML = `<div class="empty-box">Уведомлений пока нет</div>`;
+        return;
+      }
+
+      notifications.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'notif-item';
+        div.innerHTML = `
+          <div class="notif-text">${escapeHtml(item.text)}</div>
+          <div class="notif-date">${escapeHtml(formatDate(item.createdAt))}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    async function markNotificationsRead() {
+      try {
+        await api('/api/notifications/read', { method: 'PUT' });
+      } catch (err) {}
+    }
+
+    // BUYER
+    async function buyerCreateRequest() {
       try {
         const payload = {
-          title: document.getElementById('reqTitle').value.trim(),
-          description: document.getElementById('reqDescription').value.trim(),
-          category: document.getElementById('reqCategory').value.trim(),
-          city: document.getElementById('reqCity').value.trim(),
-          phone: document.getElementById('reqPhone').value.trim()
+          title: document.getElementById('buyerReqTitle').value.trim(),
+          description: document.getElementById('buyerReqDescription').value.trim(),
+          category: document.getElementById('buyerReqCategory').value.trim(),
+          city: document.getElementById('buyerReqCity').value.trim(),
+          phone: document.getElementById('buyerReqPhone').value.trim()
         };
 
         const data = await api('/api/requests', {
@@ -1025,44 +1699,120 @@
           body: JSON.stringify(payload)
         });
 
-        setMsg('requestMsg', data.message, 'green');
+        setMsg('buyerRequestMsg', data.message, 'green');
 
-        document.getElementById('reqTitle').value = '';
-        document.getElementById('reqDescription').value = '';
-        document.getElementById('reqCategory').value = '';
-        document.getElementById('reqCity').value = '';
-        document.getElementById('reqPhone').value = '';
-        document.getElementById('reqDuration').value = '24';
+        document.getElementById('buyerReqTitle').value = '';
+        document.getElementById('buyerReqDescription').value = '';
+        document.getElementById('buyerReqCategory').value = '';
+        document.getElementById('buyerReqCity').value = '';
+        document.getElementById('buyerReqPhone').value = '';
 
-        await loadMyRequests();
-        await loadMarketplace();
-        await loadNotifications();
-        await loadLatestRequests();
+        await buyerLoadRequests(true);
+        await buyerLoadNotifications();
       } catch (err) {
-        setMsg('requestMsg', err.message, 'red');
+        setMsg('buyerRequestMsg', err.message, 'red');
       }
     }
 
-    async function respondToRequest(requestId) {
-      try {
-        const price = document.getElementById(`price-${requestId}`)?.value.trim() || '';
-        const message = document.getElementById(`message-${requestId}`)?.value.trim() || '';
+    function buyerRenderRequests() {
+      const box = document.getElementById('buyerRequestsList');
+      box.innerHTML = '';
 
-        const data = await api(`/api/requests/${requestId}/respond`, {
-          method: 'POST',
-          body: JSON.stringify({ price, message })
+      if (!buyerRequestsCache.length) {
+        box.innerHTML = `<div class="empty-box">У тебя пока нет заявок</div>`;
+        document.getElementById('buyerOffersSubTitle').textContent = 'Создай первую заявку';
+        document.getElementById('buyerOffersList').innerHTML = `<div class="empty-box">Пока нет предложений</div>`;
+        return;
+      }
+
+      buyerRequestsCache.forEach((item, index) => {
+        const isActive = buyerSelectedRequestId === item.id;
+        const statusLabel =
+          item.status === 'open'
+            ? 'Активна • Ждёт ответов'
+            : item.status === 'closed'
+              ? 'Закрыта'
+              : 'Истекла';
+
+        const card = document.createElement('div');
+        card.className = `request-item ${isActive ? 'active' : ''}`;
+
+        const selectedInfo = item.selectedSellerId
+          ? `
+            <div class="mini-closed">
+              <div class="mini-closed-icon">✅</div>
+              <div>
+                <div class="mini-closed-title">${escapeHtml(item.title)}</div>
+                <div class="mini-closed-status">Продавец выбран • ${escapeHtml(item.selectedPrice || '')} ₸</div>
+              </div>
+            </div>
+          `
+          : '';
+
+        card.innerHTML = `
+          <div class="request-top">
+            <div>
+              <div class="request-name">${escapeHtml(item.title)}</div>
+              <div class="request-city">${escapeHtml(item.city || '')}</div>
+              <div class="request-status-line">${statusLabel}</div>
+            </div>
+            <div class="request-timer">${formatTimeLeft(item.expiresAt)}</div>
+          </div>
+
+          <div class="request-bottom">
+            <div class="request-chip">📍 ${escapeHtml(item.city || '')}</div>
+            <button type="button" class="show-offers-btn" data-request-id="${item.id}">
+              Посмотреть предложения
+            </button>
+          </div>
+
+          ${selectedInfo}
+        `;
+
+        card.addEventListener('click', () => buyerSelectRequest(item.id));
+        card.querySelector('.show-offers-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          buyerSelectRequest(item.id);
         });
 
-        alert(data.message || 'Ответ отправлен');
-        await loadMarketplace();
-        await loadMyResponses();
-        await loadNotifications();
-      } catch (err) {
-        alert(err.message || 'Ошибка');
+        box.appendChild(card);
+
+        if (index === 0 && !buyerSelectedRequestId) {
+          buyerSelectedRequestId = item.id;
+        }
+      });
+    }
+
+    async function buyerLoadRequests(autoOpenFirst = false) {
+      buyerRequestsCache = await api('/api/requests');
+
+      if (!buyerSelectedRequestId || autoOpenFirst) {
+        const openRequest = buyerRequestsCache.find(item => item.status === 'open') || buyerRequestsCache[0] || null;
+        buyerSelectedRequestId = openRequest ? openRequest.id : null;
+      } else {
+        const stillExists = buyerRequestsCache.find(item => item.id === buyerSelectedRequestId);
+        if (!stillExists) {
+          const openRequest = buyerRequestsCache.find(item => item.status === 'open') || buyerRequestsCache[0] || null;
+          buyerSelectedRequestId = openRequest ? openRequest.id : null;
+        }
+      }
+
+      buyerRenderRequests();
+
+      if (buyerSelectedRequestId) {
+        await buyerLoadOffers(buyerSelectedRequestId);
+      } else {
+        document.getElementById('buyerOffersList').innerHTML = `<div class="empty-box">Пока нет предложений</div>`;
       }
     }
 
-    async function selectSeller(requestId, sellerId) {
+    async function buyerSelectRequest(requestId) {
+      buyerSelectedRequestId = requestId;
+      buyerRenderRequests();
+      await buyerLoadOffers(requestId);
+    }
+
+    async function buyerSelectSeller(requestId, sellerId) {
       if (!confirm('Выбрать этого продавца?')) return;
 
       try {
@@ -1071,514 +1821,446 @@
           body: JSON.stringify({ sellerId })
         });
 
-        alert('Продавец выбран');
-        await loadMarketplace();
-        await loadMyRequests();
-        await loadNotifications();
-        await loadLatestRequests();
-      } catch (err) {
-        alert(err.message);
-      }
-    }
-
-    async function loadNotifications() {
-      const box = document.getElementById('notificationsList');
-      if (!box) return;
-
-      if (!token) {
-        box.innerHTML = '<div class="small">Войди в аккаунт, чтобы видеть уведомления</div>';
-        updateNotificationCounter([]);
-        return;
-      }
-
-      box.innerHTML = 'Загрузка...';
-
-      try {
-        const notifications = await api('/api/notifications');
-        updateNotificationCounter(notifications);
-        box.innerHTML = '';
-
-        if (!notifications.length) {
-          box.innerHTML = '<div class="small">Уведомлений пока нет</div>';
-          return;
-        }
-
-        notifications.forEach((item) => {
-          const div = document.createElement('div');
-          div.className = 'notification-card';
-
-          div.innerHTML = `
-            <div style="font-weight:bold; margin-bottom:6px;">
-              ${escapeHtml(item.text)}
-            </div>
-            <div class="meta">${escapeHtml(formatDate(item.createdAt))}</div>
-            <div class="notification-status ${item.isRead ? 'read' : 'new'}">
-              ${item.isRead ? 'Прочитано' : 'Новое'}
-            </div>
-          `;
-
-          box.appendChild(div);
-        });
-      } catch (err) {
-        updateNotificationCounter([]);
-        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
-      }
-    }
-
-    async function markNotificationsRead() {
-      try {
-        await api('/api/notifications/read', { method: 'PUT' });
-        await loadNotifications();
+        await buyerLoadRequests();
+        await buyerLoadNotifications();
       } catch (err) {
         alert(err.message || 'Ошибка');
       }
     }
 
-    async function loadLatestRequests() {
-      latestRequestsGrid.innerHTML = '<div class="small">Загрузка...</div>';
+    async function buyerLoadOffers(requestId) {
+      const panel = document.getElementById('buyerOffersList');
+      const currentRequest = buyerRequestsCache.find(item => item.id === requestId);
 
-      try {
-        let list = [];
-        if (token) {
-          list = await api('/api/marketplace');
-        } else {
-          const res = await fetch('/api/public-requests');
-          list = await res.json();
-        }
-
-        latestRequestsGrid.innerHTML = '';
-
-        if (!list.length) {
-          latestRequestsGrid.innerHTML = '<div class="small">Заявок пока нет</div>';
-          return;
-        }
-
-        list.slice(0, 4).forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'mini-request-card';
-
-          card.innerHTML = `
-            <div class="mini-icon">${getRequestEmoji(item)}</div>
-            <div>
-              <div class="mini-request-title">${escapeHtml(item.title)}</div>
-              <div class="mini-request-meta">${escapeHtml(item.category || item.city || '')}</div>
-            </div>
-          `;
-
-          card.addEventListener('click', () => {
-            if (!marketplaceCard.classList.contains('hidden')) {
-              marketplaceCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          });
-
-          latestRequestsGrid.appendChild(card);
-        });
-      } catch (err) {
-        latestRequestsGrid.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
-      }
-    }
-
-    async function loadMarketplace() {
-      const box = document.getElementById('marketplaceList');
-      const searchText = document.getElementById('searchMarketplace').value.trim().toLowerCase();
-      const categoryFilter = document.getElementById('categoryFilter').value.trim();
-
-      box.innerHTML = 'Загрузка...';
-
-      try {
-        let list = await api('/api/marketplace');
-
-        if (searchText) {
-          list = list.filter(item =>
-            `${item.title || ''} ${item.description || ''} ${item.category || ''}`.toLowerCase().includes(searchText)
-          );
-        }
-
-        if (categoryFilter) {
-          list = list.filter(item => (item.category || '') === categoryFilter);
-        }
-
-        box.innerHTML = '';
-
-        if (!list.length) {
-          box.innerHTML = '<div class="small">Заявок пока нет</div>';
-          return;
-        }
-
-        if (currentUser && currentUser.role === 'buyer') {
-          list.forEach(item => {
-            if (item.buyerId !== currentUser.id) return;
-
-            const card = document.createElement('div');
-            card.className = 'request-card';
-
-            const statusClass = item.status === 'expired' ? 'status expired' : 'status';
-            const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
-            const selectedInfo = item.selectedSellerId
-              ? `<div class="small" style="margin-top:8px;color:#16a34a;font-weight:700;">Продавец выбран • ${escapeHtml(item.selectedPrice || '')} ₸</div>`
-              : '';
-
-            card.innerHTML = `
-              <h3>${escapeHtml(item.title)}</h3>
-              <div class="meta"><strong>Категория:</strong> ${escapeHtml(item.category || 'Не указана')}</div>
-              <div class="meta"><strong>Город:</strong> ${escapeHtml(item.city)}</div>
-              <div>${escapeHtml(item.description)}</div>
-              <div class="${statusClass}">${item.status === 'open' ? 'Активна' : item.status === 'closed' ? 'Закрыта' : 'Истекла'}</div>
-              ${timeLeft}
-              ${selectedInfo}
-              <div style="margin-top:12px;">
-                <button class="gray" onclick="loadResponses('${item.id}')">Показать ответы (${item.responsesCount})</button>
-                <div id="responses-${item.id}"></div>
-              </div>
-            `;
-
-            box.appendChild(card);
-          });
-
-          if (!box.innerHTML.trim()) {
-            box.innerHTML = '<div class="small">У тебя пока нет активных предложений</div>';
-          }
-
-          return;
-        }
-
-        list.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'request-card';
-
-          const statusClass = item.status === 'expired' ? 'status expired' : 'status';
-          const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
-
-          let sellerForm = '';
-          if (currentUser && currentUser.role === 'seller' && item.status === 'open') {
-            sellerForm = `
-              <div style="margin-top:12px;">
-                <input id="price-${item.id}" placeholder="Цена" />
-                <textarea id="message-${item.id}" placeholder="Сообщение покупателю"></textarea>
-                <button class="green" onclick="respondToRequest('${item.id}')">Ответить на заявку</button>
-              </div>
-            `;
-          }
-
-          card.innerHTML = `
-            <h3>${escapeHtml(item.title)}</h3>
-            <div class="meta"><strong>Категория:</strong> ${escapeHtml(item.category || 'Не указана')}</div>
-            <div class="meta"><strong>Город:</strong> ${escapeHtml(item.city)}</div>
-            <div>${escapeHtml(item.description)}</div>
-            <div class="${statusClass}">${item.status === 'open' ? 'Активна' : item.status === 'closed' ? 'Закрыта' : 'Истекла'}</div>
-            ${timeLeft}
-            <div class="small" style="margin-top:8px;">Ответов: ${item.responsesCount}</div>
-            ${sellerForm}
-          `;
-
-          box.appendChild(card);
-        });
-      } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
-      }
-    }
-
-    async function loadMyRequests() {
-      const box = document.getElementById('myRequestsList');
-      box.innerHTML = 'Загрузка...';
-
-      try {
-        const list = await api('/api/requests');
-        box.innerHTML = '';
-
-        if (!list.length) {
-          box.innerHTML = '<div class="small">У тебя пока нет заявок</div>';
-          return;
-        }
-
-        list.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'request-card';
-
-          const statusClass = item.status === 'expired' ? 'status expired' : 'status';
-          const timeLeft = item.status === 'open' ? formatTimeLeft(item.expiresAt) : '';
-          const selectedInfo = item.selectedSellerId
-            ? `<div class="small" style="margin-top:8px;color:#16a34a;font-weight:700;">Продавец выбран • ${escapeHtml(item.selectedPrice || '')} ₸</div>`
-            : '';
-
-          card.innerHTML = `
-            <h3>${escapeHtml(item.title)}</h3>
-            <div class="meta"><strong>Категория:</strong> ${escapeHtml(item.category || 'Не указана')}</div>
-            <div class="meta"><strong>Город:</strong> ${escapeHtml(item.city)}</div>
-            <div class="${statusClass}">${item.status === 'open' ? 'Активна' : item.status === 'closed' ? 'Закрыта' : 'Истекла'}</div>
-            ${timeLeft}
-            ${selectedInfo}
-            <div style="margin-top:12px;">
-              <button class="gray" onclick="loadResponses('${item.id}')">Показать ответы (${item.responsesCount})</button>
-              <div id="responses-${item.id}"></div>
-            </div>
-          `;
-
-          box.appendChild(card);
-        });
-      } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
-      }
-    }
-
-    async function loadResponses(requestId) {
-      const box = document.getElementById(`responses-${requestId}`);
-      box.innerHTML = 'Загрузка...';
-
-      try {
-        const list = await api(`/api/requests/${requestId}/responses`);
-        box.innerHTML = '';
-
-        if (!list.length) {
-          box.innerHTML = '<div class="small">Ответов пока нет</div>';
-          return;
-        }
-
-        list.forEach(item => {
-          const whatsappClean = String(item.sellerWhatsapp || '').replace(/\D/g, '');
-          const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean}` : '#';
-
-          const card = document.createElement('div');
-          card.className = 'offer-card';
-
-          card.innerHTML = `
-            <div>
-              <div class="offer-name">${escapeHtml(item.sellerName)}</div>
-              <div class="small">${escapeHtml(item.message)}</div>
-              <div class="meta" style="margin-top:8px;">
-                ⭐ ${item.sellerRating ?? 'Нет оценки'} • ${escapeHtml(item.sellerCity || 'Город не указан')}
-              </div>
-            </div>
-            <div>
-              <div class="offer-price">${escapeHtml(item.price)} ₸</div>
-              <div class="offer-actions">
-                ${
-                  whatsappClean
-                    ? `<a class="whatsapp-btn" href="${whatsappLink}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
-                    : `<button class="gray" type="button" onclick="openSellerProfile('${item.sellerId}')">Профиль</button>`
-                }
-                <button class="choose-btn" type="button" onclick="selectSeller('${requestId}','${item.sellerId}')">Выбрать</button>
-              </div>
-            </div>
-          `;
-
-          box.appendChild(card);
-        });
-      } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
-      }
-    }
-
-    async function openSellerProfile(sellerId) {
-      const modal = document.getElementById('sellerProfileModal');
-      const content = document.getElementById('sellerProfileContent');
-
-      openedSellerId = sellerId;
-      selectedRating = 0;
-
-      modal.classList.remove('hidden');
-      content.innerHTML = 'Загрузка профиля...';
-
-      try {
-        const seller = await api(`/api/sellers/${sellerId}`);
-        const whatsappClean = String(seller.whatsapp || '').replace(/\D/g, '');
-        const whatsappLink = whatsappClean ? `https://wa.me/${whatsappClean}` : '';
-
-        const reviewsHtml = seller.reviews && seller.reviews.length
-          ? seller.reviews.map(review => `
-              <div class="response-card">
-                <strong>${escapeHtml(review.author || 'Покупатель')}</strong>
-                <div class="meta">Оценка: ${escapeHtml(review.rating)} / 5</div>
-                <div>${review.text ? escapeHtml(review.text) : '<span class="small">Без текста</span>'}</div>
-                <div class="small" style="margin-top:6px;">${escapeHtml(formatDate(review.createdAt))}</div>
-              </div>
-            `).join('')
-          : '<div class="small">Пока нет отзывов</div>';
-
-        let reviewFormHtml = '';
-
-        if (currentUser && currentUser.role === 'buyer') {
-          reviewFormHtml = `
-            <div style="margin-top:22px; padding-top:18px; border-top:1px solid #e5e7eb;">
-              <h4 style="margin:0 0 10px;">Оставить отзыв</h4>
-              <div class="stars" id="starsContainer">
-                <span class="star" data-value="1">★</span>
-                <span class="star" data-value="2">★</span>
-                <span class="star" data-value="3">★</span>
-                <span class="star" data-value="4">★</span>
-                <span class="star" data-value="5">★</span>
-              </div>
-              <textarea id="reviewText" placeholder="Напиши отзыв о продавце"></textarea>
-              <button class="green" type="button" onclick="submitSellerReview()">Отправить отзыв</button>
-              <div id="reviewMsg" class="msg"></div>
-            </div>
-          `;
-        }
-
-        content.innerHTML = `
-          <div class="response-card" style="background:white;">
-            <h3 style="margin:0 0 10px;">${escapeHtml(seller.name || 'Продавец')}</h3>
-            <div class="meta"><strong>Рейтинг:</strong> ${seller.rating !== null && seller.rating !== undefined ? escapeHtml(seller.rating) : 'Нет оценок'}</div>
-            <div class="meta"><strong>Город:</strong> ${escapeHtml(seller.city || 'Не указан')}</div>
-            <div class="meta"><strong>Адрес:</strong> ${escapeHtml(seller.address || 'Не указан')}</div>
-            <div style="margin-top:10px;">${escapeHtml(seller.about || 'Нет описания')}</div>
-            ${
-              whatsappLink
-                ? `<a class="whatsapp-btn" style="margin-top:14px;" href="${whatsappLink}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>`
-                : `<div class="small" style="margin-top:14px;">WhatsApp не указан</div>`
-            }
-          </div>
-
-          <h3 style="margin-top:22px;">Отзывы</h3>
-          ${reviewsHtml}
-
-          ${reviewFormHtml}
-        `;
-
-        initStars();
-      } catch (err) {
-        content.innerHTML = `<div style="color:red;">${escapeHtml(err.message)}</div>`;
-      }
-    }
-
-    async function submitSellerReview() {
-      if (!openedSellerId) return;
-
-      if (!selectedRating) {
-        setMsg('reviewMsg', 'Выбери оценку', 'red');
+      if (!currentRequest) {
+        panel.innerHTML = `<div class="empty-box">Заявка не найдена</div>`;
         return;
       }
 
-      const text = document.getElementById('reviewText')?.value.trim() || '';
+      document.getElementById('buyerOffersSubTitle').textContent = `Заявка: ${currentRequest.title}`;
+      panel.innerHTML = `<div class="empty-box">Загрузка предложений...</div>`;
 
       try {
-        const data = await api(`/api/sellers/${openedSellerId}/reviews`, {
-          method: 'POST',
-          body: JSON.stringify({ rating: selectedRating, text })
-        });
+        const offers = await api(`/api/requests/${requestId}/responses`);
+        panel.innerHTML = '';
 
-        setMsg('reviewMsg', data.message, 'green');
-        selectedRating = 0;
-        await openSellerProfile(openedSellerId);
-      } catch (err) {
-        setMsg('reviewMsg', err.message, 'red');
-      }
-    }
-
-    async function loadMyResponses() {
-      const box = document.getElementById('myResponsesList');
-      box.innerHTML = 'Загрузка...';
-
-      try {
-        const list = await api('/api/my-responses');
-        box.innerHTML = '';
-
-        if (!list.length) {
-          box.innerHTML = '<div class="small">Ты пока не отвечал на заявки</div>';
+        if (!offers.length) {
+          panel.innerHTML = `<div class="empty-box">Пока нет предложений</div>`;
           return;
         }
 
-        list.forEach(item => {
-          const chosenMark = item.selectedSellerId === currentUser.id
-            ? '<div class="small" style="color:#16a34a;font-weight:700;margin-top:8px;">Тебя выбрали по этой заявке</div>'
-            : '';
+        offers.forEach(item => {
+          const waLink = whatsappLink(item.sellerWhatsapp);
+          const sellerRating = item.sellerRating !== null && item.sellerRating !== undefined
+            ? `⭐ ${item.sellerRating}`
+            : '⭐ Нет оценки';
+
+          const isClosed = currentRequest.status !== 'open';
+          const selectButton = isClosed
+            ? `<button type="button" class="select-btn" disabled style="opacity:0.6;cursor:not-allowed;">Заявка закрыта</button>`
+            : `<button type="button" class="select-btn" onclick="buyerSelectSeller('${requestId}','${item.sellerId}')">Выбрать</button>`;
 
           const card = document.createElement('div');
-          card.className = 'response-card';
+          card.className = 'offer-card';
           card.innerHTML = `
-            <h3>${escapeHtml(item.requestTitle)}</h3>
-            <div class="meta"><strong>Категория:</strong> ${escapeHtml(item.requestCategory || 'Не указана')}</div>
-            <div class="meta"><strong>Город:</strong> ${escapeHtml(item.requestCity || '')}</div>
-            <div class="meta"><strong>Твоя цена:</strong> ${escapeHtml(item.price)}</div>
-            <div>${escapeHtml(item.message)}</div>
-            ${chosenMark}
+            <div class="offer-top">
+              <div class="offer-avatar">🏪</div>
+              <div>
+                <div class="offer-name">${escapeHtml(item.sellerName)}</div>
+                <div class="offer-meta">
+                  ${sellerRating}<br />
+                  ${escapeHtml(item.sellerCity || 'Город не указан')}
+                </div>
+              </div>
+              <div class="offer-price">${escapeHtml(item.price)} ₸</div>
+            </div>
+
+            <div class="offer-message">${escapeHtml(item.message)}</div>
+
+            <div class="offer-actions">
+              <button type="button" class="message-btn">Написать</button>
+              <button type="button" class="chat-btn">💬</button>
+              ${
+                waLink
+                  ? `<a class="wa-btn" href="${waLink}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
+                  : `<button type="button" class="wa-btn" disabled style="opacity:0.6;cursor:not-allowed;">WhatsApp</button>`
+              }
+              ${selectButton}
+            </div>
+
+            <div class="note-box">${escapeHtml(item.message)}</div>
           `;
-          box.appendChild(card);
+
+          panel.appendChild(card);
         });
       } catch (err) {
-        box.innerHTML = `<div class="small" style="color:red;">${escapeHtml(err.message)}</div>`;
+        panel.innerHTML = `<div class="empty-box">${escapeHtml(err.message || 'Ошибка')}</div>`;
       }
     }
 
-    document.getElementById('registerBtn').addEventListener('click', registerUser);
+    async function buyerLoadNotifications() {
+      buyerNotificationsCache = await api('/api/notifications');
+      renderNotificationList('buyerNotificationsList', buyerNotificationsCache, 'buyerNotifCount');
+    }
+
+    // SELLER
+    function sellerUpdateStats() {
+      document.getElementById('sellerNewRequestsCount').textContent = sellerMarketplaceCache.length;
+      document.getElementById('sellerResponsesCount').textContent = sellerResponsesCache.length;
+      document.getElementById('sellerChosenCount').textContent =
+        sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id).length;
+    }
+
+    function sellerOpenRespondModal(requestItem) {
+      selectedRequestForResponse = requestItem;
+      document.getElementById('sellerRespondModal').classList.remove('hidden');
+      document.getElementById('sellerRespondRequestInfo').innerHTML = `
+        <strong>${escapeHtml(requestItem.title)}</strong><br>
+        ${escapeHtml(requestItem.city || '')}${requestItem.category ? ' • ' + escapeHtml(requestItem.category) : ''}
+      `;
+      document.getElementById('sellerRespondPrice').value = '';
+      document.getElementById('sellerRespondMessage').value = '';
+      setMsg('sellerRespondMsg', '');
+    }
+
+    function sellerCloseRespondModal() {
+      document.getElementById('sellerRespondModal').classList.add('hidden');
+      selectedRequestForResponse = null;
+      setMsg('sellerRespondMsg', '');
+    }
+
+    async function sellerSubmitResponse() {
+      if (!selectedRequestForResponse) return;
+
+      try {
+        const payload = {
+          price: document.getElementById('sellerRespondPrice').value.trim(),
+          message: document.getElementById('sellerRespondMessage').value.trim()
+        };
+
+        const data = await api(`/api/requests/${selectedRequestForResponse.id}/respond`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        setMsg('sellerRespondMsg', data.message, 'green');
+
+        await sellerLoadMarketplace();
+        await sellerLoadResponses();
+        await sellerLoadNotifications();
+        sellerUpdateStats();
+
+        setTimeout(() => {
+          sellerCloseRespondModal();
+        }, 600);
+      } catch (err) {
+        setMsg('sellerRespondMsg', err.message, 'red');
+      }
+    }
+
+    function sellerRenderMarketplace() {
+      const box = document.getElementById('sellerMarketplaceList');
+      box.innerHTML = '';
+
+      let list = [...sellerMarketplaceCache];
+
+      const categoryFilter = document.getElementById('sellerCategoryFilter').value.trim();
+      const cityFilter = document.getElementById('sellerCityFilter').value.trim();
+
+      if (categoryFilter) {
+        list = list.filter(item => String(item.category || '') === categoryFilter);
+      }
+
+      if (cityFilter) {
+        list = list.filter(item => String(item.city || '') === cityFilter);
+      }
+
+      if (sellerOnlyNew) {
+        list = list.filter(item => item.status === 'open');
+      }
+
+      if (sellerHistoryMode) {
+        list = [...sellerResponsesCache].map(item => ({
+          id: item.requestId,
+          title: item.requestTitle,
+          city: item.requestCity,
+          category: item.requestCategory,
+          description: item.message,
+          expiresAt: null,
+          historyMode: true
+        }));
+      }
+
+      if (!list.length) {
+        box.innerHTML = `<div class="empty-box">${sellerHistoryMode ? 'История пока пустая' : 'Новых заявок пока нет'}</div>`;
+        return;
+      }
+
+      list.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'request-card';
+
+        if (sellerHistoryMode || item.historyMode) {
+          card.innerHTML = `
+            <div class="request-head">
+              <div>
+                <div class="request-title">${escapeHtml(item.title)}</div>
+                <div class="meta">${escapeHtml(item.city || '')}</div>
+                <div class="meta">Категория: ${escapeHtml(item.category || 'Не указана')}</div>
+              </div>
+              <div class="meta">•••</div>
+            </div>
+
+            <div class="request-desc">${escapeHtml(item.description || '')}</div>
+
+            <div class="request-footer">
+              <div class="timer-line">🕘 История откликов</div>
+              <button type="button" class="respond-btn red" disabled style="opacity:0.6;cursor:not-allowed;">Уже откликнулся</button>
+            </div>
+          `;
+        } else {
+          const isFirst = index === 0;
+          card.innerHTML = `
+            <div class="request-head">
+              <div>
+                <div class="request-title">${escapeHtml(item.title)}</div>
+                <div class="meta">${escapeHtml(item.city || '')}</div>
+                <div class="meta">Категория: ${escapeHtml(item.category || 'Не указана')}</div>
+              </div>
+              ${isFirst ? '<div class="new-badge">Новая</div>' : '<div class="meta">•••</div>'}
+            </div>
+
+            <div class="request-desc">${escapeHtml(item.description || '')}</div>
+
+            <div class="request-footer">
+              <div class="timer-line">🕘 ${formatSellerTimeLeft(item.expiresAt)}</div>
+              <button type="button" class="respond-btn ${index === 1 ? 'red' : ''}" data-request-id="${item.id}">
+                Откликнуться
+              </button>
+            </div>
+          `;
+
+          card.querySelector('.respond-btn').addEventListener('click', () => sellerOpenRespondModal(item));
+        }
+
+        box.appendChild(card);
+      });
+    }
+
+    function sellerRenderResponses() {
+      const box = document.getElementById('sellerResponsesList');
+      box.innerHTML = '';
+
+      if (!sellerResponsesCache.length) {
+        box.innerHTML = `<div class="empty-box">Ты пока не отправлял отклики</div>`;
+        return;
+      }
+
+      sellerResponsesCache.forEach(item => {
+        const chosen = item.selectedSellerId === currentUser?.id;
+        const waLink = chosen && currentUser?.whatsapp ? whatsappLink(currentUser.whatsapp) : '';
+        const card = document.createElement('div');
+        card.className = 'response-card';
+
+        card.innerHTML = `
+          <div class="response-head">
+            <div>
+              <div class="response-title">${escapeHtml(item.requestTitle)}</div>
+              <div class="meta">Вы отправили: ${escapeHtml(item.price)} ₸</div>
+            </div>
+            <div class="meta">•••</div>
+          </div>
+
+          <div class="status-line">
+            ${chosen ? 'Покупатель выбрал ваше предложение' : 'Ожидает ответа покупателя'}
+          </div>
+
+          ${
+            chosen
+              ? `
+                <div class="chosen-box">
+                  Меня выбрали!<br>
+                  Покупатель выбрал ваше предложение по заявке <strong>${escapeHtml(item.requestTitle)}</strong>.
+                </div>
+              `
+              : ''
+          }
+
+          <div class="response-footer">
+            <div class="timer-line">
+              🕘 ${item.requestStatus === 'open' ? 'Ожидание ответа' : item.requestStatus === 'closed' ? 'Заявка закрыта' : 'Истекла'}
+            </div>
+
+            ${
+              chosen
+                ? `<a class="wa-open-btn" href="${waLink || '#'}" ${waLink ? 'target="_blank" rel="noopener noreferrer"' : ''}>Открыть чат в WhatsApp</a>`
+                : `<button type="button" class="respond-btn">Отклик уже отправлен</button>`
+            }
+          </div>
+        `;
+
+        box.appendChild(card);
+      });
+    }
+
+    async function sellerLoadMarketplace() {
+      sellerMarketplaceCache = await api('/api/marketplace');
+      sellerRenderMarketplace();
+      sellerUpdateStats();
+    }
+
+    async function sellerLoadResponses() {
+      sellerResponsesCache = await api('/api/my-responses');
+      sellerRenderResponses();
+      sellerUpdateStats();
+    }
+
+    async function sellerLoadNotifications() {
+      sellerNotificationsCache = await api('/api/notifications');
+      renderNotificationList('sellerNotificationsList', sellerNotificationsCache, 'sellerNotifCount');
+    }
+
+    function sellerToggleOnlyNew() {
+      sellerOnlyNew = !sellerOnlyNew;
+      document.getElementById('sellerOnlyNewToggle').classList.toggle('active', sellerOnlyNew);
+    }
+
+    function sellerToggleHistory() {
+      sellerHistoryMode = !sellerHistoryMode;
+      document.getElementById('sellerHistoryBtn').textContent = sellerHistoryMode ? 'Назад' : 'История';
+      sellerRenderMarketplace();
+    }
+
+    async function initBuyerCabinet() {
+      document.getElementById('buyerBadge').textContent = `Я покупатель • ${currentUser.name}`;
+      showScreen('buyer');
+
+      await buyerLoadNotifications();
+      await buyerLoadRequests(true);
+
+      setInterval(() => {
+        if (currentUser?.role === 'buyer') {
+          buyerLoadRequests();
+          buyerLoadNotifications();
+        }
+      }, 30000);
+    }
+
+    async function initSellerCabinet() {
+      document.getElementById('sellerBadge').textContent = `Я продавец • ${currentUser.name}`;
+      showScreen('seller');
+
+      await sellerLoadNotifications();
+      await sellerLoadMarketplace();
+      await sellerLoadResponses();
+
+      setInterval(() => {
+        if (currentUser?.role === 'seller') {
+          sellerLoadMarketplace();
+          sellerLoadResponses();
+          sellerLoadNotifications();
+        }
+      }, 30000);
+    }
+
+    async function initApp() {
+      if (!token) {
+        showScreen('landing');
+        return;
+      }
+
+      try {
+        await loadMe();
+
+        if (currentUser.role === 'buyer') {
+          await initBuyerCabinet();
+        } else if (currentUser.role === 'seller') {
+          await initSellerCabinet();
+        } else {
+          showScreen('landing');
+        }
+      } catch (err) {
+        token = '';
+        currentUser = null;
+        localStorage.removeItem(tokenKey);
+        showScreen('landing');
+      }
+    }
+
+    // EVENTS
+    document.getElementById('openLoginBtn').addEventListener('click', openLoginModal);
+    document.getElementById('openRegisterBtn').addEventListener('click', openRegisterModal);
+    document.getElementById('heroCreateBtn').addEventListener('click', openRegisterModal);
+
+    document.getElementById('closeLoginModalBtn').addEventListener('click', closeLoginModal);
+    document.getElementById('closeRegisterModalBtn').addEventListener('click', closeRegisterModal);
+
     document.getElementById('loginBtn').addEventListener('click', loginUser);
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    document.getElementById('createRequestBtn').addEventListener('click', createRequest);
-    document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+    document.getElementById('registerBtn').addEventListener('click', registerUser);
     document.getElementById('registerRole').addEventListener('change', updateRegisterFieldsVisibility);
-    document.getElementById('readNotificationsBtn').addEventListener('click', markNotificationsRead);
 
-    document.getElementById('openCreateFormBtn').addEventListener('click', () => {
-      const quickCity = document.getElementById('reqCityQuick').value;
-      const quickCategory = document.getElementById('reqCategoryQuick').value;
+    document.getElementById('buyerLogoutBtn').addEventListener('click', logoutUser);
+    document.getElementById('sellerLogoutBtn').addEventListener('click', logoutUser);
 
-      if (quickCity) document.getElementById('reqCity').value = quickCity;
-      if (quickCategory) document.getElementById('reqCategory').value = quickCategory;
+    document.getElementById('buyerCreateRequestBtn').addEventListener('click', buyerCreateRequest);
 
-      buyerSection.classList.remove('hidden');
-      buyerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('buyerOpenNotificationsBtn').addEventListener('click', async () => {
+      document.getElementById('buyerNotificationsModal').classList.remove('hidden');
+      await markNotificationsRead();
+      await buyerLoadNotifications();
     });
 
-    document.getElementById('goToMarketBtn').addEventListener('click', async () => {
-      marketplaceCard.classList.remove('hidden');
-      sellerSection.classList.remove('hidden');
-      sellerProfileSection.classList.add('hidden');
-      await loadMarketplace();
-      marketplaceCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('closeBuyerNotificationsBtn').addEventListener('click', () => {
+      document.getElementById('buyerNotificationsModal').classList.add('hidden');
     });
 
-    document.getElementById('goToMyRequestsBtn').addEventListener('click', async () => {
-      if (currentUser?.role === 'buyer') {
-        buyerSection.classList.remove('hidden');
-        buyerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        document.getElementById('myRequestsList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('sellerOpenNotificationsBtn').addEventListener('click', async () => {
+      document.getElementById('sellerNotificationsModal').classList.remove('hidden');
+      await markNotificationsRead();
+      await sellerLoadNotifications();
+    });
+
+    document.getElementById('closeSellerNotificationsBtn').addEventListener('click', () => {
+      document.getElementById('sellerNotificationsModal').classList.add('hidden');
+    });
+
+    document.getElementById('sellerOnlyNewToggle').addEventListener('click', sellerToggleOnlyNew);
+    document.getElementById('sellerApplyFiltersBtn').addEventListener('click', sellerRenderMarketplace);
+    document.getElementById('sellerHistoryBtn').addEventListener('click', sellerToggleHistory);
+
+    document.getElementById('closeSellerRespondModalBtn').addEventListener('click', sellerCloseRespondModal);
+    document.getElementById('submitSellerResponseBtn').addEventListener('click', sellerSubmitResponse);
+
+    document.getElementById('loginModal').addEventListener('click', (e) => {
+      if (e.target.id === 'loginModal') closeLoginModal();
+    });
+
+    document.getElementById('registerModal').addEventListener('click', (e) => {
+      if (e.target.id === 'registerModal') closeRegisterModal();
+    });
+
+    document.getElementById('buyerNotificationsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'buyerNotificationsModal') {
+        document.getElementById('buyerNotificationsModal').classList.add('hidden');
       }
-      await loadMyRequests();
     });
 
-    document.getElementById('goToMyResponsesBtn').addEventListener('click', async () => {
-      sellerSection.classList.remove('hidden');
-      sellerProfileSection.classList.add('hidden');
-      sellerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      await loadMyResponses();
-    });
-
-    document.getElementById('goToProfileBtn').addEventListener('click', async () => {
-      sellerProfileSection.classList.remove('hidden');
-      sellerSection.classList.add('hidden');
-      sellerProfileSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (currentUser) fillSellerProfileForm(currentUser);
-    });
-
-    document.getElementById('goToCreateBtn').addEventListener('click', () => {
-      buyerSection.classList.remove('hidden');
-      buyerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    document.getElementById('searchMarketplace').addEventListener('input', loadMarketplace);
-    document.getElementById('categoryFilter').addEventListener('change', loadMarketplace);
-
-    document.getElementById('sellerProfileModal').addEventListener('click', (e) => {
-      if (e.target.id === 'sellerProfileModal') {
-        closeSellerProfile();
+    document.getElementById('sellerNotificationsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'sellerNotificationsModal') {
+        document.getElementById('sellerNotificationsModal').classList.add('hidden');
       }
+    });
+
+    document.getElementById('sellerRespondModal').addEventListener('click', (e) => {
+      if (e.target.id === 'sellerRespondModal') sellerCloseRespondModal();
     });
 
     fillCitySelect('registerCity');
-    fillCitySelect('profileCity');
-    fillCitySelect('reqCity', true);
-    fillCitySelect('reqCityQuick', true);
-
+    fillCitySelect('buyerReqCity', true);
+    fillCitySelect('sellerCityFilter', true, true);
     updateRegisterFieldsVisibility();
-    loadMe();
-    loadLatestRequests();
 
-    setInterval(() => {
-      if (token) {
-        loadNotifications();
-      }
-    }, 30000);
+    initApp();
   </script>
 </body>
 </html>
