@@ -1193,6 +1193,11 @@
             <select id="buyerReqCity"></select>
 
             <input type="text" id="buyerReqPhone" placeholder="Телефон" />
+
+            <input type="file" id="buyerReqImages" accept="image/jpeg,image/png,image/webp" multiple />
+            <div class="meta">До 6 фото, каждое не больше 5 МБ</div>
+            <div id="buyerReqPreview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;"></div>
+
           </div>
 
           <div>
@@ -1402,6 +1407,9 @@
         <div id="sellerRespondRequestInfo" class="meta" style="margin-bottom:12px;"></div>
         <input type="text" id="sellerRespondPrice" placeholder="Цена" />
         <textarea id="sellerRespondMessage" placeholder="Ваше предложение покупателю"></textarea>
+        <input type="file" id="sellerRespondImages" accept="image/jpeg,image/png,image/webp" multiple />
+        <div class="meta">До 6 фото, каждое не больше 5 МБ</div>
+        <div id="sellerRespondPreview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;"></div>
         <button type="button" class="modal-submit" id="submitSellerResponseBtn">Отправить отклик</button>
         <div id="sellerRespondMsg" class="msg"></div>
       </div>
@@ -1512,7 +1520,45 @@
     function whatsappLink(phone) {
       const clean = String(phone || '').replace(/\D/g, '');
       return clean ? `https://wa.me/${clean}` : '';
-    }
+      }
+
+      function renderPreview(inputId, previewId) {
+        function renderImages(images) {
+  if (!images || !images.length) return '';
+
+  return `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+      ${images.map(img => `
+        <img 
+          src="${img}" 
+          onclick="window.open('${img}', '_blank')"
+          style="width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid #e5e7eb;"
+        />
+      `).join('')}
+    </div>
+  `;
+}
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+
+  if (!input || !preview) return;
+
+  input.addEventListener('change', () => {
+    preview.innerHTML = '';
+
+    const files = Array.from(input.files || []).slice(0, 6);
+
+    files.forEach(file => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.style.width = '100%';
+      img.style.height = '90px';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '8px';
+      preview.appendChild(img);
+    });
+  });
+}
 
     async function api(url, options = {}) {
       const headers = options.headers || {};
@@ -1623,6 +1669,8 @@
 
         setTimeout(async () => {
           closeLoginModal();
+          renderPreview('buyerReqImages', 'buyerReqPreview');
+          renderPreview('sellerRespondImages', 'sellerRespondPreview');
           await initApp();
         }, 400);
       } catch (err) {
@@ -1684,35 +1732,49 @@
     }
 
     // BUYER
-    async function buyerCreateRequest() {
-      try {
-        const payload = {
-          title: document.getElementById('buyerReqTitle').value.trim(),
-          description: document.getElementById('buyerReqDescription').value.trim(),
-          category: document.getElementById('buyerReqCategory').value.trim(),
-          city: document.getElementById('buyerReqCity').value.trim(),
-          phone: document.getElementById('buyerReqPhone').value.trim()
-        };
+   async function buyerCreateRequest() {
+  try {
+    const formData = new FormData();
 
-        const data = await api('/api/requests', {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+    formData.append('title', document.getElementById('buyerReqTitle').value.trim());
+    formData.append('description', document.getElementById('buyerReqDescription').value.trim());
+    formData.append('category', document.getElementById('buyerReqCategory').value.trim());
+    formData.append('city', document.getElementById('buyerReqCity').value.trim());
+    formData.append('phone', document.getElementById('buyerReqPhone').value.trim());
 
-        setMsg('buyerRequestMsg', data.message, 'green');
+    const files = Array.from(document.getElementById('buyerReqImages').files || []).slice(0, 6);
+    files.forEach(file => formData.append('images', file));
 
-        document.getElementById('buyerReqTitle').value = '';
-        document.getElementById('buyerReqDescription').value = '';
-        document.getElementById('buyerReqCategory').value = '';
-        document.getElementById('buyerReqCity').value = '';
-        document.getElementById('buyerReqPhone').value = '';
+    const res = await fetch('/api/requests', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
 
-        await buyerLoadRequests(true);
-        await buyerLoadNotifications();
-      } catch (err) {
-        setMsg('buyerRequestMsg', err.message, 'red');
-      }
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Ошибка');
     }
+
+    setMsg('buyerRequestMsg', data.message, 'green');
+
+    document.getElementById('buyerReqTitle').value = '';
+    document.getElementById('buyerReqDescription').value = '';
+    document.getElementById('buyerReqCategory').value = '';
+    document.getElementById('buyerReqCity').value = '';
+    document.getElementById('buyerReqPhone').value = '';
+    document.getElementById('buyerReqImages').value = '';
+    document.getElementById('buyerReqPreview').innerHTML = '';
+
+    await buyerLoadRequests(true);
+    await buyerLoadNotifications();
+  } catch (err) {
+    setMsg('buyerRequestMsg', err.message, 'red');
+  }
+}
 
     function buyerRenderRequests() {
       const box = document.getElementById('buyerRequestsList');
@@ -1876,6 +1938,7 @@
             </div>
 
             <div class="offer-message">${escapeHtml(item.message)}</div>
+            ${renderImages(item.images)}
 
             <div class="offer-actions">
               <button type="button" class="message-btn">Написать</button>
@@ -1930,33 +1993,49 @@
     }
 
     async function sellerSubmitResponse() {
-      if (!selectedRequestForResponse) return;
+  if (!selectedRequestForResponse) return;
 
-      try {
-        const payload = {
-          price: document.getElementById('sellerRespondPrice').value.trim(),
-          message: document.getElementById('sellerRespondMessage').value.trim()
-        };
+  try {
+    const formData = new FormData();
+    formData.append('price', document.getElementById('sellerRespondPrice').value.trim());
+    formData.append('message', document.getElementById('sellerRespondMessage').value.trim());
 
-        const data = await api(`/api/requests/${selectedRequestForResponse.id}/respond`, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+    const files = Array.from(document.getElementById('sellerRespondImages').files || []).slice(0, 6);
+    files.forEach(file => formData.append('images', file));
 
-        setMsg('sellerRespondMsg', data.message, 'green');
+    const res = await fetch(`/api/requests/${selectedRequestForResponse.id}/respond`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
 
-        await sellerLoadMarketplace();
-        await sellerLoadResponses();
-        await sellerLoadNotifications();
-        sellerUpdateStats();
+    const data = await res.json().catch(() => ({}));
 
-        setTimeout(() => {
-          sellerCloseRespondModal();
-        }, 600);
-      } catch (err) {
-        setMsg('sellerRespondMsg', err.message, 'red');
-      }
+    if (!res.ok) {
+      throw new Error(data.message || 'Ошибка');
     }
+
+    setMsg('sellerRespondMsg', data.message, 'green');
+
+    await sellerLoadMarketplace();
+    await sellerLoadResponses();
+    await sellerLoadNotifications();
+    sellerUpdateStats();
+
+    document.getElementById('sellerRespondPrice').value = '';
+    document.getElementById('sellerRespondMessage').value = '';
+    document.getElementById('sellerRespondImages').value = '';
+    document.getElementById('sellerRespondPreview').innerHTML = '';
+
+    setTimeout(() => {
+      sellerCloseRespondModal();
+    }, 600);
+  } catch (err) {
+    setMsg('sellerRespondMsg', err.message, 'red');
+  }
+}
 
     function sellerRenderMarketplace() {
       const box = document.getElementById('sellerMarketplaceList');
@@ -2012,6 +2091,7 @@
             </div>
 
             <div class="request-desc">${escapeHtml(item.description || '')}</div>
+            ${renderImages(item.images)}
 
             <div class="request-footer">
               <div class="timer-line">🕘 История откликов</div>
