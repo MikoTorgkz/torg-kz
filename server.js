@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,21 +33,56 @@ const ALLOWED_CITIES = [
 
 const ALL_KAZAKHSTAN_LABEL = 'Весь Казахстан';
 
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR);
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOAD_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    cb(null, `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+  }
+});
+
+function fileFilter(req, file, cb) {
+  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  if (!allowed.includes(file.mimetype)) {
+    return cb(new Error('Можно загружать только JPG, PNG или WEBP'));
+  }
+  cb(null, true);
+}
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 6
+  },
+  fileFilter
+});
+
+app.use('/uploads', express.static(UPLOAD_DIR));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
 function ensureDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
-    const initialData = {
-      users: [],
-      requests: [],
-      responses: [],
-      sessions: {},
-      notifications: []
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-  }
+ const initialData = {
+  users: [],
+  requests: [],
+  responses: [],
+  sessions: {},
+  notifications: [],
+  reviews: []
+};
+}
 }
 
 function readData() {
@@ -57,6 +93,7 @@ function readData() {
   if (!raw.requests) raw.requests = [];
   if (!raw.responses) raw.responses = [];
   if (!raw.sessions) raw.sessions = {};
+  if (!raw.reviews) raw.reviews = [];
 
   raw.users = raw.users.map(user => ({
     ...user,
@@ -150,6 +187,15 @@ function cleanupExpiredRequests(data) {
     }
     return request;
   });
+}
+
+function calculateSellerRating(data, sellerId) {
+  const reviews = (data.reviews || []).filter(item => item.sellerId === sellerId);
+
+  if (!reviews.length) return null;
+
+  const avg = reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / reviews.length;
+  return Number(avg.toFixed(1));
 }
 
 function auth(req, res, next) {
@@ -310,7 +356,7 @@ app.post('/api/logout', auth, (req, res) => {
   res.json({ message: 'Вы вышли из аккаунта' });
 });
 
-app.post('/api/requests', auth, (req, res) => {
+app.post('/api/requests', auth, upload.array('images', 6), (req, res) => {
   if (req.user.role !== 'buyer') {
     return res.status(403).json({ message: 'Только покупатель может создавать заявки' });
   }
@@ -336,6 +382,7 @@ app.post('/api/requests', auth, (req, res) => {
     category: String(category || '').trim(),
     city: normalizeCity(city, true),
     phone: String(phone).trim(),
+    images: req.files ? req.files.map(file => '/uploads/' + file.filename) : [],
     status: 'open',
     selectedSellerId: null,
     selectedPrice: null,
@@ -416,7 +463,7 @@ app.get('/api/marketplace', auth, (req, res) => {
   res.json(list);
 });
 
-app.post('/api/requests/:id/respond', auth, (req, res) => {
+app.post('/api/requests/:id/respond', auth, upload.array('images', 6), (req, res) => {
   if (req.user.role !== 'seller') {
     return res.status(403).json({ message: 'Только продавец может отвечать на заявки' });
   }
@@ -463,6 +510,7 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
     sellerName: req.user.name,
     price: String(price).trim(),
     message: String(message).trim(),
+    images: req.files ? req.files.map(file => '/uploads/' + file.filename) : [],
     createdAt: Date.now()
   };
 
@@ -533,7 +581,7 @@ app.get('/api/requests/:id/responses', auth, (req, res) => {
         sellerId: response.sellerId,
         sellerWhatsapp: seller?.whatsapp || '',
         sellerCity: seller?.city || '',
-        sellerRating: null
+        sellerRating: seller ? calculateSellerRating(req.data, seller.id) : null
       };
     });
 
@@ -619,6 +667,59 @@ app.put('/api/notifications/read', auth, (req, res) => {
   writeData(req.data);
 
   res.json({ message: 'Уведомления отмечены как прочитанные' });
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'Одно фото не должно превышать 5 МБ' });
+    }
+
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ message: 'Можно загрузить максимум 6 фото' });
+    }
+
+    return res.status(400).json({ message: err.message || 'Ошибка загрузки файлов' });
+  }
+
+  if (err) {
+    return res.status(400).json({ message: err.message || 'Ошибка сервера' });
+  }
+
+  next();
+});
+
+app.get('/api/sellers/:sellerId', auth, (req, res) => {
+  const { sellerId } = req.params;
+
+  const seller = req.data.users.find(user => user.id === sellerId && user.role === 'seller');
+
+  if (!seller) {
+    return res.status(404).json({ message: 'Продавец не найден' });
+  }
+
+  const sellerReviews = (req.data.reviews || [])
+    .filter(review => review.sellerId === sellerId)
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  const rating = calculateSellerRating(req.data, sellerId);
+
+  res.json({
+    id: seller.id,
+    name: seller.name,
+    city: seller.city || '',
+    address: seller.address || '',
+    whatsapp: seller.whatsapp || '',
+    about: seller.about || '',
+    rating,
+    reviews: sellerReviews.map(review => ({
+      id: review.id,
+      authorName: review.authorName,
+      rating: review.rating,
+      text: review.text,
+      createdAt: review.createdAt
+    }))
+  });
 });
 
 app.listen(PORT, () => {
