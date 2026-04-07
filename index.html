@@ -1415,8 +1415,57 @@
       </div>
     </div>
   </div>
+  <div id="sellerProfileModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 class="modal-title">Карточка продавца</h3>
+      <button type="button" class="modal-close" id="closeSellerProfileModalBtn">Закрыть</button>
+    </div>
+    <div class="modal-body" id="sellerProfileContent"></div>
+  </div>
+</div>
 
   <script>
+
+    document.getElementById('closeSellerProfileModalBtn').addEventListener('click', () => {
+  document.getElementById('sellerProfileModal').classList.add('hidden');
+});
+
+document.getElementById('sellerProfileModal').addEventListener('click', (e) => {
+  if (e.target.id === 'sellerProfileModal') {
+    document.getElementById('sellerProfileModal').classList.add('hidden');
+  }
+});
+
+    async function submitSellerReview() {
+  if (!openedSellerId) return;
+
+  try {
+    if (!selectedSellerRating) {
+      setMsg('sellerReviewMsg', 'Поставь оценку от 1 до 5', 'red');
+      return;
+    }
+
+    const text = document.getElementById('sellerReviewText').value.trim();
+
+    const data = await api(`/api/sellers/${openedSellerId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify({
+        rating: selectedSellerRating,
+        text
+      })
+    });
+
+    setMsg('sellerReviewMsg', data.message, 'green');
+
+    setTimeout(() => {
+      openSellerProfile(openedSellerId);
+    }, 500);
+  } catch (err) {
+    setMsg('sellerReviewMsg', err.message, 'red');
+  }
+}
+
     const tokenKey = 'token';
     let token = localStorage.getItem(tokenKey) || '';
     let currentUser = null;
@@ -1521,6 +1570,121 @@
       const clean = String(phone || '').replace(/\D/g, '');
       return clean ? `https://wa.me/${clean}` : '';
       }
+
+      function renderImages(images) {
+  if (!images || !images.length) return '';
+
+  return `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+      ${images.map(img => `
+        <img 
+          src="${img}" 
+          onclick="window.open('${img}', '_blank')"
+          style="width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid #e5e7eb;"
+        />
+      `).join('')}
+    </div>
+  `;
+}
+
+      let openedSellerId = null;
+let selectedSellerRating = 0;
+
+function renderStarsInput(current = 0) {
+  return `
+    <div id="sellerRatingStars" style="display:flex;gap:8px;font-size:28px;margin:10px 0 14px;">
+      ${[1,2,3,4,5].map(num => `
+        <span 
+          data-rating="${num}" 
+          style="cursor:pointer;color:${num <= current ? '#fbbf24' : '#d1d5db'};"
+        >★</span>
+      `).join('')}
+    </div>
+  `;
+}
+
+function bindRatingStars() {
+  const stars = document.querySelectorAll('#sellerRatingStars span');
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      selectedSellerRating = Number(star.dataset.rating);
+      stars.forEach(item => {
+        item.style.color = Number(item.dataset.rating) <= selectedSellerRating ? '#fbbf24' : '#d1d5db';
+      });
+    });
+  });
+}
+
+async function openSellerProfile(sellerId) {
+  try {
+    openedSellerId = sellerId;
+    selectedSellerRating = 0;
+
+    const modal = document.getElementById('sellerProfileModal');
+    const content = document.getElementById('sellerProfileContent');
+
+    modal.classList.remove('hidden');
+    content.innerHTML = 'Загрузка...';
+
+    const seller = await api(`/api/sellers/${sellerId}`);
+
+    const reviewsHtml = seller.reviews && seller.reviews.length
+      ? seller.reviews.map(review => `
+          <div class="offer-card" style="margin-bottom:10px;">
+            <div style="font-weight:800;">${escapeHtml(review.authorName || 'Покупатель')}</div>
+            <div class="meta">Оценка: ${escapeHtml(review.rating)} ★</div>
+            <div style="margin-top:8px;">${escapeHtml(review.text || '')}</div>
+            <div class="meta" style="margin-top:8px;">${escapeHtml(formatDate(review.createdAt))}</div>
+          </div>
+        `).join('')
+      : `<div class="empty-box">Пока нет отзывов</div>`;
+
+    const waLink = whatsappLink(seller.whatsapp);
+
+    content.innerHTML = `
+      <div class="offer-card">
+        <div class="offer-name">${escapeHtml(seller.name)}</div>
+        <div class="offer-meta">
+          Город: ${escapeHtml(seller.city || 'Не указан')}<br>
+          Рейтинг: ${seller.rating !== null ? escapeHtml(seller.rating) + ' ★' : 'Нет оценок'}
+        </div>
+        <div style="margin-top:12px;">${escapeHtml(seller.about || '')}</div>
+        ${
+          waLink
+            ? `<div style="margin-top:14px;"><a class="wa-btn" href="${waLink}" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>`
+            : ''
+        }
+      </div>
+
+      <div style="margin-top:20px;">
+        <h4 style="margin:0 0 12px;">Отзывы</h4>
+        ${reviewsHtml}
+      </div>
+
+      ${
+        currentUser && currentUser.role === 'buyer'
+          ? `
+            <div style="margin-top:20px;">
+              <h4 style="margin:0 0 12px;">Оставить отзыв</h4>
+              ${renderStarsInput()}
+              <textarea id="sellerReviewText" placeholder="Напишите отзыв"></textarea>
+              <button type="button" class="modal-submit" id="submitSellerReviewBtn">Отправить отзыв</button>
+              <div id="sellerReviewMsg" class="msg"></div>
+            </div>
+          `
+          : ''
+      }
+    `;
+
+    if (currentUser && currentUser.role === 'buyer') {
+      bindRatingStars();
+
+      document.getElementById('submitSellerReviewBtn').addEventListener('click', submitSellerReview);
+    }
+  } catch (err) {
+    document.getElementById('sellerProfileContent').innerHTML = `<div class="empty-box">${escapeHtml(err.message)}</div>`;
+  }
+}
 
       function renderPreview(inputId, previewId) {
         function renderImages(images) {
@@ -1943,6 +2107,7 @@
             <div class="offer-actions">
               <button type="button" class="message-btn">Написать</button>
               <button type="button" class="chat-btn">💬</button>
+              <button type="button" class="chat-btn" onclick="openSellerProfile('${item.sellerId}')">Профиль</button>
               ${
                 waLink
                   ? `<a class="wa-btn" href="${waLink}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
