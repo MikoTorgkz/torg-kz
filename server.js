@@ -43,57 +43,10 @@ function ensureDataFile() {
       requests: [],
       responses: [],
       sessions: {},
-      reviews: []
+      notifications: []
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
   }
-}
-
-function normalizeText(str) {
-  return String(str || '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, ' ');
-}
-
-function cityKey(city) {
-  return normalizeText(city);
-}
-
-function isAllKazakhstan(city) {
-  return cityKey(city) === cityKey(ALL_KAZAKHSTAN_LABEL);
-}
-
-function findCanonicalCity(city) {
-  const key = cityKey(city);
-  return ALLOWED_CITIES.find(item => cityKey(item) === key) || null;
-}
-
-function normalizeStoredCity(city, allowAllKazakhstan = false) {
-  if (allowAllKazakhstan && isAllKazakhstan(city)) {
-    return ALL_KAZAKHSTAN_LABEL;
-  }
-  return findCanonicalCity(city) || '';
-}
-
-function citiesMatch(cityA, cityB) {
-  return cityKey(cityA) === cityKey(cityB);
-}
-
-function ensureNotificationsArray(user) {
-  if (!Array.isArray(user.notifications)) {
-    user.notifications = [];
-  }
-}
-
-function createNotification(text, type = 'info') {
-  return {
-    id: generateId('notif_'),
-    text: String(text || '').trim(),
-    type,
-    isRead: false,
-    createdAt: Date.now()
-  };
 }
 
 function readData() {
@@ -104,21 +57,19 @@ function readData() {
   if (!raw.requests) raw.requests = [];
   if (!raw.responses) raw.responses = [];
   if (!raw.sessions) raw.sessions = {};
-  if (!raw.reviews) raw.reviews = [];
 
   raw.users = raw.users.map(user => ({
     ...user,
-    city: user.role === 'seller' ? normalizeStoredCity(user.city) : (user.city || ''),
     notifications: Array.isArray(user.notifications) ? user.notifications : []
   }));
 
-  raw.requests = raw.requests.map(requestItem => ({
-    ...requestItem,
-    city: normalizeStoredCity(requestItem.city, true),
-    category: String(requestItem.category || '').trim(),
-    selectedSellerId: requestItem.selectedSellerId || null,
-    selectedPrice: requestItem.selectedPrice || null,
-    selectedAt: requestItem.selectedAt || null
+  raw.requests = raw.requests.map(request => ({
+    ...request,
+    category: String(request.category || '').trim(),
+    city: String(request.city || '').trim(),
+    selectedSellerId: request.selectedSellerId || null,
+    selectedPrice: request.selectedPrice || null,
+    selectedAt: request.selectedAt || null
   }));
 
   return raw;
@@ -149,51 +100,56 @@ function verifyPassword(password, storedPassword) {
   );
 }
 
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function normalizeCity(city, allowAllKazakhstan = false) {
+  const normalized = String(city || '').trim();
+
+  if (allowAllKazakhstan && normalizeText(normalized) === normalizeText(ALL_KAZAKHSTAN_LABEL)) {
+    return ALL_KAZAKHSTAN_LABEL;
+  }
+
+  const found = ALLOWED_CITIES.find(item => normalizeText(item) === normalizeText(normalized));
+  return found || '';
+}
+
 function isAllowedCity(city, allowAllKazakhstan = false) {
-  if (allowAllKazakhstan && isAllKazakhstan(city)) {
+  if (allowAllKazakhstan && normalizeText(city) === normalizeText(ALL_KAZAKHSTAN_LABEL)) {
     return true;
   }
-  return !!findCanonicalCity(city);
+  return !!normalizeCity(city, false);
+}
+
+function ensureNotificationsArray(user) {
+  if (!Array.isArray(user.notifications)) {
+    user.notifications = [];
+  }
+}
+
+function createNotification(text, type = 'info') {
+  return {
+    id: generateId('notif_'),
+    text: String(text || '').trim(),
+    type,
+    isRead: false,
+    createdAt: Date.now()
+  };
 }
 
 function cleanupExpiredRequests(data) {
   const now = Date.now();
 
-  data.requests = data.requests.map(requestItem => {
-    if (requestItem.status === 'open' && requestItem.expiresAt && now > requestItem.expiresAt) {
-      return { ...requestItem, status: 'expired' };
+  data.requests = data.requests.map(request => {
+    if (request.status === 'open' && request.expiresAt && now > request.expiresAt) {
+      return {
+        ...request,
+        status: 'expired'
+      };
     }
-    return requestItem;
+    return request;
   });
-}
-
-function calculateSellerRating(data, sellerId) {
-  const sellerReviews = (data.reviews || []).filter(r => r.sellerId === sellerId);
-  if (!sellerReviews.length) return null;
-
-  const avg =
-    sellerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
-    sellerReviews.length;
-
-  return Number(avg.toFixed(1));
-}
-
-function sanitizeRequestForPublic(requestItem, responsesCount = 0) {
-  return {
-    id: requestItem.id,
-    buyerId: requestItem.buyerId,
-    title: requestItem.title,
-    description: requestItem.description,
-    category: requestItem.category || '',
-    city: requestItem.city,
-    status: requestItem.status,
-    createdAt: requestItem.createdAt,
-    expiresAt: requestItem.expiresAt,
-    responsesCount,
-    selectedSellerId: requestItem.selectedSellerId || null,
-    selectedPrice: requestItem.selectedPrice || null,
-    selectedAt: requestItem.selectedAt || null
-  };
 }
 
 function auth(req, res, next) {
@@ -212,38 +168,42 @@ function auth(req, res, next) {
   }
 
   const user = data.users.find(u => u.id === session.userId);
+
   if (!user) {
     return res.status(401).json({ message: 'Пользователь не найден' });
   }
 
-  req.user = user;
   req.token = token;
+  req.user = user;
   req.data = data;
   next();
+}
+
+function canSellerSeeRequest(seller, request) {
+  const sellerCity = normalizeCity(seller.city);
+  const requestCity = normalizeCity(request.city, true);
+
+  if (requestCity === ALL_KAZAKHSTAN_LABEL) return true;
+  if (!sellerCity) return false;
+
+  return normalizeText(sellerCity) === normalizeText(requestCity);
 }
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/api/public-requests', (req, res) => {
-  const data = readData();
-  cleanupExpiredRequests(data);
-  writeData(data);
-
-  const list = data.requests
-    .filter(r => r.status === 'open')
-    .slice(0, 8)
-    .map(requestItem => {
-      const responsesCount = data.responses.filter(r => r.requestId === requestItem.id).length;
-      return sanitizeRequestForPublic(requestItem, responsesCount);
-    });
-
-  res.json(list);
-});
-
 app.post('/api/register', (req, res) => {
-  const { role, name, email, password, city, address, whatsapp, about } = req.body;
+  const {
+    role,
+    name,
+    email,
+    password,
+    city,
+    address,
+    whatsapp,
+    about
+  } = req.body;
 
   if (!role || !name || !email || !password) {
     return res.status(400).json({ message: 'Заполни все обязательные поля' });
@@ -264,7 +224,7 @@ app.post('/api/register', (req, res) => {
     return res.status(400).json({ message: 'Имя слишком короткое' });
   }
 
-  if (String(password).length < 4) {
+  if (String(password).trim().length < 4) {
     return res.status(400).json({ message: 'Пароль должен быть не короче 4 символов' });
   }
 
@@ -281,7 +241,7 @@ app.post('/api/register', (req, res) => {
     name: normalizedName,
     email: normalizedEmail,
     password: hashPassword(password),
-    city: role === 'seller' ? normalizeStoredCity(city) : '',
+    city: role === 'seller' ? normalizeCity(city) : '',
     address: role === 'seller' ? String(address || '').trim() : '',
     whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
     about: role === 'seller' ? String(about || '').trim() : '',
@@ -311,6 +271,7 @@ app.post('/api/login', (req, res) => {
   }
 
   const token = generateId('token_');
+
   data.sessions[token] = {
     userId: user.id,
     createdAt: Date.now()
@@ -373,7 +334,7 @@ app.post('/api/requests', auth, (req, res) => {
     title: String(title).trim(),
     description: String(description).trim(),
     category: String(category || '').trim(),
-    city: normalizeStoredCity(city, true),
+    city: normalizeCity(city, true),
     phone: String(phone).trim(),
     status: 'open',
     selectedSellerId: null,
@@ -385,81 +346,74 @@ app.post('/api/requests', auth, (req, res) => {
 
   req.data.requests.unshift(requestItem);
 
-  const sellers = req.data.users.filter(user => user.role === 'seller');
-  sellers.forEach(seller => {
-    const sellerCity = normalizeStoredCity(seller.city);
-    const requestCity = normalizeStoredCity(requestItem.city, true);
-
-    const canSeeRequest =
-      requestCity === ALL_KAZAKHSTAN_LABEL ||
-      (sellerCity && citiesMatch(requestCity, sellerCity));
-
-    if (canSeeRequest) {
-      ensureNotificationsArray(seller);
-      seller.notifications.unshift(
-        createNotification(`Новая заявка: ${requestItem.title}`, 'new_request')
-      );
-    }
-  });
+  req.data.users
+    .filter(user => user.role === 'seller')
+    .forEach(seller => {
+      if (canSellerSeeRequest(seller, requestItem)) {
+        ensureNotificationsArray(seller);
+        seller.notifications.unshift(
+          createNotification(`Новая заявка: ${requestItem.title}`, 'new_request')
+        );
+      }
+    });
 
   writeData(req.data);
 
-  res.json({ message: 'Заявка опубликована', request: requestItem });
+  res.json({
+    message: 'Заявка опубликована',
+    request: requestItem
+  });
 });
 
 app.get('/api/requests', auth, (req, res) => {
   cleanupExpiredRequests(req.data);
+  writeData(req.data);
 
-  const enriched = req.data.requests.map(requestItem => {
-    const responses = req.data.responses.filter(r => r.requestId === requestItem.id);
+  const enriched = req.data.requests.map(request => {
+    const responsesCount = req.data.responses.filter(r => r.requestId === request.id).length;
     return {
-      ...requestItem,
-      responsesCount: responses.length
+      ...request,
+      responsesCount
     };
   });
 
-  writeData(req.data);
-
-  if (req.user.role === 'seller') {
-    return res.json(enriched);
+  if (req.user.role === 'buyer') {
+    return res.json(enriched.filter(r => r.buyerId === req.user.id));
   }
 
-  const buyerRequests = enriched.filter(r => r.buyerId === req.user.id);
-  res.json(buyerRequests);
+  return res.json(enriched);
 });
 
 app.get('/api/marketplace', auth, (req, res) => {
   cleanupExpiredRequests(req.data);
   writeData(req.data);
 
-  let requests = req.data.requests.map(requestItem => {
-    const responses = req.data.responses.filter(r => r.requestId === requestItem.id);
-
+  let list = req.data.requests.map(request => {
+    const responses = req.data.responses.filter(r => r.requestId === request.id);
     const hasResponded = req.user.role === 'seller'
       ? responses.some(r => r.sellerId === req.user.id)
       : false;
 
     return {
-      ...sanitizeRequestForPublic(requestItem, responses.length),
+      ...request,
+      responsesCount: responses.length,
       hasResponded
     };
   });
 
   if (req.user.role === 'seller') {
-    const sellerCity = normalizeStoredCity(req.user.city);
-
-    requests = requests.filter(requestItem => {
-      const requestCity = normalizeStoredCity(requestItem.city, true);
-
-      const matchesCity =
-        requestCity === ALL_KAZAKHSTAN_LABEL ||
-        (sellerCity && citiesMatch(requestCity, sellerCity));
-
-      return matchesCity && !requestItem.hasResponded && requestItem.status === 'open';
-    });
+    list = list.filter(request =>
+      request.status === 'open' &&
+      canSellerSeeRequest(req.user, request) &&
+      !request.hasResponded
+    );
   }
 
-  res.json(requests);
+  if (req.user.role === 'buyer') {
+    list = list.filter(request => request.buyerId === req.user.id);
+  }
+
+  res.json(list);
 });
 
 app.post('/api/requests/:id/respond', auth, (req, res) => {
@@ -467,34 +421,28 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
     return res.status(403).json({ message: 'Только продавец может отвечать на заявки' });
   }
 
-  const { message, price } = req.body;
+  const { price, message } = req.body;
   const requestId = req.params.id;
 
-  if (!message || !price) {
-    return res.status(400).json({ message: 'Укажи сообщение и цену' });
+  if (!price || !message) {
+    return res.status(400).json({ message: 'Укажи цену и сообщение' });
   }
 
   cleanupExpiredRequests(req.data);
 
-  const requestItem = req.data.requests.find(r => r.id === requestId);
-  if (!requestItem) {
+  const request = req.data.requests.find(r => r.id === requestId);
+
+  if (!request) {
     writeData(req.data);
     return res.status(404).json({ message: 'Заявка не найдена' });
   }
 
-  if (requestItem.status !== 'open') {
+  if (request.status !== 'open') {
     writeData(req.data);
     return res.status(400).json({ message: 'На эту заявку уже нельзя ответить' });
   }
 
-  const sellerCity = normalizeStoredCity(req.user.city);
-  const requestCity = normalizeStoredCity(requestItem.city, true);
-
-  const canSeeRequest =
-    requestCity === ALL_KAZAKHSTAN_LABEL ||
-    (sellerCity && citiesMatch(requestCity, sellerCity));
-
-  if (!canSeeRequest) {
+  if (!canSellerSeeRequest(req.user, request)) {
     writeData(req.data);
     return res.status(403).json({ message: 'Эта заявка недоступна для твоего города' });
   }
@@ -505,7 +453,7 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
 
   if (alreadyResponded) {
     writeData(req.data);
-    return res.status(400).json({ message: 'Ты уже отвечал на эту заявку' });
+    return res.status(400).json({ message: 'Ты уже откликнулся на эту заявку' });
   }
 
   const responseItem = {
@@ -513,24 +461,83 @@ app.post('/api/requests/:id/respond', auth, (req, res) => {
     requestId,
     sellerId: req.user.id,
     sellerName: req.user.name,
-    message: String(message).trim(),
     price: String(price).trim(),
+    message: String(message).trim(),
     createdAt: Date.now()
   };
 
   req.data.responses.unshift(responseItem);
 
-  const buyer = req.data.users.find(u => u.id === requestItem.buyerId);
+  const buyer = req.data.users.find(u => u.id === request.buyerId);
   if (buyer) {
     ensureNotificationsArray(buyer);
     buyer.notifications.unshift(
-      createNotification(`На вашу заявку "${requestItem.title}" пришёл новый ответ`, 'new_response')
+      createNotification(`На вашу заявку "${request.title}" пришёл новый отклик`, 'new_response')
     );
   }
 
   writeData(req.data);
 
-  res.json({ message: 'Ответ отправлен', response: responseItem });
+  res.json({
+    message: 'Отклик отправлен',
+    response: responseItem
+  });
+});
+
+app.get('/api/my-responses', auth, (req, res) => {
+  if (req.user.role !== 'seller') {
+    return res.status(403).json({ message: 'Только продавец может смотреть свои отклики' });
+  }
+
+  cleanupExpiredRequests(req.data);
+  writeData(req.data);
+
+  const list = req.data.responses
+    .filter(response => response.sellerId === req.user.id)
+    .map(response => {
+      const request = req.data.requests.find(r => r.id === response.requestId);
+
+      return {
+        ...response,
+        requestId: response.requestId,
+        requestTitle: request ? request.title : 'Заявка удалена',
+        requestCategory: request ? request.category : '',
+        requestCity: request ? request.city : '',
+        requestStatus: request ? request.status : 'closed',
+        selectedSellerId: request ? request.selectedSellerId : null
+      };
+    });
+
+  res.json(list);
+});
+
+app.get('/api/requests/:id/responses', auth, (req, res) => {
+  const requestId = req.params.id;
+  const request = req.data.requests.find(r => r.id === requestId);
+
+  if (!request) {
+    return res.status(404).json({ message: 'Заявка не найдена' });
+  }
+
+  if (req.user.role === 'buyer' && request.buyerId !== req.user.id) {
+    return res.status(403).json({ message: 'Нет доступа' });
+  }
+
+  const responses = req.data.responses
+    .filter(response => response.requestId === requestId)
+    .map(response => {
+      const seller = req.data.users.find(u => u.id === response.sellerId && u.role === 'seller');
+
+      return {
+        ...response,
+        sellerId: response.sellerId,
+        sellerWhatsapp: seller?.whatsapp || '',
+        sellerCity: seller?.city || '',
+        sellerRating: null
+      };
+    });
+
+  res.json(responses);
 });
 
 app.post('/api/requests/:id/select', auth, (req, res) => {
@@ -538,41 +545,41 @@ app.post('/api/requests/:id/select', auth, (req, res) => {
     return res.status(403).json({ message: 'Только покупатель может выбирать продавца' });
   }
 
-  const { id } = req.params;
+  const requestId = req.params.id;
   const { sellerId } = req.body;
 
-  const requestItem = req.data.requests.find(r => r.id === id);
+  const request = req.data.requests.find(r => r.id === requestId);
 
-  if (!requestItem) {
+  if (!request) {
     return res.status(404).json({ message: 'Заявка не найдена' });
   }
 
-  if (requestItem.buyerId !== req.user.id) {
+  if (request.buyerId !== req.user.id) {
     return res.status(403).json({ message: 'Это не твоя заявка' });
   }
 
-  if (requestItem.status !== 'open') {
+  if (request.status !== 'open') {
     return res.status(400).json({ message: 'Заявка уже закрыта' });
   }
 
   const response = req.data.responses.find(
-    r => r.requestId === id && r.sellerId === sellerId
+    r => r.requestId === requestId && r.sellerId === sellerId
   );
 
   if (!response) {
-    return res.status(404).json({ message: 'Ответ продавца не найден' });
+    return res.status(404).json({ message: 'Отклик продавца не найден' });
   }
 
-  requestItem.status = 'closed';
-  requestItem.selectedSellerId = sellerId;
-  requestItem.selectedPrice = response.price;
-  requestItem.selectedAt = Date.now();
+  request.status = 'closed';
+  request.selectedSellerId = sellerId;
+  request.selectedPrice = response.price;
+  request.selectedAt = Date.now();
 
   const seller = req.data.users.find(u => u.id === sellerId);
   if (seller) {
     ensureNotificationsArray(seller);
     seller.notifications.unshift(
-      createNotification(`Покупатель выбрал вас по заявке "${requestItem.title}"`, 'deal_selected')
+      createNotification(`Покупатель выбрал вас по заявке "${request.title}"`, 'deal_selected')
     );
   }
 
@@ -580,64 +587,8 @@ app.post('/api/requests/:id/select', auth, (req, res) => {
 
   res.json({
     message: 'Продавец выбран',
-    request: requestItem
+    request
   });
-});
-
-app.get('/api/requests/:id/responses', auth, (req, res) => {
-  const requestId = req.params.id;
-  const requestItem = req.data.requests.find(r => r.id === requestId);
-
-  if (!requestItem) {
-    return res.status(404).json({ message: 'Заявка не найдена' });
-  }
-
-  if (req.user.role === 'buyer' && requestItem.buyerId !== req.user.id) {
-    return res.status(403).json({ message: 'Нет доступа' });
-  }
-
-  const responses = req.data.responses
-    .filter(r => r.requestId === requestId)
-    .map(response => {
-      const seller = req.data.users.find(u => u.id === response.sellerId && u.role === 'seller');
-      return {
-        ...response,
-        sellerId: response.sellerId,
-        sellerWhatsapp: seller?.whatsapp || '',
-        sellerCity: seller?.city || '',
-        sellerAddress: seller?.address || '',
-        sellerAbout: seller?.about || '',
-        sellerRating: seller ? calculateSellerRating(req.data, seller.id) : null
-      };
-    });
-
-  res.json(responses);
-});
-
-app.get('/api/my-responses', auth, (req, res) => {
-  if (req.user.role !== 'seller') {
-    return res.status(403).json({ message: 'Только продавец может смотреть свои ответы' });
-  }
-
-  cleanupExpiredRequests(req.data);
-  writeData(req.data);
-
-  const myResponses = req.data.responses
-    .filter(r => r.sellerId === req.user.id)
-    .map(response => {
-      const requestItem = req.data.requests.find(r => r.id === response.requestId);
-      return {
-        ...response,
-        requestId: response.requestId,
-        requestTitle: requestItem ? requestItem.title : 'Заявка удалена',
-        requestCategory: requestItem ? requestItem.category : '',
-        requestCity: requestItem ? requestItem.city : '',
-        requestStatus: requestItem ? requestItem.status : 'closed',
-        selectedSellerId: requestItem ? requestItem.selectedSellerId : null
-      };
-    });
-
-  res.json(myResponses);
 });
 
 app.get('/api/notifications', auth, (req, res) => {
@@ -668,121 +619,6 @@ app.put('/api/notifications/read', auth, (req, res) => {
   writeData(req.data);
 
   res.json({ message: 'Уведомления отмечены как прочитанные' });
-});
-
-app.get('/api/sellers/:sellerId', auth, (req, res) => {
-  const { sellerId } = req.params;
-
-  const seller = req.data.users.find(
-    u => u.id === sellerId && u.role === 'seller'
-  );
-
-  if (!seller) {
-    return res.status(404).json({ message: 'Продавец не найден' });
-  }
-
-  const sellerReviews = (req.data.reviews || [])
-    .filter(r => r.sellerId === sellerId)
-    .sort((a, b) => b.createdAt - a.createdAt);
-
-  const rating = calculateSellerRating(req.data, sellerId);
-
-  res.json({
-    id: seller.id,
-    name: seller.name,
-    city: seller.city || '',
-    address: seller.address || '',
-    whatsapp: seller.whatsapp || '',
-    about: seller.about || '',
-    rating,
-    reviews: sellerReviews.map(r => ({
-      id: r.id,
-      author: r.authorName,
-      rating: r.rating,
-      text: r.text,
-      createdAt: r.createdAt
-    }))
-  });
-});
-
-app.post('/api/sellers/:sellerId/reviews', auth, (req, res) => {
-  if (req.user.role !== 'buyer') {
-    return res.status(403).json({ message: 'Только покупатель может оставлять отзывы' });
-  }
-
-  const { sellerId } = req.params;
-  const { rating, text } = req.body;
-
-  const seller = req.data.users.find(
-    u => u.id === sellerId && u.role === 'seller'
-  );
-
-  if (!seller) {
-    return res.status(404).json({ message: 'Продавец не найден' });
-  }
-
-  const numericRating = Number(rating);
-
-  if (!numericRating || numericRating < 1 || numericRating > 5) {
-    return res.status(400).json({ message: 'Оценка должна быть от 1 до 5' });
-  }
-
-  const reviewItem = {
-    id: generateId('rev_'),
-    sellerId,
-    buyerId: req.user.id,
-    authorName: req.user.name,
-    rating: numericRating,
-    text: String(text || '').trim(),
-    createdAt: Date.now()
-  };
-
-  req.data.reviews.unshift(reviewItem);
-  writeData(req.data);
-
-  res.json({ message: 'Отзыв добавлен', review: reviewItem });
-});
-
-app.put('/api/profile', auth, (req, res) => {
-  const { name, city, address, whatsapp, about } = req.body;
-
-  const userIndex = req.data.users.findIndex(u => u.id === req.user.id);
-  if (userIndex === -1) {
-    return res.status(404).json({ message: 'Пользователь не найден' });
-  }
-
-  if (name && String(name).trim().length < 2) {
-    return res.status(400).json({ message: 'Имя слишком короткое' });
-  }
-
-  if (req.user.role === 'seller' && city !== undefined && !isAllowedCity(city)) {
-    return res.status(400).json({ message: 'Выбери город из списка' });
-  }
-
-  req.data.users[userIndex] = {
-    ...req.data.users[userIndex],
-    name: name !== undefined ? String(name).trim() : req.data.users[userIndex].name,
-    city: city !== undefined ? normalizeStoredCity(city) : req.data.users[userIndex].city,
-    address: address !== undefined ? String(address).trim() : req.data.users[userIndex].address,
-    whatsapp: whatsapp !== undefined ? String(whatsapp).trim() : req.data.users[userIndex].whatsapp,
-    about: about !== undefined ? String(about).trim() : req.data.users[userIndex].about
-  };
-
-  writeData(req.data);
-
-  res.json({
-    message: 'Профиль обновлён',
-    user: {
-      id: req.data.users[userIndex].id,
-      role: req.data.users[userIndex].role,
-      name: req.data.users[userIndex].name,
-      email: req.data.users[userIndex].email,
-      city: req.data.users[userIndex].city || '',
-      address: req.data.users[userIndex].address || '',
-      whatsapp: req.data.users[userIndex].whatsapp || '',
-      about: req.data.users[userIndex].about || ''
-    }
-  });
 });
 
 app.listen(PORT, () => {
