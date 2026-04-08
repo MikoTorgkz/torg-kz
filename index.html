@@ -2323,6 +2323,7 @@ async function openSellerProfile(sellerId) {
             </div>
 
             <div class="request-desc">${escapeHtml(item.description || '')}</div>
+            ${renderImages(item.images)}
 
             <div class="request-footer">
               <div class="timer-line">🕘 ${formatSellerTimeLeft(item.expiresAt)}</div>
