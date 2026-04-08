@@ -98,9 +98,10 @@ function readData() {
   if (!raw.reviews) raw.reviews = [];
 
   raw.users = raw.users.map(user => ({
-    ...user,
-    notifications: Array.isArray(user.notifications) ? user.notifications : []
-  }));
+  ...user,
+  sellerCategory: String(user.sellerCategory || '').trim(),
+  notifications: Array.isArray(user.notifications) ? user.notifications : []
+}));
 
   raw.requests = raw.requests.map(request => ({
     ...request,
@@ -231,10 +232,17 @@ function canSellerSeeRequest(seller, request) {
   const sellerCity = normalizeCity(seller.city);
   const requestCity = normalizeCity(request.city, true);
 
-  if (requestCity === ALL_KAZAKHSTAN_LABEL) return true;
-  if (!sellerCity) return false;
+  const sellerCategory = normalizeText(seller.sellerCategory);
+  const requestCategory = normalizeText(request.category);
 
-  return normalizeText(sellerCity) === normalizeText(requestCity);
+  const cityMatches =
+    requestCity === ALL_KAZAKHSTAN_LABEL ||
+    (sellerCity && normalizeText(sellerCity) === normalizeText(requestCity));
+
+  const categoryMatches =
+    !requestCategory || (sellerCategory && sellerCategory === requestCategory);
+
+  return cityMatches && categoryMatches;
 }
 
 app.get('/', (req, res) => {
@@ -243,15 +251,16 @@ app.get('/', (req, res) => {
 
 app.post('/api/register', (req, res) => {
   const {
-    role,
-    name,
-    email,
-    password,
-    city,
-    address,
-    whatsapp,
-    about
-  } = req.body;
+  role,
+  name,
+  email,
+  password,
+  city,
+  sellerCategory,
+  address,
+  whatsapp,
+  about
+} = req.body;
 
   if (!role || !name || !email || !password) {
     return res.status(400).json({ message: 'Заполни все обязательные поля' });
@@ -264,6 +273,10 @@ app.post('/api/register', (req, res) => {
   if (role === 'seller' && !isAllowedCity(city)) {
     return res.status(400).json({ message: 'Выбери город из списка' });
   }
+
+  if (role === 'seller' && !String(sellerCategory || '').trim()) {
+  return res.status(400).json({ message: 'Выбери категорию деятельности' });
+}
 
   const normalizedEmail = String(email).trim().toLowerCase();
   const normalizedName = String(name).trim();
@@ -284,18 +297,19 @@ app.post('/api/register', (req, res) => {
   }
 
   const user = {
-    id: generateId('user_'),
-    role,
-    name: normalizedName,
-    email: normalizedEmail,
-    password: hashPassword(password),
-    city: role === 'seller' ? normalizeCity(city) : '',
-    address: role === 'seller' ? String(address || '').trim() : '',
-    whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
-    about: role === 'seller' ? String(about || '').trim() : '',
-    notifications: [],
-    createdAt: Date.now()
-  };
+  id: generateId('user_'),
+  role,
+  name: normalizedName,
+  email: normalizedEmail,
+  password: hashPassword(password),
+  city: role === 'seller' ? normalizeCity(city) : '',
+  sellerCategory: role === 'seller' ? String(sellerCategory || '').trim() : '',
+  address: role === 'seller' ? String(address || '').trim() : '',
+  whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
+  about: role === 'seller' ? String(about || '').trim() : '',
+  notifications: [],
+  createdAt: Date.now()
+};
 
   data.users.push(user);
   writeData(data);
@@ -346,6 +360,7 @@ app.get('/api/me', auth, (req, res) => {
     name: req.user.name,
     email: req.user.email,
     city: req.user.city || '',
+    sellerCategory: req.user.sellerCategory || '',
     address: req.user.address || '',
     whatsapp: req.user.whatsapp || '',
     about: req.user.about || ''
