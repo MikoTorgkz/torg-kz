@@ -74,7 +74,7 @@ app.use(express.static(__dirname));
 
 function ensureDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
- const initialData = {
+const initialData = {
   users: [],
   requests: [],
   responses: [],
@@ -82,7 +82,6 @@ function ensureDataFile() {
   notifications: [],
   reviews: []
 };
-}
 }
 
 function readData() {
@@ -722,6 +721,52 @@ app.get('/api/sellers/:sellerId', auth, (req, res) => {
   });
 });
 
+app.post('/api/sellers/:sellerId/reviews', auth, (req, res) => {
+  if (req.user.role !== 'buyer') {
+    return res.status(403).json({ message: 'Только покупатель может оставлять отзывы' });
+  }
+
+  const { sellerId } = req.params;
+  const { rating, text } = req.body;
+
+  const seller = req.data.users.find(user => user.id === sellerId && user.role === 'seller');
+
+  if (!seller) {
+    return res.status(404).json({ message: 'Продавец не найден' });
+  }
+
+  const numericRating = Number(rating);
+
+  if (!numericRating || numericRating < 1 || numericRating > 5) {
+    return res.status(400).json({ message: 'Оценка должна быть от 1 до 5' });
+  }
+
+  const reviewItem = {
+    id: generateId('review_'),
+    sellerId,
+    buyerId: req.user.id,
+    authorName: req.user.name,
+    rating: numericRating,
+    text: String(text || '').trim(),
+    createdAt: Date.now()
+  };
+
+  req.data.reviews.unshift(reviewItem);
+
+  ensureNotificationsArray(seller);
+  seller.notifications.unshift(
+    createNotification('Вам оставили новый отзыв', 'new_review')
+  );
+
+  writeData(req.data);
+
+  res.json({
+    message: 'Отзыв отправлен',
+    review: reviewItem
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
+}  
