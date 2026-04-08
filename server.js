@@ -74,14 +74,17 @@ app.use(express.static(__dirname));
 
 function ensureDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
-const initialData = {
-  users: [],
-  requests: [],
-  responses: [],
-  sessions: {},
-  notifications: [],
-  reviews: []
-};
+    const initialData = {
+      users: [],
+      requests: [],
+      responses: [],
+      sessions: {},
+      notifications: [],
+      reviews: []
+    };
+
+    fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
+  }
 }
 
 function readData() {
@@ -769,4 +772,3 @@ app.post('/api/sellers/:sellerId/reviews', auth, (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
-}  
