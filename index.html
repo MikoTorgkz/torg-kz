@@ -1427,6 +1427,16 @@
 
   <script>
 
+function selectSellerRating(value) {
+  selectedSellerRating = value;
+
+  const stars = document.querySelectorAll('#sellerRatingStars span');
+
+  stars.forEach((star, index) => {
+    star.style.color = index < value ? '#fbbf24' : '#d1d5db';
+  });
+}
+
     document.getElementById('closeSellerProfileModalBtn').addEventListener('click', () => {
   document.getElementById('sellerProfileModal').classList.add('hidden');
 });
@@ -1588,7 +1598,7 @@ document.getElementById('sellerProfileModal').addEventListener('click', (e) => {
 }
 
       let openedSellerId = null;
-let selectedSellerRating = 0;
+      let selectedSellerRating = 0;
 
 function renderStarsInput(current = 0) {
   return `
@@ -1660,6 +1670,36 @@ async function openSellerProfile(sellerId) {
         <h4 style="margin:0 0 12px;">Отзывы</h4>
         ${reviewsHtml}
       </div>
+
+      ${
+currentUser && currentUser.role === 'buyer'
+? `
+<div style="margin-top:20px;">
+  <h4 style="margin:0 0 12px;">Оставить отзыв</h4>
+
+  <div id="sellerRatingStars" style="display:flex;gap:8px;font-size:28px;margin:10px 0;">
+    <span onclick="selectSellerRating(1)">★</span>
+    <span onclick="selectSellerRating(2)">★</span>
+    <span onclick="selectSellerRating(3)">★</span>
+    <span onclick="selectSellerRating(4)">★</span>
+    <span onclick="selectSellerRating(5)">★</span>
+  </div>
+
+  <textarea id="sellerReviewText" placeholder="Напишите отзыв"></textarea>
+
+  <button 
+    class="modal-submit"
+    onclick="submitSellerReview()"
+    style="margin-top:10px"
+  >
+    Отправить отзыв
+  </button>
+
+  <div id="sellerReviewMsg" class="msg"></div>
+</div>
+`
+: ''
+}
 
       ${
         currentUser && currentUser.role === 'buyer'
