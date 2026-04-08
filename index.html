@@ -1387,11 +1387,25 @@
         <input type="password" id="registerPassword" placeholder="Пароль" />
 
         <div id="sellerExtraFields" class="seller-extra-fields hidden">
-          <select id="registerCity"></select>
-          <input type="text" id="registerAddress" placeholder="Адрес магазина" />
-          <input type="text" id="registerWhatsapp" placeholder="WhatsApp, например 77071234567" />
-          <textarea id="registerAbout" placeholder="Коротко о продавце / магазине"></textarea>
-        </div>
+  <select id="registerCity"></select>
+
+  <select id="registerSellerCategory">
+    <option value="">Выберите категорию деятельности</option>
+    <option value="Электроника">Электроника</option>
+    <option value="Бытовая техника">Бытовая техника</option>
+    <option value="Автозапчасти">Автозапчасти</option>
+    <option value="Мебель">Мебель</option>
+    <option value="Услуги">Услуги</option>
+    <option value="Одежда и обувь">Одежда и обувь</option>
+    <option value="Детские товары">Детские товары</option>
+    <option value="Стройматериалы">Стройматериалы</option>
+    <option value="Другое">Другое</option>
+  </select>
+
+  <input type="text" id="registerAddress" placeholder="Адрес магазина" />
+  <input type="text" id="registerWhatsapp" placeholder="WhatsApp, например 77071234567" />
+  <textarea id="registerAbout" placeholder="Коротко о продавце / магазине"></textarea>
+</div>
 
         <button type="button" class="landing-btn" style="background:#17345f;color:#fff;width:100%;border:none;" id="registerBtn">Зарегистрироваться</button>
         <div id="registerMsg" class="msg"></div>
@@ -1809,8 +1823,9 @@ async function openSellerProfile(sellerId) {
     }
 
     function openRegisterModal() {
-      document.getElementById('registerModal').classList.remove('hidden');
-    }
+  document.getElementById('registerModal').classList.remove('hidden');
+  updateRegisterFieldsVisibility();
+}
 
     function closeRegisterModal() {
       document.getElementById('registerModal').classList.add('hidden');
@@ -1827,15 +1842,16 @@ async function openSellerProfile(sellerId) {
         const role = document.getElementById('registerRole').value;
 
         const payload = {
-          role,
-          name: document.getElementById('registerName').value.trim(),
-          email: document.getElementById('registerEmail').value.trim(),
-          password: document.getElementById('registerPassword').value.trim(),
-          city: role === 'seller' ? document.getElementById('registerCity').value.trim() : '',
-          address: role === 'seller' ? document.getElementById('registerAddress').value.trim() : '',
-          whatsapp: role === 'seller' ? document.getElementById('registerWhatsapp').value.trim() : '',
-          about: role === 'seller' ? document.getElementById('registerAbout').value.trim() : ''
-        };
+  role,
+  name: document.getElementById('registerName').value.trim(),
+  email: document.getElementById('registerEmail').value.trim(),
+  password: document.getElementById('registerPassword').value.trim(),
+  city: role === 'seller' ? document.getElementById('registerCity').value.trim() : '',
+  sellerCategory: role === 'seller' ? document.getElementById('registerSellerCategory').value.trim() : '',
+  address: role === 'seller' ? document.getElementById('registerAddress').value.trim() : '',
+  whatsapp: role === 'seller' ? document.getElementById('registerWhatsapp').value.trim() : '',
+  about: role === 'seller' ? document.getElementById('registerAbout').value.trim() : ''
+};
 
         const data = await api('/api/register', {
           method: 'POST',
@@ -1848,6 +1864,7 @@ async function openSellerProfile(sellerId) {
         document.getElementById('registerEmail').value = '';
         document.getElementById('registerPassword').value = '';
         document.getElementById('registerCity').value = '';
+        document.getElementById('registerSellerCategory').value = '';
         document.getElementById('registerAddress').value = '';
         document.getElementById('registerWhatsapp').value = '';
         document.getElementById('registerAbout').value = '';
@@ -2491,6 +2508,7 @@ async function openSellerProfile(sellerId) {
     document.getElementById('loginBtn').addEventListener('click', loginUser);
     document.getElementById('registerBtn').addEventListener('click', registerUser);
     document.getElementById('registerRole').addEventListener('change', updateRegisterFieldsVisibility);
+    updateRegisterFieldsVisibility();
 
     document.getElementById('buyerLogoutBtn').addEventListener('click', logoutUser);
     document.getElementById('sellerLogoutBtn').addEventListener('click', logoutUser);
