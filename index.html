@@ -440,11 +440,36 @@
       margin: 0;
     }
 
-    .auth-modal-body,
-    .modal-body,
-    .notif-body {
-      padding: 18px 20px;
-    }
+.auth-modal-body,
+.modal-body,
+.notif-body {
+  padding: 18px 20px;
+}
+
+.modal-box {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  max-height: calc(90vh - 80px);
+  overflow-y: auto;
+}
+
+.modal-overlay {
+  align-items: center;
+  overflow-y: auto;
+}
+
+.modal-box {
+  margin: 20px 0;
+}
+
+.modal-body {
+  max-height: 75vh;
+  overflow-y: auto;
+}
 
     .notif-body {
       max-height: 420px;
