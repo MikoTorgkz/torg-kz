@@ -1672,57 +1672,39 @@ async function openSellerProfile(sellerId) {
       </div>
 
       ${
-currentUser && currentUser.role === 'buyer'
-? `
-<div style="margin-top:20px;">
-  <h4 style="margin:0 0 12px;">Оставить отзыв</h4>
-
-  <div id="sellerRatingStars" style="display:flex;gap:8px;font-size:28px;margin:10px 0;">
-    <span onclick="selectSellerRating(1)">★</span>
-    <span onclick="selectSellerRating(2)">★</span>
-    <span onclick="selectSellerRating(3)">★</span>
-    <span onclick="selectSellerRating(4)">★</span>
-    <span onclick="selectSellerRating(5)">★</span>
-  </div>
-
-  <textarea id="sellerReviewText" placeholder="Напишите отзыв"></textarea>
-
-  <button 
-    class="modal-submit"
-    onclick="submitSellerReview()"
-    style="margin-top:10px"
-  >
-    Отправить отзыв
-  </button>
-
-  <div id="sellerReviewMsg" class="msg"></div>
-</div>
-`
-: ''
-}
-
-      ${
         currentUser && currentUser.role === 'buyer'
           ? `
             <div style="margin-top:20px;">
               <h4 style="margin:0 0 12px;">Оставить отзыв</h4>
-              ${renderStarsInput()}
+
+              <div id="sellerRatingStars" style="display:flex;gap:8px;font-size:28px;margin:10px 0;">
+                <span onclick="selectSellerRating(1)" style="cursor:pointer;color:#d1d5db;">★</span>
+                <span onclick="selectSellerRating(2)" style="cursor:pointer;color:#d1d5db;">★</span>
+                <span onclick="selectSellerRating(3)" style="cursor:pointer;color:#d1d5db;">★</span>
+                <span onclick="selectSellerRating(4)" style="cursor:pointer;color:#d1d5db;">★</span>
+                <span onclick="selectSellerRating(5)" style="cursor:pointer;color:#d1d5db;">★</span>
+              </div>
+
               <textarea id="sellerReviewText" placeholder="Напишите отзыв"></textarea>
-              <button type="button" class="modal-submit" id="submitSellerReviewBtn">Отправить отзыв</button>
+
+              <button 
+                type="button"
+                class="modal-submit"
+                onclick="submitSellerReview()"
+                style="margin-top:10px"
+              >
+                Отправить отзыв
+              </button>
+
               <div id="sellerReviewMsg" class="msg"></div>
             </div>
           `
           : ''
       }
     `;
-
-    if (currentUser && currentUser.role === 'buyer') {
-      bindRatingStars();
-
-      document.getElementById('submitSellerReviewBtn').addEventListener('click', submitSellerReview);
-    }
   } catch (err) {
-    document.getElementById('sellerProfileContent').innerHTML = `<div class="empty-box">${escapeHtml(err.message)}</div>`;
+    document.getElementById('sellerProfileContent').innerHTML =
+      `<div class="empty-box">${escapeHtml(err.message)}</div>`;
   }
 }
 
