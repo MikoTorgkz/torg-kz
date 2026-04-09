@@ -2,15 +2,16 @@
   "users": [
     {
       "id": "user_0ef2e9f40a28c8a9",
-      "role": "buyer",
-      "name": "kz",
-      "email": "kz@gmail.com",
-      "password": "a9e20d6d00f5130e8f85773bf709fbbf:bdd69762df2e3f131b87945e2755a3624ee49fba48006edf75a4d296838ca4c10d059f28c54ffb7f0bafece1524ea2c4cffb930b41f3341e8a9c79d1b7aa3276",
+      "role": "admin",
+      "name": "meirbekadmin",
+      "email": "meirbekadmin@gmail.com",
+      "password": "meirbekadmin201265",
       "city": "",
       "address": "",
       "whatsapp": "",
       "about": "",
-      "createdAt": 1775371994927
+      "createdAt": 1775371994927,
+      "blocked": false
     },
     {
       "id": "user_bf90385bd3a0a207",
@@ -22,7 +23,8 @@
       "address": "ssss",
       "whatsapp": "87474344037",
       "about": "njhjdsfsdfhjsddhfj",
-      "createdAt": 1775372102456
+      "createdAt": 1775372102456,
+      "blocked": false
     }
   ],
   "requests": [
