@@ -1359,29 +1359,7 @@ app.delete('/api/admin/users/:id', async (req, res) => {
   }
 });
 
-initDB()
-  .then(() => {
-    async function initDB() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      role TEXT,
-      name TEXT,
-      email TEXT UNIQUE,
-      password TEXT,
-      city TEXT,
-      seller_category TEXT,
-      address TEXT,
-      whatsapp TEXT,
-      about TEXT,
-      blocked BOOLEAN DEFAULT false,
-      created_at BIGINT
-    );
-  `);
-
-  console.log("PostgreSQL connected");
-}
-
+// ========== ЗАПУСК СЕРВЕРА ==========
 initDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
@@ -1389,8 +1367,15 @@ initDB().then(() => {
 }).catch(err => {
   console.error("DB error", err);
 });
-  })
-  .catch(error => {
-    console.error('DB init error:', error);
-    process.exit(1);
+
+  console.log("PostgreSQL connected");
+
+// ========== ЗАПУСК СЕРВЕРА ==========
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server started on port ${PORT}`);
   });
+}).catch(err => {
+  console.error("DB error", err);
+  process.exit(1);
+});
