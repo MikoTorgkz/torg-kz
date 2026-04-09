@@ -308,7 +308,8 @@ app.post('/api/register', (req, res) => {
   whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
   about: role === 'seller' ? String(about || '').trim() : '',
   notifications: [],
-  createdAt: Date.now()
+  createdAt: Date.now(),
+  "blocked": false
 };
 
   data.users.push(user);
@@ -330,7 +331,10 @@ app.post('/api/login', (req, res) => {
 
   if (!user || !verifyPassword(password, user.password)) {
     return res.status(401).json({ message: 'Неверный email или пароль' });
-  }
+    }
+    if (user.blocked) {
+  return res.status(403).json({ error: 'Ваш аккаунт заблокирован' });
+}
 
   const token = generateId('token_');
 
@@ -781,6 +785,108 @@ app.post('/api/sellers/:sellerId/reviews', auth, (req, res) => {
   res.json({
     message: 'Отзыв отправлен',
     review: reviewItem
+  });
+});
+
+function getUserFromHeader(req, data) {
+  const userId = req.headers['x-user-id'];
+  return data.users.find(u => u.id === userId);
+}
+
+app.get('/api/admin/stats', (req, res) => {
+  const data = readData();
+  const user = getUserFromHeader(req, data);
+
+  if (!user || user.role !== 'admin') {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  res.json({
+    users: Array.isArray(data.users) ? data.users.length : 0,
+    requests: Array.isArray(data.requests) ? data.requests.length : 0,
+    responses: Array.isArray(data.responses) ? data.responses.length : 0
+  });
+});
+
+app.get('/api/admin/users', (req, res) => {
+  const data = readData();
+  const user = getUserFromHeader(req, data);
+
+  if (!user || user.role !== 'admin') {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  const safeUsers = data.users.map(u => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    blocked: !!u.blocked,
+    city: u.city || '',
+    whatsapp: u.whatsapp || ''
+  }));
+
+  res.json(safeUsers);
+});
+
+app.patch('/api/admin/users/:id/block', (req, res) => {
+  const data = readData();
+  const admin = getUserFromHeader(req, data);
+
+  if (!admin || admin.role !== 'admin') {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  const userIndex = data.users.findIndex(u => u.id === req.params.id);
+
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'Пользователь не найден' });
+  }
+
+  if (data.users[userIndex].role === 'admin') {
+    return res.status(400).json({ error: 'Админа блокировать нельзя' });
+  }
+
+  data.users[userIndex].blocked = !data.users[userIndex].blocked;
+  writeData(data);
+
+  res.json({
+    message: data.users[userIndex].blocked ? 'Пользователь заблокирован' : 'Пользователь разблокирован',
+    user: {
+      id: data.users[userIndex].id,
+      blocked: data.users[userIndex].blocked
+    }
+  });
+});
+
+app.delete('/api/admin/users/:id', (req, res) => {
+  const data = readData();
+  const admin = getUserFromHeader(req, data);
+
+  if (!admin || admin.role !== 'admin') {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  const userIndex = data.users.findIndex(u => u.id === req.params.id);
+
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'Пользователь не найден' });
+  }
+
+  if (data.users[userIndex].role === 'admin') {
+    return res.status(400).json({ error: 'Админа удалять нельзя' });
+  }
+
+  const deletedUser = data.users[userIndex];
+  data.users.splice(userIndex, 1);
+  writeData(data);
+
+  res.json({
+    message: 'Пользователь удалён',
+    user: {
+      id: deletedUser.id,
+      name: deletedUser.name
+    }
   });
 });
 
