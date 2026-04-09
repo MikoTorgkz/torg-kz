@@ -1361,18 +1361,8 @@ app.delete('/api/admin/users/:id', async (req, res) => {
 
 // ========== ЗАПУСК СЕРВЕРА ==========
 initDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error("DB error", err);
-});
-
-  console.log("PostgreSQL connected");
-
-// ========== ЗАПУСК СЕРВЕРА ==========
-initDB().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`PostgreSQL connected`);
     console.log(`Server started on port ${PORT}`);
   });
 }).catch(err => {
