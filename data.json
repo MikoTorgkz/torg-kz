@@ -1,18 +1,6 @@
 {
   "users": [
-    {
-      "id": "user_0ef2e9f40a28c8a9",
-      "role": "admin",
-      "name": "meirbekadmin",
-      "email": "meirbekadmin@gmail.com",
-      "password": "123456",
-      "city": "",
-      "address": "",
-      "whatsapp": "",
-      "about": "",
-      "createdAt": 1775371994927,
-      "blocked": false
-    },
+    
     {
       "id": "user_bf90385bd3a0a207",
       "role": "seller",
