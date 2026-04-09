@@ -1886,21 +1886,25 @@ async function openSellerProfile(sellerId) {
         };
 
         const data = await api('/api/login', {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+  method: 'POST',
+  body: JSON.stringify(payload)
+});
 
-        token = data.token;
-        localStorage.setItem(tokenKey, token);
+token = data.token;
+localStorage.setItem(tokenKey, token);
+localStorage.setItem('user', JSON.stringify(data.user));
+currentUser = data.user;
 
-        setMsg('loginMsg', 'Успешный вход', 'green');
+setMsg('loginMsg', 'Успешный вход', 'green');
 
-        setTimeout(async () => {
-          closeLoginModal();
-          renderPreview('buyerReqImages', 'buyerReqPreview');
-          renderPreview('sellerRespondImages', 'sellerRespondPreview');
-          await initApp();
-        }, 400);
+setTimeout(async () => {
+  closeLoginModal();
+  renderPreview('buyerReqImages', 'buyerReqPreview');
+  renderPreview('sellerRespondImages', 'sellerRespondPreview');
+  await initApp();
+  loadAdminStats();
+  loadAdminUsers();
+}, 400);
       } catch (err) {
         setMsg('loginMsg', err.message, 'red');
       }
@@ -1914,6 +1918,7 @@ async function openSellerProfile(sellerId) {
       token = '';
       currentUser = null;
       localStorage.removeItem(tokenKey);
+      localStorage.removeItem('user');
       location.reload();
     }
 
