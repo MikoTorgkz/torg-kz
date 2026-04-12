@@ -71,12 +71,12 @@ body {
   }
 }
 
-    .topbar {
+.topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 28px 16px;
+  padding: calc(18px + env(safe-area-inset-top)) 28px 16px;
   border-bottom: 1px solid var(--line);
   background: #fff;
   flex-wrap: wrap;
@@ -266,17 +266,22 @@ body {
       justify-content: center;
     }
 
-    .step-icon {
-      width: 86px;
-      height: 86px;
-      border-radius: 22px;
-      background: linear-gradient(180deg, #eaf3ff, #dfeeff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 44px;
-      flex-shrink: 0;
-    }
+   .step-icon {
+  width: 86px;
+  height: 86px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #eaf3ff, #dfeeff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-icon svg {
+  width: 40px;
+  height: 40px;
+  stroke: #2563eb;
+}
 
     .step-title {
       font-size: 20px;
@@ -1161,17 +1166,31 @@ body {
 
           <div class="steps-card">
             <div class="step">
-              <div class="step-icon">📝</div>
+              <div class="step-icon">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+    <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/>
+    <path d="M16 3h5v5"/>
+    <path d="M21 3l-9 9"/>
+  </svg>
+</div>
               <div class="step-title">Создай заявку</div>
             </div>
             <div class="step-arrow">→</div>
             <div class="step">
-              <div class="step-icon">💬</div>
+            <div class="step-icon">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+    <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+  </svg>
+</div>
               <div class="step-title">Получи предложения</div>
             </div>
             <div class="step-arrow">→</div>
             <div class="step">
-              <div class="step-icon">🤝</div>
+              <div class="step-icon">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+    <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/>
+  </svg>
+</div>
               <div class="step-title">Выбери лучшее</div>
             </div>
           </div>
