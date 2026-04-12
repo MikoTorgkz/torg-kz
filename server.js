@@ -1369,3 +1369,9 @@ initDB().then(() => {
   console.error("DB error", err);
   process.exit(1);
 });
+
+// Держим процесс активным
+process.on('SIGINT', () => {
+  console.log('Shutting down gracefully...');
+  process.exit(0);
+});
