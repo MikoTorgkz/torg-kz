@@ -1185,6 +1185,53 @@ body {
     }
   </style>
 </head>
+<script type="module">
+  import { Capacitor } from 'https://cdn.jsdelivr.net/npm/@capacitor/core@latest/dist/capacitor.js';
+  import { PushNotifications } from 'https://cdn.jsdelivr.net/npm/@capacitor/push-notifications@latest/dist/plugin.js';
+
+  async function initAndroidPush() {
+    if (!window.Capacitor) {
+      console.log('Capacitor not found');
+      return;
+    }
+
+    const permStatus = await PushNotifications.requestPermissions();
+
+    if (permStatus.receive !== 'granted') {
+      console.log('Разрешение на уведомления не выдано');
+      return;
+    }
+
+    await PushNotifications.register();
+
+    PushNotifications.addListener('registration', async (token) => {
+      console.log('FCM TOKEN:', token.value);
+
+      await fetch('/api/save-push-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: token.value,
+          platform: 'android'
+        })
+      });
+    });
+
+    PushNotifications.addListener('registrationError', (error) => {
+      console.error('Ошибка регистрации push:', error);
+    });
+
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+      console.log('Push получен:', notification);
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+      console.log('Пользователь нажал push:', action);
+    });
+  }
+
+  initAndroidPush();
+</script>
 <body>
   <!-- LANDING -->
   <div id="landingApp" class="page-shell hidden">

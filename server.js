@@ -1361,6 +1361,32 @@ app.delete('/api/admin/users/:id', async (req, res) => {
 
 // ========== ЗАПУСК СЕРВЕРА ==========
 initDB().then(() => {
+  app.post('/api/save-push-token', (req, res) => {
+  const { token, platform } = req.body || {};
+
+  if (!token) {
+    return res.status(400).json({ ok: false });
+  }
+
+  if (!req.data.pushTokens) {
+    req.data.pushTokens = [];
+  }
+
+  const exists = req.data.pushTokens.find(t => t.token === token);
+
+  if (!exists) {
+    req.data.pushTokens.push({
+      token,
+      platform,
+      createdAt: new Date()
+    });
+
+    writeData(req.data);
+  }
+
+  res.json({ ok: true });
+});
+
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`PostgreSQL connected`);
     console.log(`Server started on port ${PORT}`);
