@@ -1077,10 +1077,10 @@ body {
     border-radius: 0;
   }
 
-  .topbar {
-    padding: 14px 14px 12px;
-    gap: 10px;
-  }
+ .topbar {
+  padding: calc(14px + env(safe-area-inset-top)) 14px 12px;
+  gap: 10px;
+}
 
   .logo {
     font-size: 22px;
