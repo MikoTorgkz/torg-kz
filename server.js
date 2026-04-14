@@ -1282,6 +1282,46 @@ app.get('/api/admin/users', async (req, res) => {
   }
 });
 
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const user = await getUserFromHeader(req);
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Доступ запрещён' });
+    }
+
+    const usersResult = await db.query(
+      `SELECT COUNT(*)::int AS count FROM users`
+    );
+
+    const buyersResult = await db.query(
+      `SELECT COUNT(*)::int AS count FROM users WHERE role = 'buyer'`
+    );
+
+    const sellersResult = await db.query(
+      `SELECT COUNT(*)::int AS count FROM users WHERE role = 'seller'`
+    );
+
+    const requestsResult = await db.query(
+      `SELECT COUNT(*)::int AS count FROM requests`
+    );
+
+    const responsesResult = await db.query(
+      `SELECT COUNT(*)::int AS count FROM responses`
+    );
+
+    return res.json({
+      users: usersResult.rows[0]?.count || 0,
+      buyers: buyersResult.rows[0]?.count || 0,
+      sellers: sellersResult.rows[0]?.count || 0,
+      requests: requestsResult.rows[0]?.count || 0,
+      responses: responsesResult.rows[0]?.count || 0
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 app.patch('/api/admin/users/:id/block', async (req, res) => {
   try {
     const admin = await getUserFromHeader(req);
