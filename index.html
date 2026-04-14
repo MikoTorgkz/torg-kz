@@ -2745,16 +2745,28 @@ setTimeout(async () => {
   <h2 style="margin-bottom:20px;">Админ панель</h2>
 
   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:24px;">
-    <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
-      <div style="font-size:14px; color:#666;">Пользователи</div>
-      <div id="usersCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
-    </div>
+  
+  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
+    <div style="font-size:14px; color:#666;">Пользователи</div>
+    <div id="usersCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
+  </div>
 
-    <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
-      <div style="font-size:14px; color:#666;">Заявки</div>
-      <div id="requestsCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
-    </div>
+  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
+    <div style="font-size:14px; color:#666;">Покупатели</div>
+    <div id="buyersCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
+  </div>
 
+  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
+    <div style="font-size:14px; color:#666;">Продавцы</div>
+    <div id="sellersCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
+  </div>
+
+  <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
+    <div style="font-size:14px; color:#666;">Заявки</div>
+    <div id="requestsCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
+  </div>
+
+</div>
     <div style="background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
       <div style="font-size:14px; color:#666;">Отклики</div>
       <div id="responsesCount" style="font-size:32px; font-weight:bold; margin-top:8px;">0</div>
@@ -2783,9 +2795,25 @@ async function loadAdminStats() {
 
     const stats = await res.json();
 
+ async function loadAdminStats() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || user.role !== 'admin') return;
+
+  try {
+    const res = await fetch('/api/admin/stats', {
+      headers: {
+        'x-user-id': user.id
+      }
+    });
+
+    const stats = await res.json();
+
     document.getElementById('usersCount').textContent = stats.users || 0;
+    document.getElementById('buyersCount').textContent = stats.buyers || 0;
+    document.getElementById('sellersCount').textContent = stats.sellers || 0;
     document.getElementById('requestsCount').textContent = stats.requests || 0;
     document.getElementById('responsesCount').textContent = stats.responses || 0;
+
   } catch (error) {
     console.error('Ошибка загрузки статистики:', error);
   }
