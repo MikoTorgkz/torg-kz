@@ -2645,6 +2645,26 @@ if (searchText) {
       sellerUpdateStats();
     }
 
+    function sellerRenderDeals() {
+  const box = document.getElementById('sellerDealsList');
+  box.innerHTML = '';
+
+  const deals = sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id);
+
+  if (!deals.length) {
+    box.innerHTML = `<div class="empty-box">Пока нет сделок</div>`;
+    return;
+  }
+
+  function sellerRenderHistory() {
+  const box = document.getElementById('sellerHistoryList');
+  box.innerHTML = '';
+
+  const history = sellerResponsesCache.filter(item =>
+    item.requestStatus !== 'open' &&
+    item.selectedSellerId !== currentUser?.id
+  );
+
     async function sellerLoadResponses() {
       sellerResponsesCache = await api('/api/my-responses');
       sellerRenderResponses();
@@ -3046,17 +3066,6 @@ async function confirmDeal(requestId, sellerId) {
   }
 }
 
-function sellerRenderDeals() {
-  const box = document.getElementById('sellerDealsList');
-  box.innerHTML = '';
-
-  const deals = sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id);
-
-  if (!deals.length) {
-    box.innerHTML = `<div class="empty-box">Пока нет сделок</div>`;
-    return;
-  }
-
   deals.forEach(item => {
     const card = document.createElement('div');
     card.className = 'response-card';
@@ -3077,15 +3086,6 @@ function sellerRenderDeals() {
     box.appendChild(card);
   });
 }
-
-function sellerRenderHistory() {
-  const box = document.getElementById('sellerHistoryList');
-  box.innerHTML = '';
-
-  const history = sellerResponsesCache.filter(item =>
-    item.requestStatus !== 'open' &&
-    item.selectedSellerId !== currentUser?.id
-  );
 
   if (!history.length) {
     box.innerHTML = `<div class="empty-box">История пока пустая</div>`;
