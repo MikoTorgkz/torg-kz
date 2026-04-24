@@ -2371,9 +2371,9 @@ setTimeout(async () => {
 
  ${
   waLink
-    ? `<button class="wa-btn" onclick="selectSellerAndOpenWhatsapp('${requestId}', '${item.id}', '${item.whatsapp}')">
-        WhatsApp
-      </button>`
+    ? `<button class="wa-btn" onclick="selectSellerAndOpenWhatsapp('${requestId}', '${item.sellerId}', '${item.sellerWhatsapp}')">
+    WhatsApp
+  </button>`
     : `<button type="button" class="wa-btn" disabled style="opacity:0.6;cursor:not-allowed;">
         WhatsApp
       </button>`
@@ -2978,7 +2978,7 @@ setTimeout(async () => {
 
     window.location.href = `https://wa.me/${phone}`;
 
-    loadMyRequests();
+    buyerLoadRequests();
   } catch (err) {
     alert('Ошибка при выборе продавца');
   }
