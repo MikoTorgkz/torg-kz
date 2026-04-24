@@ -1183,6 +1183,34 @@ body {
         min-width: 100%;
       }
     }
+
+    .seller-search-box {
+  grid-column: 1 / -1;
+  position: relative;
+}
+
+.seller-search-box input {
+  height: 58px;
+  padding-left: 52px;
+  font-weight: 800;
+  border-radius: 18px;
+  border: 1px solid #d8dee8;
+  background: #fff;
+}
+
+.seller-search-box input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.seller-search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+}
   </style>
 </head>
 <script>
@@ -1501,27 +1529,16 @@ window.addEventListener('load', () => {
         </div>
 
         <div class="filters-row">
-          <select id="sellerCategoryFilter">
-            <option value="">Категория</option>
-            <option value="Электроника">Электроника</option>
-            <option value="Бытовая техника">Бытовая техника</option>
-            <option value="Автозапчасти">Автозапчасти</option>
-            <option value="Мебель">Мебель</option>
-            <option value="Услуги">Услуги</option>
-            <option value="Одежда и обувь">Одежда и обувь</option>
-            <option value="Детские товары">Детские товары</option>
-            <option value="Стройматериалы">Стройматериалы</option>
-            <option value="Другое">Другое</option>
-          </select>
-
-          <select id="sellerCityFilter"></select>
-
-          <div class="toggle-wrap">
-            <div class="toggle-label">Только новые</div>
-            <div class="toggle active" id="sellerOnlyNewToggle"></div>
-          </div>
-
-          <button type="button" class="apply-btn" id="sellerApplyFiltersBtn">Применить</button>
+          <div class="filters-row">
+  <div class="seller-search-box">
+    <span class="seller-search-icon">🔍</span>
+    <input 
+      type="text" 
+      id="sellerSearchInput" 
+      placeholder="Найти заявку: Sonata, амортизатор, Шымкент" 
+    />
+  </div>
+</div>
         </div>
       </section>
 
@@ -2470,6 +2487,18 @@ setTimeout(async () => {
       box.innerHTML = '';
 
       let list = [...sellerMarketplaceCache];
+      const searchText = document.getElementById('sellerSearchInput')?.value.toLowerCase() || '';
+
+if (searchText) {
+  list = list.filter(item => {
+    return (
+      (item.title || '').toLowerCase().includes(searchText) ||
+      (item.description || '').toLowerCase().includes(searchText) ||
+      (item.city || '').toLowerCase().includes(searchText) ||
+      (item.category || '').toLowerCase().includes(searchText)
+    );
+  });
+}
 
       const categoryFilter = document.getElementById('sellerCategoryFilter').value.trim();
       const cityFilter = document.getElementById('sellerCityFilter').value.trim();
@@ -3009,6 +3038,9 @@ document.addEventListener('input', function (e) {
   if (digits.length >= 9) result += '-' + digits.slice(9, 11);
 
   e.target.value = result;
+
+  document.getElementById('sellerSearchInput')
+  .addEventListener('input', sellerRenderMarketplace);
 });
 </script>
 
