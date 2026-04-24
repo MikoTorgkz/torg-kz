@@ -1528,8 +1528,7 @@ window.addEventListener('load', () => {
           <button type="button" class="history-link" id="sellerHistoryBtn">История</button>
         </div>
 
-        <div class="filters-row">
-          <div class="filters-row">
+       <div class="filters-row">
   <div class="seller-search-box">
     <span class="seller-search-icon">🔍</span>
     <input 
@@ -1538,8 +1537,7 @@ window.addEventListener('load', () => {
       placeholder="Найти заявку: Sonata, амортизатор, Шымкент" 
     />
   </div>
-</div>
-        </div>
+   </div>
       </section>
 
       <section class="main-grid">
@@ -2487,18 +2485,6 @@ setTimeout(async () => {
       box.innerHTML = '';
 
       let list = [...sellerMarketplaceCache];
-      const searchText = document.getElementById('sellerSearchInput')?.value.toLowerCase() || '';
-
-if (searchText) {
-  list = list.filter(item => {
-    return (
-      (item.title || '').toLowerCase().includes(searchText) ||
-      (item.description || '').toLowerCase().includes(searchText) ||
-      (item.city || '').toLowerCase().includes(searchText) ||
-      (item.category || '').toLowerCase().includes(searchText)
-    );
-  });
-}
 
     const searchText = document.getElementById('sellerSearchInput')?.value.trim().toLowerCase() || '';
 
@@ -2800,6 +2786,12 @@ if (searchText) {
     updateRegisterFieldsVisibility();
 
         initApp();
+
+       document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'sellerSearchInput') {
+    sellerRenderMarketplace();
+  }
+});
   </script>
 
   <section id="adminPanel" style="display:none; max-width:1200px; margin:30px auto; padding:20px;">
@@ -3038,9 +3030,7 @@ document.addEventListener('input', function (e) {
   if (digits.length >= 9) result += '-' + digits.slice(9, 11);
 
   e.target.value = result;
-
-  document.getElementById('sellerSearchInput')
-  .addEventListener('input', sellerRenderMarketplace);
+  
 });
 </script>
 
