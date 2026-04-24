@@ -2645,27 +2645,52 @@ if (searchText) {
       sellerUpdateStats();
     }
 
-  function sellerRenderDeals() {
+    function sellerRenderDeals() {
   const box = document.getElementById('sellerDealsList');
   if (!box) return;
-  box.innerHTML = '';
 
-  const deals = sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id);
+  const deals = sellerResponsesCache.filter(item =>
+    item.selectedSellerId === currentUser?.id
+  );
 
   if (!deals.length) {
     box.innerHTML = `<div class="empty-box">Пока нет сделок</div>`;
     return;
   }
 
-  function sellerRenderHistory() {
+  box.innerHTML = deals.map(item => `
+    <div class="response-card">
+      <div class="response-title">${escapeHtml(item.requestTitle || 'Заявка')}</div>
+      <div class="meta">${escapeHtml(item.requestCity || '')} • ${escapeHtml(item.requestCategory || '')}</div>
+      <div class="response-desc">${escapeHtml(item.message || '')}</div>
+      <div class="status-line">✅ Вас выбрали</div>
+    </div>
+  `).join('');
+}
+
+function sellerRenderHistory() {
   const box = document.getElementById('sellerHistoryList');
   if (!box) return;
-  box.innerHTML = '';
 
   const history = sellerResponsesCache.filter(item =>
     item.requestStatus !== 'open' &&
     item.selectedSellerId !== currentUser?.id
   );
+
+  if (!history.length) {
+    box.innerHTML = `<div class="empty-box">История пустая</div>`;
+    return;
+  }
+
+  box.innerHTML = history.map(item => `
+    <div class="response-card">
+      <div class="response-title">${escapeHtml(item.requestTitle || 'Заявка')}</div>
+      <div class="meta">${escapeHtml(item.requestCity || '')} • ${escapeHtml(item.requestCategory || '')}</div>
+      <div class="response-desc">${escapeHtml(item.message || '')}</div>
+      <div class="status-line">Заявка завершена или истекла</div>
+    </div>
+  `).join('');
+}
 
     async function sellerLoadResponses() {
       sellerResponsesCache = await api('/api/my-responses');
@@ -2816,7 +2841,6 @@ if (searchText) {
 
     fillCitySelect('registerCity');
     fillCitySelect('buyerReqCity', true);
-    fillCitySelect('sellerCityFilter', true, true);
     updateRegisterFieldsVisibility();
 
         initApp();
@@ -3068,53 +3092,51 @@ async function confirmDeal(requestId, sellerId) {
   }
 }
 
-  deals.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'response-card';
+  function sellerRenderDeals() {
+  const box = document.getElementById('sellerDealsList');
+  if (!box) return;
 
-    card.innerHTML = `
-      <div class="response-head">
-        <div>
-          <div class="response-title">${escapeHtml(item.requestTitle)}</div>
-          <div class="meta">Цена: ${escapeHtml(item.price)} ₸</div>
-        </div>
-      </div>
+  const deals = sellerResponsesCache.filter(item =>
+    item.selectedSellerId === currentUser?.id
+  );
 
-      <div class="chosen-box">
-        Сделка завершена ✅
-      </div>
-    `;
-
-    box.appendChild(card);
-  });
-}
-
-  if (!history.length) {
-    box.innerHTML = `<div class="empty-box">История пока пустая</div>`;
+  if (!deals.length) {
+    box.innerHTML = `<div class="empty-box">Пока нет сделок</div>`;
     return;
   }
 
-  history.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'response-card';
+  box.innerHTML = deals.map(item => `
+    <div class="response-card">
+      <div class="response-title">${escapeHtml(item.requestTitle || 'Заявка')}</div>
+      <div class="meta">${escapeHtml(item.requestCity || '')} • ${escapeHtml(item.requestCategory || '')}</div>
+      <div class="response-desc">${escapeHtml(item.message || '')}</div>
+      <div class="status-line">✅ Вас выбрали</div>
+    </div>
+  `).join('');
+}
 
-    card.innerHTML = `
-      <div class="response-head">
-        <div>
-          <div class="response-title">${escapeHtml(item.requestTitle)}</div>
-          <div class="meta">Вы отправили: ${escapeHtml(item.price)} ₸</div>
-        </div>
-      </div>
+function sellerRenderHistory() {
+  const box = document.getElementById('sellerHistoryList');
+  if (!box) return;
 
-      <div class="note-box">
-        ${item.requestStatus === 'closed'
-          ? 'Заявка закрыта другим продавцом'
-          : 'Срок заявки истёк'}
-      </div>
-    `;
+  const history = sellerResponsesCache.filter(item =>
+    item.requestStatus !== 'open' &&
+    item.selectedSellerId !== currentUser?.id
+  );
 
-    box.appendChild(card);
-  });
+  if (!history.length) {
+    box.innerHTML = `<div class="empty-box">История пустая</div>`;
+    return;
+  }
+
+  box.innerHTML = history.map(item => `
+    <div class="response-card">
+      <div class="response-title">${escapeHtml(item.requestTitle || 'Заявка')}</div>
+      <div class="meta">${escapeHtml(item.requestCity || '')} • ${escapeHtml(item.requestCategory || '')}</div>
+      <div class="response-desc">${escapeHtml(item.message || '')}</div>
+      <div class="status-line">Заявка завершена или истекла</div>
+    </div>
+  `).join('');
 }
   </script>
 <script>
