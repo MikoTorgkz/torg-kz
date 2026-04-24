@@ -2421,7 +2421,7 @@ setTimeout(async () => {
       document.getElementById('sellerNewRequestsCount').textContent = sellerMarketplaceCache.length;
       document.getElementById('sellerResponsesCount').textContent = sellerResponsesCache.length;
       document.getElementById('sellerChosenCount').textContent =
-        sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id).length;
+  sellerNotificationsCache.filter(item => item.type === 'seller_contacted').length;
     }
 
     function sellerOpenRespondModal(requestItem) {
