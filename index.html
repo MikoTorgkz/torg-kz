@@ -2645,8 +2645,9 @@ if (searchText) {
       sellerUpdateStats();
     }
 
-    function sellerRenderDeals() {
+  function sellerRenderDeals() {
   const box = document.getElementById('sellerDealsList');
+  if (!box) return;
   box.innerHTML = '';
 
   const deals = sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id);
@@ -2658,6 +2659,7 @@ if (searchText) {
 
   function sellerRenderHistory() {
   const box = document.getElementById('sellerHistoryList');
+  if (!box) return;
   box.innerHTML = '';
 
   const history = sellerResponsesCache.filter(item =>
@@ -3060,7 +3062,7 @@ async function confirmDeal(requestId, sellerId) {
 
     alert('Сделка подтверждена');
 
-    loadMyRequests(); // обновить список
+    lbuyerLoadRequests();
   } catch (err) {
     alert('Ошибка');
   }
