@@ -962,6 +962,66 @@ app.get('/api/requests/:id/responses', auth, async (req, res) => {
   }
 });
 
+app.post('/api/requests/:id/contact', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'buyer') {
+      return res.status(403).json({ message: 'Только покупатель может выбрать продавца' });
+    }
+
+    const requestId = req.params.id;
+    const { sellerId } = req.body;
+
+    if (!sellerId) {
+      return res.status(400).json({ message: 'sellerId не передан' });
+    }
+
+    const requestResult = await db.query(
+      `SELECT * FROM requests WHERE id = $1 LIMIT 1`,
+      [requestId]
+    );
+
+    const requestRow = requestResult.rows[0];
+
+    if (!requestRow) {
+      return res.status(404).json({ message: 'Заявка не найдена' });
+    }
+
+    const request = mapRequest(requestRow);
+
+    if (request.buyerId !== req.user.id) {
+      return res.status(403).json({ message: 'Это не твоя заявка' });
+    }
+
+    const responseResult = await db.query(
+      `
+      SELECT *
+      FROM responses
+      WHERE request_id = $1 AND seller_id = $2
+      LIMIT 1
+      `,
+      [requestId, sellerId]
+    );
+
+    const response = responseResult.rows[0];
+
+    if (!response) {
+      return res.status(404).json({ message: 'Отклик продавца не найден' });
+    }
+
+    await addNotification(
+      sellerId,
+      `Покупатель открыл WhatsApp по заявке "${request.title}"`,
+      'seller_contacted'
+    );
+
+    return res.json({
+      message: 'Продавец выбран для связи'
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
 app.post('/api/requests/:id/select', auth, async (req, res) => {
   try {
     if (req.user.role !== 'buyer') {
