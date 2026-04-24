@@ -2584,14 +2584,16 @@ if (searchText) {
 
     function sellerRenderResponses() {
       const box = document.getElementById('sellerResponsesList');
-      box.innerHTML = '';
+if (!box) return;
 
-      if (!activeResponses.length) {
-        box.innerHTML = `<div class="empty-box">Ты пока не отправлял отклики</div>`;
-        return;
-      }
+box.innerHTML = '';
 
-      const activeResponses = sellerResponsesCache.filter(item => item.requestStatus === 'open');
+const activeResponses = sellerResponsesCache.filter(item => item.requestStatus === 'open');
+
+if (!activeResponses.length) {
+  box.innerHTML = `<div class="empty-box">Ты пока не отправлял отклики</div>`;
+  return;
+}
       activeResponses.forEach(item => {
         const chosen = item.selectedSellerId === currentUser?.id;
         const waLink = chosen && currentUser?.whatsapp ? whatsappLink(currentUser.whatsapp) : '';
