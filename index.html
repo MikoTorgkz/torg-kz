@@ -1194,12 +1194,15 @@ async function initAndroidPush() {
     }
 
     const platform = window.Capacitor.getPlatform?.();
+    console.log('Platform:', platform);
+
     if (platform !== 'android') {
-      console.log('Not android:', platform);
+      console.log('Not android');
       return;
     }
 
     const PushNotifications = window.Capacitor.Plugins?.PushNotifications;
+
     if (!PushNotifications) {
       console.log('PushNotifications plugin not found');
       return;
@@ -1218,14 +1221,18 @@ async function initAndroidPush() {
     PushNotifications.addListener('registration', async (token) => {
       console.log('FCM TOKEN:', token.value);
 
-      await fetch('/api/save-push-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: token.value,
-          platform: 'android'
-        })
-      });
+      try {
+        await fetch('/api/save-push-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token.value,
+            platform: 'android'
+          })
+        });
+      } catch (e) {
+        console.error('Ошибка отправки токена на сервер:', e);
+      }
     });
 
     PushNotifications.addListener('registrationError', (error) => {
@@ -1239,12 +1246,12 @@ async function initAndroidPush() {
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
       console.log('Нажат push:', action);
     });
+
   } catch (e) {
     console.error('initAndroidPush error:', e);
   }
 }
 
-document.addEventListener('deviceready', initAndroidPush);
 window.addEventListener('load', () => {
   setTimeout(initAndroidPush, 1000);
 });
@@ -1582,7 +1589,12 @@ window.addEventListener('load', () => {
   </select>
 
   <input type="text" id="registerAddress" placeholder="Адрес магазина" />
-  <input type="text" id="registerWhatsapp" placeholder="WhatsApp, например 77071234567" />
+  <input 
+  type="text" 
+  id="registerWhatsapp" 
+  name="whatsapp"
+  placeholder="WhatsApp, например +7(___) ___-__-__" 
+/>
   <textarea id="registerAbout" placeholder="Коротко о продавце / магазине"></textarea>
 </div>
 
@@ -2936,6 +2948,32 @@ setTimeout(async () => {
 
     showAdminPanel();
   </script>
+<script>
+document.addEventListener('input', function (e) {
+  if (e.target.id !== 'registerWhatsapp') return;
+
+  let digits = e.target.value.replace(/\D/g, '');
+
+  if (digits.startsWith('8')) {
+    digits = '7' + digits.slice(1);
+  }
+
+  if (!digits.startsWith('7')) {
+    digits = '7' + digits;
+  }
+
+  digits = digits.slice(0, 11);
+
+  let result = '+7';
+
+  if (digits.length > 1) result += ' (' + digits.slice(1, 4);
+  if (digits.length >= 4) result += ') ' + digits.slice(4, 7);
+  if (digits.length >= 7) result += '-' + digits.slice(7, 9);
+  if (digits.length >= 9) result += '-' + digits.slice(9, 11);
+
+  e.target.value = result;
+});
+</script>
 
 </body>
 </html>
