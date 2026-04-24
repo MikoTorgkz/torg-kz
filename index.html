@@ -1184,6 +1184,22 @@ body {
       }
     }
 
+    .seller-toggle-title {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
     .seller-tabs {
   display: flex;
   gap: 10px;
@@ -1569,8 +1585,12 @@ window.addEventListener('load', () => {
 
       <section class="main-grid">
         <div class="card">
-          <h3 class="panel-title">Новые заявки</h3>
-          <div id="sellerMarketplaceList"></div>
+          <button type="button" class="seller-toggle-title" onclick="toggleSellerNewRequests()">
+  Новые заявки
+  <span id="sellerNewRequestsArrow">▼</span>
+</button>
+
+<div id="sellerMarketplaceList"></div>
         </div>
 
         <div class="card">
@@ -2620,6 +2640,18 @@ if (searchText) {
       });
     }
 
+    function toggleSellerNewRequests() {
+  const list = document.getElementById('sellerMarketplaceList');
+  const arrow = document.getElementById('sellerNewRequestsArrow');
+
+  if (!list) return;
+
+  list.classList.toggle('hidden');
+
+  if (arrow) {
+    arrow.textContent = list.classList.contains('hidden') ? '▶' : '▼';
+  }
+}
     function openSellerTab(tab) {
   const responses = document.getElementById('sellerResponsesList');
   const deals = document.getElementById('sellerDealsList');
