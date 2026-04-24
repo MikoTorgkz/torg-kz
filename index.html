@@ -2953,7 +2953,9 @@ setTimeout(async () => {
 
     async function selectSellerAndOpenWhatsapp(requestId, responseId, whatsapp) {
   try {
-    await fetch(`/api/requests/${requestId}/select`, {
+    const token = localStorage.getItem('token');
+
+    const res = await fetch(`/api/requests/${requestId}/select`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2961,6 +2963,13 @@ setTimeout(async () => {
       },
       body: JSON.stringify({ responseId })
     });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert(result.error || 'Ошибка при выборе продавца');
+      return;
+    }
 
     let phone = String(whatsapp || '').replace(/\D/g, '');
 
@@ -2972,10 +2981,11 @@ setTimeout(async () => {
       phone = '7' + phone;
     }
 
-    window.open(`https://wa.me/${phone}`, '_blank');
+    window.location.href = `https://wa.me/${phone}`;
 
-    loadMyRequests(); // обновить список
+    loadMyRequests();
   } catch (err) {
+    console.error(err);
     alert('Ошибка при выборе продавца');
   }
 }
