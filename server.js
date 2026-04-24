@@ -380,6 +380,8 @@ async function auth(req, res, next) {
 
     const user = await getUserById(session.user_id);
 
+    console.log('AUTH USER:', user);
+
     if (!user) {
       return res.status(401).json({ message: 'Пользователь не найден' });
     }
@@ -558,16 +560,18 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('/api/me', auth, async (req, res) => {
+  const user = mapUser(req.user);
+
   return res.json({
-    id: req.user.id,
-    role: req.user.role,
-    name: req.user.name,
-    email: req.user.email,
-    city: req.user.city || '',
-    sellerCategory: req.user.seller_category || '',
-    address: req.user.address || '',
-    whatsapp: req.user.whatsapp || '',
-    about: req.user.about || ''
+    id: user.id,
+    role: user.role,
+    name: user.name,
+    email: user.email,
+    city: user.city,
+    sellerCategory: user.sellerCategory,
+    address: user.address,
+    whatsapp: user.whatsapp,
+    about: user.about
   });
 });
 
