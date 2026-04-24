@@ -1,0 +1,9 @@
+{
+  "appId": "kz.torgkz.app",
+  "appName": "Torg KZ",
+  "webDir": "www",
+  "server": {
+    "url": "https://torg-kz-production.up.railway.app",
+    "cleartext": true
+  }
+}

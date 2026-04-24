@@ -1185,20 +1185,31 @@ body {
     }
   </style>
 </head>
-<script type="module">
-  import { Capacitor } from 'https://cdn.jsdelivr.net/npm/@capacitor/core@latest/dist/capacitor.js';
-  import { PushNotifications } from 'https://cdn.jsdelivr.net/npm/@capacitor/push-notifications@latest/dist/plugin.js';
-
-  async function initAndroidPush() {
+<script>
+async function initAndroidPush() {
+  try {
     if (!window.Capacitor) {
       console.log('Capacitor not found');
       return;
     }
 
+    const platform = window.Capacitor.getPlatform?.();
+    if (platform !== 'android') {
+      console.log('Not android:', platform);
+      return;
+    }
+
+    const PushNotifications = window.Capacitor.Plugins?.PushNotifications;
+    if (!PushNotifications) {
+      console.log('PushNotifications plugin not found');
+      return;
+    }
+
     const permStatus = await PushNotifications.requestPermissions();
+    console.log('permStatus:', permStatus);
 
     if (permStatus.receive !== 'granted') {
-      console.log('Разрешение на уведомления не выдано');
+      console.log('Разрешение не выдано');
       return;
     }
 
@@ -1226,11 +1237,17 @@ body {
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      console.log('Пользователь нажал push:', action);
+      console.log('Нажат push:', action);
     });
+  } catch (e) {
+    console.error('initAndroidPush error:', e);
   }
+}
 
-  initAndroidPush();
+document.addEventListener('deviceready', initAndroidPush);
+window.addEventListener('load', () => {
+  setTimeout(initAndroidPush, 1000);
+});
 </script>
 <body>
   <!-- LANDING -->

@@ -16,6 +16,10 @@
   "author": "Make",
   "license": "MIT",
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/push-notifications": "^8.0.3",
     "express": "^4.22.1",
     "images": "^3.2.4",
     "multer": "^2.1.1",
