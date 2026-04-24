@@ -2393,6 +2393,13 @@ setTimeout(async () => {
         WhatsApp
       </button>`
 }
+
+<button 
+    class="select-btn"
+    onclick="confirmDeal('${requestId}', '${item.sellerId}')"
+  >
+    Договорились
+  </button>
 </div>
             <div class="note-box">${escapeHtml(item.message)}</div>
           `;
@@ -2974,7 +2981,7 @@ if (searchText) {
   try {
     const token = localStorage.getItem('token');
 
-    const res = await fetch(`/api/requests/${requestId}/select`, {
+    const res = await fetch(`/api/requests/${requestId}/contact`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -3003,6 +3010,35 @@ if (searchText) {
   }
 }
 
+async function confirmDeal(requestId, sellerId) {
+  if (!confirm('Подтвердить сделку?')) return;
+
+  try {
+    const token = localStorage.getItem('token');
+
+    const res = await fetch(`/api/requests/${requestId}/select`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ sellerId })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert(result.message || 'Ошибка');
+      return;
+    }
+
+    alert('Сделка подтверждена');
+
+    loadMyRequests(); // обновить список
+  } catch (err) {
+    alert('Ошибка');
+  }
+}
   </script>
 <script>
 document.addEventListener('input', function (e) {
