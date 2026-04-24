@@ -1200,6 +1200,33 @@ body {
   font-weight: 900;
   cursor: pointer;
 }
+.buyer-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.buyer-tab-btn {
+  width: auto;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.buyer-tab-btn.active {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+}
+
+.buyer-tab-content.hidden {
+  display: none !important;
+}
     .seller-tabs {
   display: flex;
   gap: 10px;
@@ -1495,18 +1522,26 @@ window.addEventListener('load', () => {
       </section>
 
       <section class="requests-layout">
-        <div class="card">
-          <h2 class="section-title">Мои активные заявки</h2>
-          <div id="buyerRequestsList"></div>
-        </div>
+       <div class="card">
+  <div class="buyer-tabs">
+    <button type="button" class="buyer-tab-btn active" onclick="openBuyerTab('requests')">
+      Мои активные заявки
+    </button>
 
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-            <div>
-              <h2 class="section-title" style="margin-bottom:6px;">Предложения по заявке</h2>
-              <div class="meta" id="buyerOffersSubTitle">Выбери заявку слева</div>
-            </div>
-          </div>
+    <button type="button" class="buyer-tab-btn" onclick="openBuyerTab('offers')">
+      Предложения по заявке
+    </button>
+  </div>
+
+  <div id="buyerRequestsList" class="buyer-tab-content"></div>
+
+  <div id="buyerOffersWrap" class="buyer-tab-content hidden">
+    <div class="meta" id="buyerOffersSubTitle" style="margin-bottom:14px;">
+      Выбери заявку
+    </div>
+    <div id="buyerOffersList"></div>
+  </div>
+</div>
 
           <div id="buyerOffersList"></div>
         </div>
@@ -2650,6 +2685,29 @@ if (searchText) {
 
   if (arrow) {
     arrow.textContent = list.classList.contains('hidden') ? '▶' : '▼';
+  }
+}
+function openBuyerTab(tab) {
+  const requests = document.getElementById('buyerRequestsList');
+  const offers = document.getElementById('buyerOffersWrap');
+
+  if (!requests || !offers) return;
+
+  requests.classList.add('hidden');
+  offers.classList.add('hidden');
+
+  document.querySelectorAll('.buyer-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+
+  if (tab === 'requests') {
+    requests.classList.remove('hidden');
+    document.querySelectorAll('.buyer-tab-btn')[0]?.classList.add('active');
+  }
+
+  if (tab === 'offers') {
+    offers.classList.remove('hidden');
+    document.querySelectorAll('.buyer-tab-btn')[1]?.classList.add('active');
   }
 }
     function openSellerTab(tab) {
