@@ -2500,16 +2500,16 @@ if (searchText) {
   });
 }
 
-      const categoryFilter = document.getElementById('sellerCategoryFilter').value.trim();
-      const cityFilter = document.getElementById('sellerCityFilter').value.trim();
+    const searchText = document.getElementById('sellerSearchInput')?.value.trim().toLowerCase() || '';
 
-      if (categoryFilter) {
-        list = list.filter(item => String(item.category || '') === categoryFilter);
-      }
-
-      if (cityFilter) {
-        list = list.filter(item => String(item.city || '') === cityFilter);
-      }
+if (searchText) {
+  list = list.filter(item =>
+    String(item.title || '').toLowerCase().includes(searchText) ||
+    String(item.description || '').toLowerCase().includes(searchText) ||
+    String(item.city || '').toLowerCase().includes(searchText) ||
+    String(item.category || '').toLowerCase().includes(searchText)
+  );
+}
 
       if (sellerOnlyNew) {
         list = list.filter(item => item.status === 'open');
