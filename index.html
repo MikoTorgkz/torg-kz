@@ -1184,6 +1184,33 @@ body {
       }
     }
 
+    .seller-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.seller-tab-btn {
+  width: auto;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.seller-tab-btn.active {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+}
+
+.seller-tab-content.hidden {
+  display: none !important;
+}
     .seller-search-box {
   grid-column: 1 / -1;
   position: relative;
@@ -1547,12 +1574,23 @@ window.addEventListener('load', () => {
         </div>
 
         <div class="card">
-          <h3 class="panel-title">Мои отклики</h3>
-          <div id="sellerResponsesList"></div>
-          <h3 class="panel-title">Мои сделки</h3>
-        <div id="sellerDealsList"></div>
-        <h3 class="panel-title">История</h3>
-<div id="sellerHistoryList"></div>
+        <div class="seller-tabs">
+  <button type="button" class="seller-tab-btn active" onclick="openSellerTab('responses')">
+    Мои отклики
+  </button>
+
+  <button type="button" class="seller-tab-btn" onclick="openSellerTab('deals')">
+    Мои сделки
+  </button>
+
+  <button type="button" class="seller-tab-btn" onclick="openSellerTab('history')">
+    История
+  </button>
+</div>
+
+<div id="sellerResponsesList" class="seller-tab-content"></div>
+<div id="sellerDealsList" class="seller-tab-content hidden"></div>
+<div id="sellerHistoryList" class="seller-tab-content hidden"></div>
         </div>
       </section>
     </main>
@@ -2582,6 +2620,36 @@ if (searchText) {
       });
     }
 
+    function openSellerTab(tab) {
+  const responses = document.getElementById('sellerResponsesList');
+  const deals = document.getElementById('sellerDealsList');
+  const history = document.getElementById('sellerHistoryList');
+
+  if (!responses || !deals || !history) return;
+
+  responses.classList.add('hidden');
+  deals.classList.add('hidden');
+  history.classList.add('hidden');
+
+  document.querySelectorAll('.seller-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+
+  if (tab === 'responses') {
+    responses.classList.remove('hidden');
+    document.querySelectorAll('.seller-tab-btn')[0]?.classList.add('active');
+  }
+
+  if (tab === 'deals') {
+    deals.classList.remove('hidden');
+    document.querySelectorAll('.seller-tab-btn')[1]?.classList.add('active');
+  }
+
+  if (tab === 'history') {
+    history.classList.remove('hidden');
+    document.querySelectorAll('.seller-tab-btn')[2]?.classList.add('active');
+  }
+}
     function sellerRenderResponses() {
       const box = document.getElementById('sellerResponsesList');
 if (!box) return;
