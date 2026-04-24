@@ -2369,15 +2369,15 @@ setTimeout(async () => {
     Профиль
   </button>
 
-  ${
-    waLink
-      ? `<button class="wa-btn" onclick="selectSellerAndOpenWhatsapp('${request.id}', '${item.id}', '${item.whatsapp}')">
-          WhatsApp
-        </button>`
-      : `<button type="button" class="wa-btn" disabled style="opacity:0.6;cursor:not-allowed;">
-          WhatsApp
-        </button>`
-  }
+ ${
+  waLink
+    ? `<button class="wa-btn" onclick="selectSellerAndOpenWhatsapp('${requestId}', '${item.id}', '${item.whatsapp}')">
+        WhatsApp
+      </button>`
+    : `<button type="button" class="wa-btn" disabled style="opacity:0.6;cursor:not-allowed;">
+        WhatsApp
+      </button>`
+}
 </div>
             <div class="note-box">${escapeHtml(item.message)}</div>
           `;
