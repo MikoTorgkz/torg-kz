@@ -3003,9 +3003,8 @@ if (searchText) {
     if (!phone.startsWith('7')) phone = '7' + phone;
 
     window.location.href = `https://wa.me/${phone}`;
-
-    buyerLoadRequests();
   } catch (err) {
+    console.error(err);
     alert('Ошибка при выборе продавца');
   }
 }
