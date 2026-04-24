@@ -1551,6 +1551,8 @@ window.addEventListener('load', () => {
           <div id="sellerResponsesList"></div>
           <h3 class="panel-title">Мои сделки</h3>
         <div id="sellerDealsList"></div>
+        <h3 class="panel-title">История</h3>
+<div id="sellerHistoryList"></div>
         </div>
       </section>
     </main>
@@ -2584,12 +2586,13 @@ if (searchText) {
       const box = document.getElementById('sellerResponsesList');
       box.innerHTML = '';
 
-      if (!sellerResponsesCache.length) {
+      if (!activeResponses.length) {
         box.innerHTML = `<div class="empty-box">Ты пока не отправлял отклики</div>`;
         return;
       }
 
-      sellerResponsesCache.forEach(item => {
+      const activeResponses = sellerResponsesCache.filter(item => item.requestStatus === 'open');
+      activeResponses.forEach(item => {
         const chosen = item.selectedSellerId === currentUser?.id;
         const waLink = chosen && currentUser?.whatsapp ? whatsappLink(currentUser.whatsapp) : '';
         const card = document.createElement('div');
@@ -2647,6 +2650,7 @@ if (searchText) {
       sellerRenderResponses();
       sellerUpdateStats();
       sellerRenderDeals();
+      sellerRenderHistory();
     }
 
     async function sellerLoadNotifications() {
@@ -3067,6 +3071,43 @@ function sellerRenderDeals() {
 
       <div class="chosen-box">
         Сделка завершена ✅
+      </div>
+    `;
+
+    box.appendChild(card);
+  });
+}
+
+function sellerRenderHistory() {
+  const box = document.getElementById('sellerHistoryList');
+  box.innerHTML = '';
+
+  const history = sellerResponsesCache.filter(item =>
+    item.requestStatus !== 'open' &&
+    item.selectedSellerId !== currentUser?.id
+  );
+
+  if (!history.length) {
+    box.innerHTML = `<div class="empty-box">История пока пустая</div>`;
+    return;
+  }
+
+  history.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'response-card';
+
+    card.innerHTML = `
+      <div class="response-head">
+        <div>
+          <div class="response-title">${escapeHtml(item.requestTitle)}</div>
+          <div class="meta">Вы отправили: ${escapeHtml(item.price)} ₸</div>
+        </div>
+      </div>
+
+      <div class="note-box">
+        ${item.requestStatus === 'closed'
+          ? 'Заявка закрыта другим продавцом'
+          : 'Срок заявки истёк'}
       </div>
     `;
 
