@@ -2365,17 +2365,20 @@ setTimeout(async () => {
             ${renderImages(item.images)}
 
             <div class="offer-actions">
-              <button type="button" class="message-btn">Написать</button>
-              <button type="button" class="chat-btn">💬</button>
-              <button type="button" class="chat-btn" onclick="openSellerProfile('${item.sellerId}')">Профиль</button>
-              ${
-                waLink
-                  ? `<a class="wa-btn" href="${waLink}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`
-                  : `<button type="button" class="wa-btn" disabled style="opacity:0.6;cursor:not-allowed;">WhatsApp</button>`
-              }
-              ${selectButton}
-            </div>
+  <button type="button" class="chat-btn" onclick="openSellerProfile('${item.sellerId}')">
+    Профиль
+  </button>
 
+  ${
+    waLink
+      ? `<button class="wa-btn" onclick="selectSellerAndOpenWhatsapp('${request.id}', '${item.id}', '${item.whatsapp}')">
+          WhatsApp
+        </button>`
+      : `<button type="button" class="wa-btn" disabled style="opacity:0.6;cursor:not-allowed;">
+          WhatsApp
+        </button>`
+  }
+</div>
             <div class="note-box">${escapeHtml(item.message)}</div>
           `;
 
@@ -2805,7 +2808,7 @@ setTimeout(async () => {
       <div id="adminUsersList"></div>
     </div>
   </section>
-
+  
   <script>
     async function loadAdminStats() {
       const user = JSON.parse(localStorage.getItem('user'));
@@ -2947,6 +2950,36 @@ setTimeout(async () => {
     }
 
     showAdminPanel();
+
+    async function selectSellerAndOpenWhatsapp(requestId, responseId, whatsapp) {
+  try {
+    await fetch(`/api/requests/${requestId}/select`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ responseId })
+    });
+
+    let phone = String(whatsapp || '').replace(/\D/g, '');
+
+    if (phone.startsWith('8')) {
+      phone = '7' + phone.slice(1);
+    }
+
+    if (!phone.startsWith('7')) {
+      phone = '7' + phone;
+    }
+
+    window.open(`https://wa.me/${phone}`, '_blank');
+
+    loadMyRequests(); // обновить список
+  } catch (err) {
+    alert('Ошибка при выборе продавца');
+  }
+}
+
   </script>
 <script>
 document.addEventListener('input', function (e) {
