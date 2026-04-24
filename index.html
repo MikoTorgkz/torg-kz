@@ -1549,6 +1549,8 @@ window.addEventListener('load', () => {
         <div class="card">
           <h3 class="panel-title">Мои отклики</h3>
           <div id="sellerResponsesList"></div>
+          <h3 class="panel-title">Мои сделки</h3>
+        <div id="sellerDealsList"></div>
         </div>
       </section>
     </main>
@@ -2644,6 +2646,7 @@ if (searchText) {
       sellerResponsesCache = await api('/api/my-responses');
       sellerRenderResponses();
       sellerUpdateStats();
+      sellerRenderDeals();
     }
 
     async function sellerLoadNotifications() {
@@ -3037,6 +3040,38 @@ async function confirmDeal(requestId, sellerId) {
   } catch (err) {
     alert('Ошибка');
   }
+}
+
+function sellerRenderDeals() {
+  const box = document.getElementById('sellerDealsList');
+  box.innerHTML = '';
+
+  const deals = sellerResponsesCache.filter(item => item.selectedSellerId === currentUser?.id);
+
+  if (!deals.length) {
+    box.innerHTML = `<div class="empty-box">Пока нет сделок</div>`;
+    return;
+  }
+
+  deals.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'response-card';
+
+    card.innerHTML = `
+      <div class="response-head">
+        <div>
+          <div class="response-title">${escapeHtml(item.requestTitle)}</div>
+          <div class="meta">Цена: ${escapeHtml(item.price)} ₸</div>
+        </div>
+      </div>
+
+      <div class="chosen-box">
+        Сделка завершена ✅
+      </div>
+    `;
+
+    box.appendChild(card);
+  });
 }
   </script>
 <script>
