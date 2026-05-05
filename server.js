@@ -418,16 +418,17 @@ app.get('/', (req, res) => {
 app.post('/api/register', async (req, res) => {
   try {
     const {
-      role,
-      name,
-      email,
-      password,
-      city,
-      sellerCategory,
-      address,
-      whatsapp,
-      about
-    } = req.body;
+  role,
+  name,
+  email,
+  password,
+  city,
+  sellerCategory,
+  address,
+  whatsapp,
+  about,
+  whatsappClient
+} = req.body;
 
     if (!role || !name || !email || !password) {
       return res.status(400).json({ message: 'Заполни все обязательные поля' });
@@ -474,7 +475,9 @@ app.post('/api/register', async (req, res) => {
       city: role === 'seller' ? normalizeCity(city) : '',
       sellerCategory: role === 'seller' ? String(sellerCategory || '').trim() : '',
       address: role === 'seller' ? String(address || '').trim() : '',
-      whatsapp: role === 'seller' ? String(whatsapp || '').trim() : '',
+      whatsapp: role === 'seller'
+  ? String(whatsapp || '').trim()
+  : String(whatsappClient || '').trim(),
       about: role === 'seller' ? String(about || '').trim() : '',
       createdAt: Date.now(),
       blocked: false
