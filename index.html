@@ -1487,19 +1487,30 @@ window.addEventListener('load', () => {
         <div class="buyer-form-grid">
           <div class="buyer-left-fields">
             <select id="buyerReqCategory">
-              <option value="">Категория</option>
-              <option value="Электроника">Электроника</option>
-              <option value="Бытовая техника">Бытовая техника</option>
-              <option value="Автозапчасти">Автозапчасти</option>
-              <option value="Мебель">Мебель</option>
-              <option value="Услуги">Услуги</option>
-              <option value="Одежда и обувь">Одежда и обувь</option>
-              <option value="Детские товары">Детские товары</option>
-              <option value="Стройматериалы">Стройматериалы</option>
-              <option value="Другое">Другое</option>
-            </select>
+  <option value="">Тип заявки</option>
+  <option value="Автозапчасти">Автозапчасти</option>
+  <option value="Услуги">Услуги</option>
+</select>
 
             <select id="buyerReqCity"></select>
+            <div id="autoPartsFields" class="hidden">
+  <input type="text" id="buyerCarBrand" placeholder="Марка авто: Hyundai, Kia, Toyota..." />
+
+  <select id="buyerPartType">
+    <option value="">Раздел запчасти</option>
+    <option value="Ходовая и мотор">Ходовая и мотор</option>
+    <option value="Кузов">Кузов</option>
+    <option value="Аксессуар">Аксессуар</option>
+  </select>
+</div>
+
+<div id="serviceFields" class="hidden">
+  <select id="buyerServiceType">
+    <option value="">Категория услуги</option>
+    <option value="Мастер">Мастер</option>
+    <option value="Водитель авто">Водитель авто</option>
+  </select>
+</div>
 
             <input type="text" id="buyerReqPhone" placeholder="Телефон" />
 
@@ -1542,9 +1553,6 @@ window.addEventListener('load', () => {
     <div id="buyerOffersList"></div>
   </div>
 </div>
-
-          <div id="buyerOffersList"></div>
-        </div>
       </section>
     </main>
   </div>
@@ -1615,6 +1623,9 @@ window.addEventListener('load', () => {
       placeholder="Найти заявку: Sonata, амортизатор, Шымкент" 
     />
   </div>
+  <select id="sellerFilterType">
+  <option value="">Все разделы</option>
+</select>
    </div>
       </section>
 
@@ -1683,22 +1694,21 @@ window.addEventListener('load', () => {
         <input type="text" id="registerName" placeholder="Имя" />
         <input type="email" id="registerEmail" placeholder="Email" />
         <input type="password" id="registerPassword" placeholder="Пароль" />
+        <input type="password" id="registerPassword2" placeholder="Повторите пароль" />
+        <input 
+  type="text" 
+  id="registerWhatsappClient" 
+  placeholder="WhatsApp (+7...)" 
+/>
 
         <div id="sellerExtraFields" class="seller-extra-fields hidden">
   <select id="registerCity"></select>
 
   <select id="registerSellerCategory">
-    <option value="">Выберите категорию деятельности</option>
-    <option value="Электроника">Электроника</option>
-    <option value="Бытовая техника">Бытовая техника</option>
-    <option value="Автозапчасти">Автозапчасти</option>
-    <option value="Мебель">Мебель</option>
-    <option value="Услуги">Услуги</option>
-    <option value="Одежда и обувь">Одежда и обувь</option>
-    <option value="Детские товары">Детские товары</option>
-    <option value="Стройматериалы">Стройматериалы</option>
-    <option value="Другое">Другое</option>
-  </select>
+  <option value="">Выберите категорию</option>
+  <option value="Автозапчасти">Автозапчасти</option>
+  <option value="Услуги">Услуги</option>
+</select>
 
   <input type="text" id="registerAddress" placeholder="Адрес магазина" />
   <input 
@@ -2144,6 +2154,13 @@ async function openSellerProfile(sellerId) {
       try {
         const role = document.getElementById('registerRole').value;
 
+        const pass1 = document.getElementById('registerPassword').value;
+const pass2 = document.getElementById('registerPassword2').value;
+
+if (pass1 !== pass2) {
+  setMsg('registerMsg', 'Пароли не совпадают');
+  return;
+}
         const payload = {
   role,
   name: document.getElementById('registerName').value.trim(),
@@ -2152,7 +2169,8 @@ async function openSellerProfile(sellerId) {
   city: role === 'seller' ? document.getElementById('registerCity').value.trim() : '',
   sellerCategory: role === 'seller' ? document.getElementById('registerSellerCategory').value.trim() : '',
   address: role === 'seller' ? document.getElementById('registerAddress').value.trim() : '',
-  whatsapp: role === 'seller' ? document.getElementById('registerWhatsapp').value.trim() : '',
+whatsapp: role === 'seller' ? document.getElementById('registerWhatsapp').value.trim() : '',
+whatsappClient: role === 'buyer' ? document.getElementById('registerWhatsappClient').value.trim() : '',
   about: role === 'seller' ? document.getElementById('registerAbout').value.trim() : ''
 };
 
@@ -2268,13 +2286,45 @@ setTimeout(async () => {
     }
 
     // BUYER
+    function updateBuyerRequestFields() {
+  const category = document.getElementById('buyerReqCategory').value;
+
+  document.getElementById('autoPartsFields').classList.toggle('hidden', category !== 'Автозапчасти');
+  document.getElementById('serviceFields').classList.toggle('hidden', category !== 'Услуги');
+}
    async function buyerCreateRequest() {
   try {
     const formData = new FormData();
 
     formData.append('title', document.getElementById('buyerReqTitle').value.trim());
-    formData.append('description', document.getElementById('buyerReqDescription').value.trim());
-    formData.append('category', document.getElementById('buyerReqCategory').value.trim());
+    const selectedCategory = document.getElementById('buyerReqCategory').value.trim();
+let extraInfo = '';
+
+if (selectedCategory === 'Автозапчасти') {
+  const carBrand = document.getElementById('buyerCarBrand').value.trim();
+  const partType = document.getElementById('buyerPartType').value.trim();
+
+  extraInfo = `
+Марка авто: ${carBrand || 'Не указано'}
+Раздел: ${partType || 'Не указано'}
+`;
+}
+
+if (selectedCategory === 'Услуги') {
+  const serviceType = document.getElementById('buyerServiceType').value.trim();
+
+  extraInfo = `
+Тип услуги: ${serviceType || 'Не указано'}
+`;
+}
+
+const fullDescription = `${extraInfo}
+
+Описание:
+${document.getElementById('buyerReqDescription').value.trim()}`;
+
+formData.append('description', fullDescription.trim());
+formData.append('category', selectedCategory);
     formData.append('city', document.getElementById('buyerReqCity').value.trim());
     formData.append('phone', document.getElementById('buyerReqPhone').value.trim());
 
@@ -2300,6 +2350,10 @@ setTimeout(async () => {
     document.getElementById('buyerReqTitle').value = '';
     document.getElementById('buyerReqDescription').value = '';
     document.getElementById('buyerReqCategory').value = '';
+    document.getElementById('buyerCarBrand').value = '';
+document.getElementById('buyerPartType').value = '';
+document.getElementById('buyerServiceType').value = '';
+updateBuyerRequestFields();
     document.getElementById('buyerReqCity').value = '';
     document.getElementById('buyerReqPhone').value = '';
     document.getElementById('buyerReqImages').value = '';
@@ -2371,6 +2425,7 @@ setTimeout(async () => {
         card.querySelector('.show-offers-btn').addEventListener('click', (e) => {
           e.stopPropagation();
           buyerSelectRequest(item.id);
+          document.getElementById('buyerReqCategory').addEventListener('change', updateBuyerRequestFields);
         });
 
         box.appendChild(card);
@@ -2591,6 +2646,7 @@ setTimeout(async () => {
       let list = [...sellerMarketplaceCache];
 
     const searchText = document.getElementById('sellerSearchInput')?.value.trim().toLowerCase() || '';
+    const filterType = document.getElementById('sellerFilterType')?.value.trim().toLowerCase() || '';
 
 if (searchText) {
   list = list.filter(item =>
@@ -2598,6 +2654,11 @@ if (searchText) {
     String(item.description || '').toLowerCase().includes(searchText) ||
     String(item.city || '').toLowerCase().includes(searchText) ||
     String(item.category || '').toLowerCase().includes(searchText)
+  );
+}
+if (filterType) {
+  list = list.filter(item =>
+    String(item.description || '').toLowerCase().includes(filterType)
   );
 }
 
@@ -2892,12 +2953,14 @@ function sellerRenderHistory() {
     }
 
     async function initSellerCabinet() {
-      document.getElementById('sellerBadge').textContent = `Я продавец • ${currentUser.name}`;
-      showScreen('seller');
+  document.getElementById('sellerBadge').textContent = `Я продавец • ${currentUser.name}`;
+  showScreen('seller');
 
-      await sellerLoadNotifications();
-      await sellerLoadMarketplace();
-      await sellerLoadResponses();
+  updateSellerFilterByCategory();
+
+  await sellerLoadNotifications();
+  await sellerLoadMarketplace();
+  await sellerLoadResponses();
 
       setInterval(() => {
         if (currentUser?.role === 'seller') {
@@ -2949,11 +3012,13 @@ function sellerRenderHistory() {
     document.getElementById('sellerLogoutBtn').addEventListener('click', logoutUser);
 
     document.getElementById('buyerCreateRequestBtn').addEventListener('click', buyerCreateRequest);
+    document.getElementById('buyerReqCategory').addEventListener('change', updateBuyerRequestFields);
 
     document.getElementById('buyerOpenNotificationsBtn').addEventListener('click', async () => {
       document.getElementById('buyerNotificationsModal').classList.remove('hidden');
       await markNotificationsRead();
       await buyerLoadNotifications();
+      document.getElementById('sellerFilterType')?.addEventListener('change', sellerRenderMarketplace);
     });
 
     document.getElementById('closeBuyerNotificationsBtn').addEventListener('click', () => {
@@ -2971,6 +3036,7 @@ function sellerRenderHistory() {
     });
 
     document.getElementById('sellerHistoryBtn').addEventListener('click', sellerToggleHistory);
+    document.getElementById('sellerFilterType')?.addEventListener('change', sellerRenderMarketplace);
 
     document.getElementById('closeSellerRespondModalBtn').addEventListener('click', sellerCloseRespondModal);
     document.getElementById('submitSellerResponseBtn').addEventListener('click', sellerSubmitResponse);
@@ -3008,6 +3074,7 @@ function sellerRenderHistory() {
        document.addEventListener('input', function(e) {
   if (e.target && e.target.id === 'sellerSearchInput') {
     sellerRenderMarketplace();
+    updateSellerFilterByCategory();
   }
 });
   </script>
@@ -3246,7 +3313,7 @@ async function confirmDeal(requestId, sellerId) {
 
     alert('Сделка подтверждена');
 
-    lbuyerLoadRequests();
+    buyerLoadRequests();
   } catch (err) {
     alert('Ошибка');
   }
@@ -3297,6 +3364,27 @@ function sellerRenderHistory() {
       <div class="status-line">Заявка завершена или истекла</div>
     </div>
   `).join('');
+}
+function updateSellerFilterByCategory() {
+  const select = document.getElementById('sellerFilterType');
+  if (!select || !currentUser) return;
+
+  if (currentUser.sellerCategory === 'Автозапчасти') {
+    select.innerHTML = `
+      <option value="">Все разделы</option>
+      <option value="Ходовая и мотор">Ходовая и мотор</option>
+      <option value="Кузов">Кузов</option>
+      <option value="Аксессуар">Аксессуар</option>
+    `;
+  }
+
+  if (currentUser.sellerCategory === 'Услуги') {
+    select.innerHTML = `
+      <option value="">Все услуги</option>
+      <option value="Мастер">Мастер</option>
+      <option value="Водитель авто">Водитель авто</option>
+    `;
+  }
 }
   </script>
 <script>
