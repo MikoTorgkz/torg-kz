@@ -1699,6 +1699,7 @@ window.addEventListener('load', () => {
   type="text" 
   id="registerWhatsappClient" 
   placeholder="WhatsApp (+7...)" 
+  style="display:none"
 />
 
         <div id="sellerExtraFields" class="seller-extra-fields hidden">
@@ -2146,9 +2147,17 @@ async function openSellerProfile(sellerId) {
     }
 
     function updateRegisterFieldsVisibility() {
-      const role = document.getElementById('registerRole').value;
-      document.getElementById('sellerExtraFields').classList.toggle('hidden', role !== 'seller');
-    }
+  const role = document.getElementById('registerRole').value;
+
+  document.getElementById('sellerExtraFields')
+    .classList.toggle('hidden', role !== 'seller');
+
+  const buyerWhatsapp = document.getElementById('registerWhatsappClient');
+
+  if (buyerWhatsapp) {
+    buyerWhatsapp.style.display = role === 'buyer' ? 'block' : 'none';
+  }
+}
 
     async function registerUser() {
       try {
@@ -3389,7 +3398,7 @@ function updateSellerFilterByCategory() {
   </script>
 <script>
 document.addEventListener('input', function (e) {
-  if (e.target.id !== 'registerWhatsapp') return;
+  if (e.target.id !== 'registerWhatsapp' && e.target.id !== 'registerWhatsappClient') return;
 
   let digits = e.target.value.replace(/\D/g, '');
 
