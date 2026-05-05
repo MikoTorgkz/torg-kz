@@ -3,10 +3,17 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+cloudinary.config({
+  cloud_name: 'doyr16aqh',
+  api_key: '59259213697114',
+  api_secret: 'ТВОЙ_API_SECRET'
+});
 
 const ALLOWED_CITIES = [
   'Алматы',
@@ -605,6 +612,17 @@ app.post('/api/requests', auth, upload.array('images', 6), async (req, res) => {
 
     await cleanupExpiredRequests();
 
+    let images = [];
+
+if (req.files && req.files.length) {
+  for (const file of req.files) {
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder: 'torg-kz'
+    });
+    images.push(result.secure_url);
+  }
+}
+
     const requestItem = {
       id: generateId('req_'),
       buyerId: req.user.id,
@@ -614,7 +632,7 @@ app.post('/api/requests', auth, upload.array('images', 6), async (req, res) => {
       category: String(category || '').trim(),
       city: normalizeCity(city, true),
       phone: String(phone).trim(),
-      images: req.files ? req.files.map(file => '/uploads/' + file.filename) : [],
+      images: images,
       status: 'open',
       selectedSellerId: null,
       selectedPrice: null,
@@ -824,6 +842,17 @@ app.post('/api/requests/:id/respond', auth, upload.array('images', 6), async (re
       return res.status(400).json({ message: 'Ты уже откликнулся на эту заявку' });
     }
 
+    let images = [];
+
+if (req.files && req.files.length) {
+  for (const file of req.files) {
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder: 'torg-kz'
+    });
+    images.push(result.secure_url);
+  }
+}
+
     const responseItem = {
       id: generateId('resp_'),
       requestId,
@@ -831,7 +860,7 @@ app.post('/api/requests/:id/respond', auth, upload.array('images', 6), async (re
       sellerName: req.user.name,
       price: String(price).trim(),
       message: String(message).trim(),
-      images: req.files ? req.files.map(file => '/uploads/' + file.filename) : [],
+      images: images,
       createdAt: Date.now()
     };
 
