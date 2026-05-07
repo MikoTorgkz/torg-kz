@@ -2431,11 +2431,11 @@ updateBuyerRequestFields();
         `;
 
         card.addEventListener('click', () => buyerSelectRequest(item.id));
-        card.querySelector('.show-offers-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          buyerSelectRequest(item.id);
-          document.getElementById('buyerReqCategory').addEventListener('change', updateBuyerRequestFields);
-        });
+       card.querySelector('.show-offers-btn').addEventListener('click', async (e) => {
+  e.stopPropagation();
+  openBuyerTab('offers');
+  await buyerSelectRequest(item.id);
+});
 
         box.appendChild(card);
 
