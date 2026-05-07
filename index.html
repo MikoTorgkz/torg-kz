@@ -2707,7 +2707,9 @@ if (filterType) {
               <div class="meta">•••</div>
             </div>
 
-            <div class="request-desc">${escapeHtml(item.description || '')}</div>
+            <div class="request-desc" style="white-space: pre-line;">
+  ${escapeHtml(item.description || '')}
+</div>
             ${renderImages(item.images)}
 
             <div class="request-footer">
