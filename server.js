@@ -238,7 +238,7 @@ async function initDB() {
         'admin',
         'Admin',
         adminEmail,
-        hashPassword('123456'),
+        hashPassword('Tumar2025'),
         '',
         '',
         '',
@@ -1332,7 +1332,9 @@ app.get('/api/admin/users', async (req, res) => {
 
     const result = await db.query(
       `
-      SELECT id, name, email, role, blocked, city, whatsapp
+      SELECT 
+        id, name, email, role, blocked, city, seller_category,
+        address, whatsapp, about, created_at
       FROM users
       ORDER BY created_at DESC
       `
@@ -1345,7 +1347,11 @@ app.get('/api/admin/users', async (req, res) => {
       role: u.role,
       blocked: !!u.blocked,
       city: u.city || '',
-      whatsapp: u.whatsapp || ''
+      sellerCategory: u.seller_category || '',
+      address: u.address || '',
+      whatsapp: u.whatsapp || '',
+      about: u.about || '',
+      createdAt: Number(u.created_at || 0)
     }));
 
     return res.json(safeUsers);
@@ -1353,7 +1359,6 @@ app.get('/api/admin/users', async (req, res) => {
     return res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
-
 app.get('/api/admin/stats', async (req, res) => {
   try {
     const user = await getUserFromHeader(req);
