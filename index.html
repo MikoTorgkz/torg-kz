@@ -3154,43 +3154,72 @@ function sellerRenderHistory() {
       }
     }
 
-    app.get('/api/admin/users', async (req, res) => {
-  try {
-    const user = await getUserFromHeader(req);
+    async function loadAdminUsers() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || user.role !== 'admin') return;
 
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ error: 'Доступ запрещён' });
+  try {
+    const res = await fetch('/api/admin/users', {
+      headers: {
+        'x-user-id': user.id
+      }
+    });
+
+    const users = await res.json();
+    const container = document.getElementById('adminUsersList');
+
+    if (!Array.isArray(users) || !users.length) {
+      container.innerHTML = '<p>Пользователей пока нет</p>';
+      return;
     }
 
-    const result = await db.query(
-      `
-      SELECT 
-        id, name, email, role, blocked, city, seller_category,
-        address, whatsapp, about, created_at
-      FROM users
-      ORDER BY created_at DESC
-      `
-    );
+    const buyers = users.filter(u => u.role === 'buyer');
+    const sellers = users.filter(u => u.role === 'seller');
 
-    const safeUsers = result.rows.map(u => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      role: u.role,
-      blocked: !!u.blocked,
-      city: u.city || '',
-      sellerCategory: u.seller_category || '',
-      address: u.address || '',
-      whatsapp: u.whatsapp || '',
-      about: u.about || '',
-      createdAt: Number(u.created_at || 0)
-    }));
+    function userCard(item) {
+      return `
+        <div style="border:1px solid #eee; border-radius:14px; padding:14px; margin-bottom:12px;">
+          <div style="font-weight:800; font-size:17px;">${escapeHtml(item.name)}</div>
+          <div style="font-size:14px; color:#666;">Email: ${escapeHtml(item.email)}</div>
+          <div style="font-size:14px; color:#666;">Телефон / WhatsApp: ${escapeHtml(item.whatsapp || 'Не указан')}</div>
+          <div style="font-size:14px; color:#666;">Город: ${escapeHtml(item.city || 'Не указан')}</div>
 
-    return res.json(safeUsers);
+          ${item.role === 'seller' ? `
+            <div style="font-size:14px; color:#666;">Категория: ${escapeHtml(item.sellerCategory || 'Не указана')}</div>
+            <div style="font-size:14px; color:#666;">Адрес магазина: ${escapeHtml(item.address || 'Не указан')}</div>
+            <div style="font-size:14px; color:#666;">О магазине: ${escapeHtml(item.about || 'Нет описания')}</div>
+          ` : ''}
+
+          <div style="font-size:14px; color:${item.blocked ? 'red' : 'green'}; margin-top:6px;">
+            ${item.blocked ? 'Заблокирован' : 'Активен'}
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+            <button onclick="toggleBlockUser('${item.id}')" style="padding:10px 14px; border:none; border-radius:10px; background:#2563eb; color:#fff; cursor:pointer;">
+              ${item.blocked ? 'Разблокировать' : 'Блокировать'}
+            </button>
+
+            <button onclick="deleteUser('${item.id}')" style="padding:10px 14px; border:none; border-radius:10px; background:#ef4444; color:#fff; cursor:pointer;">
+              Удалить
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <h3>Покупатели</h3>
+      ${buyers.length ? buyers.map(userCard).join('') : '<p>Покупателей пока нет</p>'}
+
+      <hr style="margin:24px 0;">
+
+      <h3>Продавцы</h3>
+      ${sellers.length ? sellers.map(userCard).join('') : '<p>Продавцов пока нет</p>'}
+    `;
   } catch (error) {
-    return res.status(500).json({ error: 'Ошибка сервера' });
+    console.error('Ошибка загрузки пользователей:', error);
   }
-});
+}
 
     async function toggleBlockUser(userId) {
       const admin = JSON.parse(localStorage.getItem('user'));
