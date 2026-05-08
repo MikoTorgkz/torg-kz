@@ -3154,7 +3154,153 @@ function sellerRenderHistory() {
       }
     }
 
-    async function loadAdminUsers() {
+   let adminUsersCache = [];
+let adminOpenRole = null;
+
+function renderAdminUsers() {
+  const container = document.getElementById('adminUsersList');
+  const search = (document.getElementById('adminUserSearch')?.value || '').toLowerCase();
+
+  let list = adminUsersCache;
+
+  if (adminOpenRole) {
+    list = list.filter(u => u.role === adminOpenRole);
+  } else {
+    container.innerHTML = '';
+    return;
+  }
+
+  if (search) {
+    list = list.filter(u =>
+      String(u.name || '').toLowerCase().includes(search) ||
+      String(u.email || '').toLowerCase().includes(search) ||
+      String(u.whatsapp || '').toLowerCase().includes(search) ||
+      String(u.city || '').toLowerCase().includes(search) ||
+      String(u.address || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (!list.length) {
+    container.innerHTML = '<p>Ничего не найдено</p>';
+    return;
+  }
+
+  container.innerHTML = list.map(item => `
+  <div style="border:1px solid #eee; border-radius:14px; margin-bottom:12px; overflow:hidden;">
+
+    <div
+      onclick="toggleAdminUser('${item.id}')"
+      style="
+        padding:14px;
+        cursor:pointer;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        background:#fafafa;
+      "
+    >
+      <div>
+        <div style="font-weight:800;">
+          ${escapeHtml(item.name)}
+        </div>
+
+        <div style="font-size:13px; color:#666;">
+          ${escapeHtml(item.city || 'Город не указан')}
+        </div>
+      </div>
+
+      <div style="font-size:20px;">
+        ▼
+      </div>
+    </div>
+
+    <div id="admin-user-${item.id}" style="display:none; padding:14px;">
+
+      <div style="font-size:14px; color:#666;">
+        Email: ${escapeHtml(item.email)}
+      </div>
+
+      <div style="font-size:14px; color:#666;">
+        Телефон: ${escapeHtml(item.whatsapp || 'Не указан')}
+      </div>
+
+      <div style="font-size:14px; color:#666;">
+        Город: ${escapeHtml(item.city || 'Не указан')}
+      </div>
+
+      <div style="font-size:14px; color:#666;">
+        Дата регистрации:
+        ${item.createdAt ? new Date(item.createdAt).toLocaleString('ru-RU') : 'Не указана'}
+      </div>
+
+      ${item.role === 'seller' ? `
+        <div style="font-size:14px; color:#666;">
+          Категория: ${escapeHtml(item.sellerCategory || 'Не указана')}
+        </div>
+
+        <div style="font-size:14px; color:#666;">
+          Адрес магазина: ${escapeHtml(item.address || 'Не указан')}
+        </div>
+      ` : ''}
+
+      <div style="font-size:14px; color:${item.blocked ? 'red' : 'green'}; margin-top:8px;">
+        ${item.blocked ? 'Заблокирован' : 'Активен'}
+      </div>
+
+      ${item.role !== 'admin' ? `
+        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+
+          <button
+            onclick="toggleBlockUser('${item.id}')"
+            style="
+              padding:10px 14px;
+              border:none;
+              border-radius:10px;
+              background:#2563eb;
+              color:#fff;
+            "
+          >
+            ${item.blocked ? 'Разблокировать' : 'Блокировать'}
+          </button>
+
+          <button
+            onclick="deleteUser('${item.id}')"
+            style="
+              padding:10px 14px;
+              border:none;
+              border-radius:10px;
+              background:#ef4444;
+              color:#fff;
+            "
+          >
+            Удалить
+          </button>
+
+        </div>
+      ` : ''}
+
+    </div>
+  </div>
+`).join('');
+}
+
+function toggleAdminUser(id) {
+  const el = document.getElementById('admin-user-' + id);
+
+  if (!el) return;
+
+  el.style.display =
+    el.style.display === 'none'
+      ? 'block'
+      : 'none';
+}
+
+function toggleAdminRole(role) {
+  adminOpenRole = adminOpenRole === role ? null : role;
+  renderAdminUsers();
+}
+
+async function loadAdminUsers() {
   const user = JSON.parse(localStorage.getItem('user'));
   if (!user || user.role !== 'admin') return;
 
@@ -3165,57 +3311,35 @@ function sellerRenderHistory() {
       }
     });
 
-    const users = await res.json();
+    adminUsersCache = await res.json();
+
     const container = document.getElementById('adminUsersList');
 
-    if (!Array.isArray(users) || !users.length) {
-      container.innerHTML = '<p>Пользователей пока нет</p>';
-      return;
-    }
+    container.parentElement.innerHTML = `
+      <h3 style="margin-top:0;">Пользователи</h3>
 
-    const buyers = users.filter(u => u.role === 'buyer');
-    const sellers = users.filter(u => u.role === 'seller');
+      <input 
+        id="adminUserSearch"
+        type="text"
+        placeholder="Поиск: имя, email, телефон, город, адрес..."
+        oninput="renderAdminUsers()"
+        style="margin-bottom:12px;"
+      />
 
-    function userCard(item) {
-      return `
-        <div style="border:1px solid #eee; border-radius:14px; padding:14px; margin-bottom:12px;">
-          <div style="font-weight:800; font-size:17px;">${escapeHtml(item.name)}</div>
-          <div style="font-size:14px; color:#666;">Email: ${escapeHtml(item.email)}</div>
-          <div style="font-size:14px; color:#666;">Телефон / WhatsApp: ${escapeHtml(item.whatsapp || 'Не указан')}</div>
-          <div style="font-size:14px; color:#666;">Город: ${escapeHtml(item.city || 'Не указан')}</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+        <button onclick="toggleAdminRole('buyer')" style="width:auto; padding:12px 16px; border:none; border-radius:12px; background:#2563eb; color:white; font-weight:800;">
+  Покупатели (${adminUsersCache.filter(u => u.role === 'buyer').length})
+</button>
 
-          ${item.role === 'seller' ? `
-            <div style="font-size:14px; color:#666;">Категория: ${escapeHtml(item.sellerCategory || 'Не указана')}</div>
-            <div style="font-size:14px; color:#666;">Адрес магазина: ${escapeHtml(item.address || 'Не указан')}</div>
-            <div style="font-size:14px; color:#666;">О магазине: ${escapeHtml(item.about || 'Нет описания')}</div>
-          ` : ''}
+        <button onclick="toggleAdminRole('seller')" style="width:auto; padding:12px 16px; border:none; border-radius:12px; background:#16a34a; color:white; font-weight:800;">
+  Продавцы (${adminUsersCache.filter(u => u.role === 'seller').length})
+</button>
+      </div>
 
-          <div style="font-size:14px; color:${item.blocked ? 'red' : 'green'}; margin-top:6px;">
-            ${item.blocked ? 'Заблокирован' : 'Активен'}
-          </div>
-
-          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-            <button onclick="toggleBlockUser('${item.id}')" style="padding:10px 14px; border:none; border-radius:10px; background:#2563eb; color:#fff; cursor:pointer;">
-              ${item.blocked ? 'Разблокировать' : 'Блокировать'}
-            </button>
-
-            <button onclick="deleteUser('${item.id}')" style="padding:10px 14px; border:none; border-radius:10px; background:#ef4444; color:#fff; cursor:pointer;">
-              Удалить
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    container.innerHTML = `
-      <h3>Покупатели</h3>
-      ${buyers.length ? buyers.map(userCard).join('') : '<p>Покупателей пока нет</p>'}
-
-      <hr style="margin:24px 0;">
-
-      <h3>Продавцы</h3>
-      ${sellers.length ? sellers.map(userCard).join('') : '<p>Продавцов пока нет</p>'}
+      <div id="adminUsersList"></div>
     `;
+
+    renderAdminUsers();
   } catch (error) {
     console.error('Ошибка загрузки пользователей:', error);
   }
