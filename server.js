@@ -727,44 +727,31 @@ app.post('/api/requests', auth, upload.array('images', 6), async (req, res) => {
     );
 
     const sellersResult = await db.query(
-      `SELECT * FROM users WHERE role = 'seller'`
-    );
-
-    for (const seller of sellersResult.rows) {
-      const sellerView = {
-        ...mapUser(seller)
-      };
-
-      if (canSellerSeeRequest(sellerView, requestItem)) {
-        await addNotification(
-          seller.id,
-          `Новая заявка: ${requestItem.title}`,
-          'new_request'
-        );
-      }
-    }
-
-  const pushSellersResult = await db.query(
-  `
-  SELECT id
-  FROM users
-  WHERE role = 'seller'
-    AND blocked = false
-    AND (city = $1 OR city = $2)
-  `,
-  [city, 'Весь Казахстан']
+  `SELECT * FROM users WHERE role = 'seller'`
 );
 
-for (const seller of pushSellersResult.rows) {
-  await sendPushToUser(
-    seller.id,
-    'Новая заявка',
-    `Появилась новая заявка: "${title}"`,
-    {
-      type: 'new_request',
-      requestId: requestId
-    }
-  );
+for (const seller of sellersResult.rows) {
+  const sellerView = {
+    ...mapUser(seller)
+  };
+
+  if (canSellerSeeRequest(sellerView, requestItem)) {
+    await addNotification(
+      seller.id,
+      `Новая заявка: ${requestItem.title}`,
+      'new_request'
+    );
+
+    await sendPushToUser(
+      seller.id,
+      'Новая заявка',
+      `Появилась новая заявка: "${requestItem.title}"`,
+      {
+        type: 'new_request',
+        requestId: requestItem.id
+      }
+    );
+  }
 }
 
     return res.json({
