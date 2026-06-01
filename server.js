@@ -1107,6 +1107,41 @@ app.post('/api/requests/:id/select', auth, async (req, res) => {
   }
 });
 
+app.post('/api/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Заполни все поля' });
+    }
+
+    if (String(newPassword).length < 4) {
+      return res.status(400).json({ message: 'Новый пароль слишком короткий' });
+    }
+
+    if (!verifyPassword(currentPassword, req.user.password)) {
+      return res.status(400).json({ message: 'Текущий пароль неверный' });
+    }
+
+    await db.query(
+      `UPDATE users SET password = $1 WHERE id = $2`,
+      [hashPassword(newPassword), req.user.id]
+    );
+
+    return res.json({ message: 'Пароль изменён' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
+app.delete('/api/account', auth, async (req, res) => {
+  try {
+    await db.query(`DELETE FROM users WHERE id = $1`, [req.user.id]);
+    return res.json({ message: 'Аккаунт удалён' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
 app.get('/api/notifications', auth, async (req, res) => {
   try {
     const result = await db.query(
