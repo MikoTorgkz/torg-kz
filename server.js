@@ -1168,6 +1168,16 @@ app.post('/api/requests/:id/select', auth, async (req, res) => {
       'deal_selected'
     );
 
+    await sendPushToUser(
+  sellerId,
+  'Вас выбрали',
+  `Покупатель выбрал вас по заявке "${request.title}"`,
+  {
+    type: 'deal_selected',
+    requestId: request.id
+  }
+);
+
     const updatedRequestResult = await db.query(
       `SELECT * FROM requests WHERE id = $1 LIMIT 1`,
       [requestId]
