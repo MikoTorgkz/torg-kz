@@ -1528,7 +1528,10 @@ initDB().then(() => {
     const { token, platform } = req.body || {};
 
     if (!token) {
-      return res.status(400).json({ ok: false, message: 'token required' });
+      return res.status(400).json({
+        ok: false,
+        message: 'token required'
+      });
     }
 
     await db.query(
@@ -1547,12 +1550,25 @@ initDB().then(() => {
       ]
     );
 
-    return res.json({ ok: true });
+    res.json({ ok: true });
+
   } catch (error) {
     console.error('SAVE PUSH TOKEN ERROR:', error);
-    return res.status(500).json({ ok: false });
+    res.status(500).json({ ok: false });
   }
 });
+
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('PostgreSQL connected');
+  console.log(`Server started on port ${PORT}`);
+});
+
+}).catch(err => {
+  console.error("DB error", err);
+  process.exit(1);
+});
+
 
 // Держим процесс активным
 process.on('SIGINT', () => {
