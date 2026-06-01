@@ -352,7 +352,14 @@ async function addNotification(userId, text, type = 'info') {
 }
 
 async function sendPushToUser(userId, title, body, data = {}) {
+  console.log('PUSH FUNCTION CALLED', {
+    userId,
+    title
+  });
+
   try {
+    console.log('LOOKING FOR TOKENS OF USER:', userId);
+
     const tokensResult = await db.query(
       `
       SELECT token
@@ -361,6 +368,9 @@ async function sendPushToUser(userId, title, body, data = {}) {
       `,
       [userId]
     );
+
+    console.log('TOKENS FOUND:', tokensResult.rows.length);
+console.log(tokensResult.rows);
 
     if (!tokensResult.rows.length) {
       console.log('PUSH: no tokens for user', userId);
