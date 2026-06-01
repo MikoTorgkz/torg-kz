@@ -20,6 +20,8 @@
     "@capacitor/cli": "^8.3.0",
     "@capacitor/core": "^8.3.0",
     "@capacitor/push-notifications": "^8.0.3",
+    "anp": "^0.0.0",
+    "apn": "^2.2.0",
     "cloudinary": "^2.10.0",
     "express": "^4.22.1",
     "images": "^3.2.4",

@@ -3,7 +3,20 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
+const apn = require('apn');
 const db = require('./db');
+const applePrivateKey = process.env.APPLE_PRIVATE_KEY
+  ? process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  : '';
+
+const apnProvider = new apn.Provider({
+  token: {
+    keyId: process.env.APPLE_KEY_ID,
+    teamId: process.env.APPLE_TEAM_ID,
+    key: applePrivateKey
+  },
+  production: true
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -336,6 +349,48 @@ async function addNotification(userId, text, type = 'info') {
     `,
     [item.id, userId, item.text, item.type, item.isRead, item.createdAt]
   );
+}
+
+async function sendPushToUser(userId, title, body, data = {}) {
+  try {
+    const tokensResult = await db.query(
+      `
+      SELECT token
+      FROM push_tokens
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    if (!tokensResult.rows.length) {
+      console.log('PUSH: no tokens for user', userId);
+      return;
+    }
+
+    for (const row of tokensResult.rows) {
+      const note = new apn.Notification();
+
+      note.alert = {
+        title,
+        body
+      };
+
+      note.sound = 'default';
+      note.badge = 1;
+      note.topic = process.env.APPLE_BUNDLE_ID;
+      note.payload = data;
+
+      const result = await apnProvider.send(note, row.token);
+
+      console.log('PUSH RESULT:', JSON.stringify(result));
+
+      if (result.failed && result.failed.length) {
+        console.log('PUSH FAILED:', result.failed);
+      }
+    }
+  } catch (error) {
+    console.error('SEND PUSH ERROR:', error);
+  }
 }
 
 async function cleanupExpiredRequests() {
@@ -869,6 +924,16 @@ app.post('/api/requests/:id/respond', auth, upload.array('images', 6), async (re
       `На вашу заявку "${request.title}" пришёл новый отклик`,
       'new_response'
     );
+
+    await sendPushToUser(
+  request.buyerId,
+  'Новое предложение',
+  `На вашу заявку "${request.title}" пришёл новый отклик`,
+  {
+    type: 'new_response',
+    requestId: request.id
+  }
+);
 
     return res.json({
       message: 'Отклик отправлен',
