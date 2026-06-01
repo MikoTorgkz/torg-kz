@@ -744,6 +744,29 @@ app.post('/api/requests', auth, upload.array('images', 6), async (req, res) => {
       }
     }
 
+    const sellersResult = await db.query(
+  `
+  SELECT id
+  FROM users
+  WHERE role = 'seller'
+    AND blocked = false
+    AND (city = $1 OR city = $2)
+  `,
+  [city, 'Весь Казахстан']
+);
+
+for (const seller of sellersResult.rows) {
+  await sendPushToUser(
+    seller.id,
+    'Новая заявка',
+    `Появилась новая заявка: "${title}"`,
+    {
+      type: 'new_request',
+      requestId: id
+    }
+  );
+}
+
     return res.json({
       message: 'Заявка опубликована',
       request: requestItem
