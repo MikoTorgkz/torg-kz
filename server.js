@@ -219,6 +219,16 @@ async function initDB() {
     )
   `);
 
+  await db.query(`
+  CREATE TABLE IF NOT EXISTS push_tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT UNIQUE NOT NULL,
+    platform TEXT DEFAULT 'ios',
+    created_at BIGINT NOT NULL
+  )
+`);
+
   const adminEmail = 'admin@torg.kz';
   const existingAdmin = await db.query(
     `SELECT id FROM users WHERE role = 'admin' LIMIT 1`
@@ -1513,39 +1523,35 @@ app.delete('/api/admin/users/:id', async (req, res) => {
 
 // ========== ЗАПУСК СЕРВЕРА ==========
 initDB().then(() => {
-  app.post('/api/save-push-token', (req, res) => {
-  const { token, platform } = req.body || {};
+  app.post('/api/save-push-token', auth, async (req, res) => {
+  try {
+    const { token, platform } = req.body || {};
 
-  if (!token) {
-    return res.status(400).json({ ok: false });
+    if (!token) {
+      return res.status(400).json({ ok: false, message: 'token required' });
+    }
+
+    await db.query(
+      `
+      INSERT INTO push_tokens (id, user_id, token, platform, created_at)
+      VALUES ($1,$2,$3,$4,$5)
+      ON CONFLICT (token)
+      DO UPDATE SET user_id = EXCLUDED.user_id
+      `,
+      [
+        generateId('push_'),
+        req.user.id,
+        token,
+        platform || 'ios',
+        Date.now()
+      ]
+    );
+
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error('SAVE PUSH TOKEN ERROR:', error);
+    return res.status(500).json({ ok: false });
   }
-
-  if (!req.data.pushTokens) {
-    req.data.pushTokens = [];
-  }
-
-  const exists = req.data.pushTokens.find(t => t.token === token);
-
-  if (!exists) {
-    req.data.pushTokens.push({
-      token,
-      platform,
-      createdAt: new Date()
-    });
-
-    writeData(req.data);
-  }
-
-  res.json({ ok: true });
-});
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`PostgreSQL connected`);
-    console.log(`Server started on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error("DB error", err);
-  process.exit(1);
 });
 
 // Держим процесс активным
