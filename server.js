@@ -945,6 +945,16 @@ app.post('/api/requests/:id/respond', auth, upload.array('images', 6), async (re
   }
 );
 
+    await sendPushToUser(
+  request.buyerId,
+  'Новое предложение',
+  `На вашу заявку "${request.title}" пришёл новый отклик`,
+  {
+    type: 'new_response',
+    requestId: request.id
+  }
+);
+
     return res.json({
       message: 'Отклик отправлен',
       response: responseItem
