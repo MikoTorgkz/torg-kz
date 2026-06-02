@@ -1047,6 +1047,12 @@ app.get('/api/requests/:id/responses', auth, async (req, res) => {
       return res.status(403).json({ message: 'Нет доступа' });
     }
 
+    if (req.user.role !== 'buyer') {
+  return res.status(403).json({
+    message: 'Только покупатель может видеть предложения'
+  });
+}
+
     const responsesResult = await db.query(
       `
       SELECT resp.*
