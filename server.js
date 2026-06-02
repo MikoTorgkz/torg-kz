@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const multer = require('multer');
 const apn = require('apn');
 const db = require('./db');
+const nodemailer = require('nodemailer');
 const applePrivateKey = process.env.APPLE_PRIVATE_KEY
   ? process.env.APPLE_PRIVATE_KEY.replace(/\\n/g, '\n')
   : '';
@@ -238,6 +239,17 @@ async function initDB() {
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token TEXT UNIQUE NOT NULL,
     platform TEXT DEFAULT 'ios',
+    created_at BIGINT NOT NULL
+  )
+    
+`);
+
+await db.query(`
+  CREATE TABLE IF NOT EXISTS password_resets (
+    token TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at BIGINT NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
     created_at BIGINT NOT NULL
   )
 `);
@@ -1280,6 +1292,118 @@ app.post('/api/change-password', auth, async (req, res) => {
 
     return res.json({ message: 'Пароль изменён' });
   } catch (error) {
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
+const mailer = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
+
+app.post('/api/forgot-password', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ message: 'Введите email' });
+    }
+
+    const userResult = await db.query(
+      `SELECT * FROM users WHERE email = $1 LIMIT 1`,
+      [email]
+    );
+
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.json({
+        message: 'Если email зарегистрирован, ссылка будет отправлена'
+      });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = Date.now() + 30 * 60 * 1000;
+
+    await db.query(
+      `
+      INSERT INTO password_resets (token, user_id, expires_at, used, created_at)
+      VALUES ($1,$2,$3,$4,$5)
+      `,
+      [token, user.id, expiresAt, false, Date.now()]
+    );
+
+    const resetLink = `https://torg-kz.kz/reset-password.html?token=${token}`;
+
+    await mailer.sendMail({
+      from: `"Torg.kz" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: 'Сброс пароля Torg.kz',
+      html: `
+        <h2>Сброс пароля</h2>
+        <p>Нажмите на ссылку ниже, чтобы установить новый пароль:</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>Ссылка действует 30 минут.</p>
+      `
+    });
+
+    return res.json({
+      message: 'Если email зарегистрирован, ссылка будет отправлена'
+    });
+
+  } catch (error) {
+    console.error('FORGOT PASSWORD ERROR:', error);
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: 'Заполни все поля' });
+    }
+
+    if (String(newPassword).length < 4) {
+      return res.status(400).json({ message: 'Пароль слишком короткий' });
+    }
+
+    const resetResult = await db.query(
+      `
+      SELECT *
+      FROM password_resets
+      WHERE token = $1 AND used = FALSE
+      LIMIT 1
+      `,
+      [token]
+    );
+
+    const reset = resetResult.rows[0];
+
+    if (!reset || Number(reset.expires_at) < Date.now()) {
+      return res.status(400).json({ message: 'Ссылка недействительна или истекла' });
+    }
+
+    await db.query(
+      `UPDATE users SET password = $1 WHERE id = $2`,
+      [hashPassword(newPassword), reset.user_id]
+    );
+
+    await db.query(
+      `UPDATE password_resets SET used = TRUE WHERE token = $1`,
+      [token]
+    );
+
+    return res.json({ message: 'Пароль успешно изменён' });
+
+  } catch (error) {
+    console.error('RESET PASSWORD ERROR:', error);
     return res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
