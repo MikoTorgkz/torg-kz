@@ -1222,6 +1222,41 @@ app.post('/api/requests/:id/select', auth, async (req, res) => {
   }
 });
 
+app.get('/api/history', auth, async (req, res) => {
+  try {
+    let result;
+
+    if (req.user.role === 'buyer') {
+      result = await db.query(
+        `
+        SELECT *
+        FROM requests
+        WHERE status = 'closed'
+          AND buyer_id = $1
+        ORDER BY selected_at DESC
+        `,
+        [req.user.id]
+      );
+    } else {
+      result = await db.query(
+        `
+        SELECT *
+        FROM requests
+        WHERE status = 'closed'
+          AND selected_seller_id = $1
+        ORDER BY selected_at DESC
+        `,
+        [req.user.id]
+      );
+    }
+
+    return res.json(result.rows.map(mapRequest));
+  } catch (error) {
+    console.error('LOAD HISTORY ERROR:', error);
+    return res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
 app.post('/api/change-password', auth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
