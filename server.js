@@ -3,10 +3,12 @@ const path = require('path');
 const fs = require('fs');
 const admin = require("firebase-admin")
 
+const firebaseServiceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT
+)
+
 admin.initializeApp({
-  credential: admin.credential.cert(
-    require("./firebase-key.json")
-  )
+  credential: admin.credential.cert(firebaseServiceAccount)
 })
 const crypto = require('crypto');
 const multer = require('multer');
@@ -371,17 +373,12 @@ async function addNotification(userId, text, type = 'info') {
 }
 
 async function sendPushToUser(userId, title, body, data = {}) {
-  console.log('PUSH FUNCTION CALLED', {
-    userId,
-    title
-  });
+  console.log('PUSH FUNCTION CALLED', { userId, title });
 
   try {
-    console.log('LOOKING FOR TOKENS OF USER:', userId);
-
     const tokensResult = await db.query(
       `
-      SELECT token
+      SELECT token, platform
       FROM push_tokens
       WHERE user_id = $1
       `,
@@ -389,7 +386,7 @@ async function sendPushToUser(userId, title, body, data = {}) {
     );
 
     console.log('TOKENS FOUND:', tokensResult.rows.length);
-console.log(tokensResult.rows);
+    console.log(tokensResult.rows);
 
     if (!tokensResult.rows.length) {
       console.log('PUSH: no tokens for user', userId);
@@ -397,13 +394,34 @@ console.log(tokensResult.rows);
     }
 
     for (const row of tokensResult.rows) {
+      const platform = row.platform || 'ios';
+
+      if (platform === 'android') {
+        try {
+          const result = await admin.messaging().send({
+            token: row.token,
+            notification: {
+              title,
+              body
+            },
+            data: {
+              ...data,
+              title: String(title),
+              body: String(body)
+            }
+          });
+
+          console.log('ANDROID PUSH RESULT:', result);
+        } catch (error) {
+          console.error('ANDROID PUSH ERROR:', error);
+        }
+
+        continue;
+      }
+
       const note = new apn.Notification();
 
-      note.alert = {
-        title,
-        body
-      };
-
+      note.alert = { title, body };
       note.sound = 'default';
       note.badge = 1;
       note.topic = process.env.APPLE_BUNDLE_ID;
@@ -411,10 +429,10 @@ console.log(tokensResult.rows);
 
       const result = await apnProvider.send(note, row.token);
 
-      console.log('PUSH RESULT:', JSON.stringify(result));
+      console.log('IOS PUSH RESULT:', JSON.stringify(result));
 
       if (result.failed && result.failed.length) {
-        console.log('PUSH FAILED:', result.failed);
+        console.log('IOS PUSH FAILED:', result.failed);
       }
     }
   } catch (error) {
