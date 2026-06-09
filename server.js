@@ -1,6 +1,13 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const admin = require("firebase-admin")
+
+admin.initializeApp({
+  credential: admin.credential.cert(
+    require("./firebase-key.json")
+  )
+})
 const crypto = require('crypto');
 const multer = require('multer');
 const apn = require('apn');

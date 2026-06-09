@@ -24,6 +24,7 @@
     "apn": "^2.2.0",
     "cloudinary": "^2.10.0",
     "express": "^4.22.1",
+    "firebase-admin": "^14.0.0",
     "images": "^3.2.4",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.10",
