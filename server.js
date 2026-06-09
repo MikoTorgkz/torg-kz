@@ -1,15 +1,15 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const admin = require("firebase-admin")
+const firebaseAdmin = require("firebase-admin");
 
 const firebaseServiceAccount = JSON.parse(
   process.env.FIREBASE_SERVICE_ACCOUNT
-)
+);
 
-admin.initializeApp({
-  credential: admin.credential.cert(firebaseServiceAccount)
-})
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(firebaseServiceAccount)
+});
 const crypto = require('crypto');
 const multer = require('multer');
 const apn = require('apn');
