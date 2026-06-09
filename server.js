@@ -3,13 +3,19 @@ const path = require('path');
 const fs = require('fs');
 const firebaseAdmin = require("firebase-admin");
 
-const firebaseServiceAccount = JSON.parse(
-  process.env.FIREBASE_SERVICE_ACCOUNT
-);
+let firebaseServiceAccount = null;
 
-firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.cert(firebaseServiceAccount)
-});
+try {
+  firebaseServiceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}");
+
+  firebaseAdmin.initializeApp({
+    credential: firebaseAdmin.credential.cert(firebaseServiceAccount)
+  });
+
+  console.log("Firebase Admin initialized");
+} catch (error) {
+  console.error("Firebase Admin init error:", error.message);
+}
 const crypto = require('crypto');
 const multer = require('multer');
 const apn = require('apn');
