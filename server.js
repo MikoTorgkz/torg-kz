@@ -404,7 +404,7 @@ async function sendPushToUser(userId, title, body, data = {}) {
 
       if (platform === 'android') {
         try {
-          const result = await admin.messaging().send({
+          const result = await firebaseAdmin.messaging().send({
             token: row.token,
             notification: {
               title,
