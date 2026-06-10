@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const firebaseAdmin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getMessaging } = require("firebase-admin/messaging");
 
 let firebaseReady = false;
 
@@ -10,8 +11,8 @@ try {
     process.env.FIREBASE_SERVICE_ACCOUNT || "{}"
   );
 
-  firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.cert(firebaseServiceAccount)
+  initializeApp({
+    credential: cert(firebaseServiceAccount)
   });
 
   firebaseReady = true;
@@ -412,7 +413,7 @@ async function sendPushToUser(userId, title, body, data = {}) {
       continue;
     }
 
-    const result = await firebaseAdmin.messaging().send({
+    const result = await getMessaging().send({
       token: row.token,
       notification: {
         title,
