@@ -35,7 +35,7 @@ const apnProvider = new apn.Provider({
     teamId: process.env.APPLE_TEAM_ID,
     key: applePrivateKey
   },
-  production: false
+  production: true
 });
 
 const app = express();
