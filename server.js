@@ -335,6 +335,7 @@ function mapRequest(row) {
     description: row.description,
     category: row.category || '',
     city: row.city || '',
+    brand: row.brand || '',
     phone: row.phone || '',
     images: Array.isArray(row.images) ? row.images : [],
     status: row.status,
