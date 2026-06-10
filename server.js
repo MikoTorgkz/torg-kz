@@ -3,15 +3,18 @@ const path = require('path');
 const fs = require('fs');
 const firebaseAdmin = require("firebase-admin");
 
-let firebaseServiceAccount = null;
+let firebaseReady = false;
 
 try {
-  firebaseServiceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}");
+  const firebaseServiceAccount = JSON.parse(
+    process.env.FIREBASE_SERVICE_ACCOUNT || "{}"
+  );
 
   firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(firebaseServiceAccount)
   });
 
+  firebaseReady = true;
   console.log("Firebase Admin initialized");
 } catch (error) {
   console.error("Firebase Admin init error:", error.message);
@@ -403,27 +406,32 @@ async function sendPushToUser(userId, title, body, data = {}) {
       const platform = row.platform || 'ios';
 
       if (platform === 'android') {
-        try {
-          const result = await firebaseAdmin.messaging().send({
-            token: row.token,
-            notification: {
-              title,
-              body
-            },
-            data: {
-              ...data,
-              title: String(title),
-              body: String(body)
-            }
-          });
+  try {
+    if (!firebaseReady) {
+      console.log('ANDROID PUSH SKIPPED: Firebase not ready');
+      continue;
+    }
 
-          console.log('ANDROID PUSH RESULT:', result);
-        } catch (error) {
-          console.error('ANDROID PUSH ERROR:', error);
-        }
-
-        continue;
+    const result = await firebaseAdmin.messaging().send({
+      token: row.token,
+      notification: {
+        title,
+        body
+      },
+      data: {
+        ...data,
+        title: String(title),
+        body: String(body)
       }
+    });
+
+    console.log('ANDROID PUSH RESULT:', result);
+  } catch (error) {
+    console.error('ANDROID PUSH ERROR:', error);
+  }
+
+  continue;
+}
 
       const note = new apn.Notification();
 
