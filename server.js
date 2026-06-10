@@ -1840,7 +1840,10 @@ initDB().then(() => {
       INSERT INTO push_tokens (id, user_id, token, platform, created_at)
       VALUES ($1,$2,$3,$4,$5)
       ON CONFLICT (token)
-      DO UPDATE SET user_id = EXCLUDED.user_id
+DO UPDATE SET 
+  user_id = EXCLUDED.user_id,
+  platform = EXCLUDED.platform,
+  created_at = EXCLUDED.created_at
       `,
       [
         generateId('push_'),
