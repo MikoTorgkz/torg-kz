@@ -205,6 +205,7 @@ async function initDB() {
       description TEXT NOT NULL,
       category TEXT DEFAULT '',
       city TEXT NOT NULL,
+      brand TEXT DEFAULT '',
       phone TEXT NOT NULL,
       images JSONB NOT NULL DEFAULT '[]'::jsonb,
       status TEXT NOT NULL DEFAULT 'open',
