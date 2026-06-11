@@ -544,6 +544,33 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/delete-account', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Удаление аккаунта TorgKZ</title>
+      <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #0b1f3a; }
+        h1 { color: #e60012; }
+        a { color: #0b1f3a; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <h1>Удаление аккаунта TorgKZ</h1>
+      <p>Пользователь может запросить удаление аккаунта TorgKZ и связанных с ним данных.</p>
+      <p>Для удаления аккаунта отправьте запрос на email:</p>
+      <p><a href="mailto:turebekovmeirbek@gmail.com">turebekovmeirbek@gmail.com</a></p>
+      <p>В письме укажите email или номер телефона, который использовался в приложении.</p>
+      <p>После подтверждения аккаунт и связанные данные будут удалены в течение 30 дней.</p>
+      <p>Некоторые данные могут быть сохранены, если это требуется законом или необходимо для безопасности сервиса.</p>
+    </body>
+    </html>
+  `);
+});
+
 app.post('/api/register', async (req, res) => {
   try {
     const {
@@ -722,7 +749,7 @@ app.post('/api/requests', auth, upload.array('images', 6), async (req, res) => {
       return res.status(403).json({ message: 'Только покупатель может создавать заявки' });
     }
 
-    const { title, description, category, city, phone } = req.body;
+    const { title, description, category, city, phone, brand } = req.body;
 
     if (!title || !description || !city || !phone) {
       return res.status(400).json({ message: 'Заполни все поля заявки' });
